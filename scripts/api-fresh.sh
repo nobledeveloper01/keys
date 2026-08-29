@@ -27,8 +27,14 @@ trap 'rm -rf "$work"' EXIT
 
 # `set -e` with no message is a gate that fails and says nothing, which is how
 # a broken binary in node_modules cost twenty minutes once. Name the step.
+#
+# `CURRENT` is cleared once the steps are done, so that the script's own
+# deliberate `exit 1` — the stale-client verdict, which prints its own
+# explanation — is not reported as the last step having crashed. It said
+# "failed while generating the client types" over a perfectly working
+# generator, which is a diagnostic that sends the reader somewhere false.
 step() { CURRENT="$1"; }
-trap 'code=$?; [ "$code" -ne 0 ] && echo "${red}✗${off} failed while ${CURRENT:-running}: exit $code" >&2; rm -rf "$work"' EXIT
+trap 'code=$?; [ "$code" -ne 0 ] && [ -n "${CURRENT:-}" ] && echo "${red}✗${off} failed while ${CURRENT}: exit $code" >&2; rm -rf "$work"' EXIT
 
 cp "$DOC" "$work/openapi.before.json"
 cp "$SCHEMA" "$work/schema.before.ts"
@@ -39,6 +45,9 @@ step 'emitting the OpenAPI document'
 node apps/server/dist/emit-openapi.js >/dev/null
 step 'generating the client types'
 pnpm --filter @keys/api exec openapi-typescript openapi.json -o src/schema.ts >/dev/null
+
+# Every step that can crash is behind us; what follows is the verdict.
+CURRENT=""
 
 stale=0
 if ! diff -q "$work/openapi.before.json" "$DOC" >/dev/null; then
