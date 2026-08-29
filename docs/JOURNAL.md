@@ -6,6 +6,51 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-30 — A durable store, and turbo quietly halving the coverage
+
+**Did.** `ReportsStore` became an interface with an in-memory and a Postgres
+implementation. Wrote the migration with the publication rule as three `CHECK`
+constraints. Parameterised both server suites over every store. Closed the last
+of phase 0's debt that could be closed without a device.
+
+### What surprised us
+
+**The suites ran against a `Map` while the Makefile was handing them a
+database.** `make test` resolved `KEYS_TEST_DATABASE_URL`, exported it, and the
+server suite reported nineteen tests instead of thirty-six. Turbo filters the
+environment by default and drops anything not declared in `turbo.json`, so the
+variable never arrived — and nothing anywhere said so. It looked exactly like a
+passing run.
+
+That is the fifth variation of the same thing this week: a check that is green
+and could not have been otherwise. Here it was not even a gate at fault, it was
+a build tool's cache-correctness feature doing its job. The fix is the same one
+every time — **make it say what it did**. `make test` now prints a warning when
+it cannot find a database, because passing quietly on half the coverage is worse
+than failing.
+
+**Writing the rule as constraints found nothing, and that was the point.** All
+three `CHECK`s went in green, which is the boring outcome and the one that
+proves the domain has actually been holding the line. What is different now is
+that the rule survives a route somebody adds without reading `review()`, a
+caller who forgets to filter, and a `psql` session at 2am — three ways past a
+rule that until tonight had one guard. Written up in
+[ADR-0005](adr/0005-a-rule-this-serious-lives-in-three-places.md), which had to
+argue with [ADR-0001](adr/0001-the-server-imports-the-domain-rather-than-mirroring-it.md)
+to get there: this codebase's whole position is that one rule lives in one
+place. The distinction is that the C# mirror was *the same rule described twice
+for two runtimes*, which drifts, and a `CHECK` constraint is the same sentence
+expressed as something the database can refuse.
+
+**And the whole product runs.** Report a number on the web, restart the server,
+the report is still there and still invisible; the reported party answers
+through the link; a reviewer records evidence and upholds it; the lookup page
+turns from zero to one with the categories and the words about who decided.
+That is the wedge, working, on a store that survives a restart — with no SMS, no
+uploads and no listings, which is exactly what phase 1 was supposed to be.
+
+---
+
 ## 2026-08-30 — The mobile app had never been compiled
 
 **Did.** Made `apps/mobile` a package, wrote the app root, a language picker and

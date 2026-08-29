@@ -28,7 +28,7 @@ split into what blocks the next phase and what blocks a release.
 | Mobile | React Native 0.87, New Architecture, TypeScript strict |
 | Web | Next.js 15 with SSR — listing pages are a business requirement, not a roadmap item |
 | Server | **NestJS 11 on Node 22**, importing the same rules the phone runs |
-| Data | PostgreSQL with PostGIS — **not yet; the store is in memory** |
+| Data | PostgreSQL 16 — durable, with the publication rule as `CHECK` constraints. **PostGIS is not installed yet**; nothing needs it until listings |
 | Rules | `packages/domain`, pure TypeScript, three consumers, [Apache-2.0](packages/domain/LICENSE) |
 | Wire | `packages/api`, generated from the controllers, [gated against drift](scripts/api-fresh.sh) |
 | Languages | English, Hausa, Yoruba and Igbo, in every string the app renders |
@@ -67,8 +67,10 @@ Named here rather than left to be discovered:
 
 - **No native projects.** `ios/` and `android/` are not generated, so the app
   compiles and its screens are tested, but it runs on no device yet.
-- **No database.** The store is in memory. `/healthz` answers `durable: false`
-  so this cannot be mistaken for a deployment.
+- **No PostGIS.** Reports need no geospatial index; listings will, in phase 3.
+  Postgres itself is wired: reports survive a restart, and `/healthz` asks the
+  store rather than the environment, so it cannot claim durability a running
+  server does not have.
 - **No SMS**, so the reply token is generated and honoured but never delivered.
   This is phase 1's second exit gate and it is open.
 - **No file upload.** Object storage is phase 3, and the domain refuses to
@@ -93,6 +95,18 @@ The server, with a reviewer token long enough for the guard to accept:
 KEYS_REVIEWER_TOKEN=$(openssl rand -hex 24) PORT=5211 pnpm --filter @keys/server start
 ```
 
+Without `KEYS_DATABASE_URL` it starts on an in-memory store and says so —
+`/healthz` answers `durable: false`. That fallback announces itself rather than
+defaulting the other way, because a server that quietly loses every report on
+restart while every log line looks normal is worse than one that will not start.
+
+```bash
+make db     # createdb keys_test and keys_dev, once
+KEYS_DATABASE_URL="postgres://$USER@localhost/keys_dev" \
+KEYS_REVIEWER_TOKEN=$(openssl rand -hex 24) PORT=5211 \
+  pnpm --filter @keys/server start
+```
+
 The web surface, pointed at it:
 
 ```bash
@@ -101,6 +115,23 @@ KEYS_API_URL=http://127.0.0.1:5211 pnpm --filter @keys/web dev
 
 `KEYS_API_URL` has no localhost fallback, deliberately: a production build
 silently pointing at somebody's laptop is worse than one that refuses to start.
+
+### Configuration
+
+Every one of these changes what the server will *refuse* to do, which is why
+they are listed together rather than left in whichever file reads them.
+
+| Variable | Read by | Unset means |
+|---|---|---|
+| `KEYS_DATABASE_URL` | server | In-memory store. Announced: `/healthz` says `durable: false` |
+| `KEYS_REVIEWER_TOKEN` | server | **The review console refuses everybody.** An unconfigured server has no console, not an open one. Shorter than 32 characters is also refused |
+| `KEYS_CORS_ORIGINS` | server | No browser may call the API. `*` is rejected at startup — the process will not boot |
+| `KEYS_API_URL` | web | **The web surface will not start.** There is no localhost fallback: a production build silently pointing at somebody's laptop is worse than one that refuses |
+| `KEYS_TEST_DATABASE_URL` | tests | Server suites run against the in-memory store only, and `make test` prints a warning saying so |
+
+Each default is the one that fails loudly. That is the pattern, not a
+coincidence: a missing secret should stop the thing that needs it, never quietly
+widen what is allowed.
 
 ### The gates
 
@@ -116,7 +147,12 @@ breaking what it guards and watching it go red:
 | `wired-check` | Nothing is exported, tested, and called by nothing |
 | `untranslated` | No English string is rendered by a screen without going through `say()` |
 | `api-fresh` | The generated client still matches the controllers |
-| `test` | 59 across the four packages: 34 domain, 19 server, 4 wire, 2 app |
+| `test` | 76 across the four packages: 34 domain, 36 server, 4 wire, 2 app |
+
+The server suites run **against every store implementation** — in memory and
+Postgres — because a suite that only exercises the `Map` proves something about
+a `Map`. `make test` finds a database if one is reachable and says plainly when
+it cannot, rather than passing quietly on half the coverage.
 
 Three of these could not fail when phase 1 began — they were ported from the
 previous project and were scanning directories that do not exist here, or

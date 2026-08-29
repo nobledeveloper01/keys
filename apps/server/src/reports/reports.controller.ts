@@ -46,7 +46,7 @@ export class ReportsController {
     summary: 'What is publicly known about a number. No account required.',
   })
   @ApiOkResponse({ type: LookupResponse })
-  lookup(@Query('phone') phone?: string) {
+  async lookup(@Query('phone') phone?: string) {
     if (!phone || phone.trim().length < 7) {
       throw new BadRequestException('Give a phone number to look up.');
     }
@@ -59,7 +59,7 @@ export class ReportsController {
       back. Belt and braces on the one query in this product where being wrong
       is a defamation claim rather than a bug report.
     */
-    const reports = this.store.publishedFor(phone.trim());
+    const reports = await this.store.publishedFor(phone.trim());
     const answer = standing(reports, new Date());
 
     return {
@@ -85,7 +85,7 @@ export class ReportsController {
   // the same thing, or the generated client is typed against a response the
   // server never sends.
   @ApiCreatedResponse({ type: ReportAcceptedResponse })
-  report(
+  async report(
     @Body()
     body: {
       reportedPhone?: string;
@@ -110,7 +110,7 @@ export class ReportsController {
       );
     }
 
-    const row = this.store.add({
+    const row = await this.store.add({
       id: randomUUID(),
       // Recorded and never returned. See `StoredReport.reporterId`.
       reporterId: body.reporterId ?? 'anonymous',

@@ -2,6 +2,8 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LANGUAGES, say } from '@keys/domain';
 
+import { ReportsStore } from './reports/reports.store';
+
 /**
  * Whether the server is up, and what it is honest about.
  *
@@ -14,13 +16,23 @@ import { LANGUAGES, say } from '@keys/domain';
 @ApiTags('health')
 @Controller('healthz')
 export class HealthController {
+  constructor(private readonly store: ReportsStore) {}
+
   @Get()
   @ApiOperation({ summary: 'Liveness, and whether the store is durable.' })
   get() {
     return {
       status: 'ok',
-      store: process.env.KEYS_DATABASE_URL ? 'postgres' : 'in-memory',
-      durable: Boolean(process.env.KEYS_DATABASE_URL),
+      /*
+        Asked of the store rather than inferred from the environment.
+
+        Reading `KEYS_DATABASE_URL` here would mean this endpoint reports
+        `durable: true` because a variable is set, which is a claim about
+        configuration rather than about where the data actually went. The store
+        itself is the only thing that knows.
+      */
+      store: this.store.durable ? 'postgres' : 'in-memory',
+      durable: this.store.durable,
 
       /*
         Proof that the server and the phone are running the same rules.

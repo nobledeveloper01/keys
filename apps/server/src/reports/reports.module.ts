@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 
+import { HealthController } from '../health.controller';
 import { ReplyController } from './reply.controller';
 import { ReportsController } from './reports.controller';
-import { ReportsStore } from './reports.store';
+import { PostgresReportsStore } from './reports.postgres';
+import { InMemoryReportsStore, ReportsStore } from './reports.store';
 import { ReviewController } from './review.controller';
 
 /**
@@ -14,7 +16,24 @@ import { ReviewController } from './review.controller';
  * everything. Nothing else may read the store.
  */
 @Module({
-  controllers: [ReportsController, ReplyController, ReviewController],
-  providers: [ReportsStore],
+  controllers: [ReportsController, ReplyController, ReviewController, HealthController],
+  providers: [
+    {
+      provide: ReportsStore,
+      useFactory: (): ReportsStore => {
+        /*
+          Postgres when it is configured, memory when it is not.
+
+          Deliberately not the other way round with a localhost default. A
+          server that silently falls back to memory is a server that loses
+          every report on the next restart while `/healthz` and every log line
+          look normal — so the fallback is the one that announces itself:
+          `durable: false`, said out loud on the health endpoint.
+        */
+        const url = process.env.KEYS_DATABASE_URL;
+        return url ? new PostgresReportsStore(url) : new InMemoryReportsStore();
+      },
+    },
+  ],
 })
 export class ReportsModule {}

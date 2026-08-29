@@ -1,21 +1,6 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/healthz": {
-      "get": {
-        "operationId": "HealthController_get",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "summary": "Liveness, and whether the store is durable.",
-        "tags": [
-          "health"
-        ]
-      }
-    },
     "/v1/registry/lookup": {
       "get": {
         "operationId": "ReportsController_lookup",
@@ -288,6 +273,21 @@
         "summary": "Decide a report. The domain refuses what policy forbids.",
         "tags": [
           "review"
+        ]
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "HealthController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Liveness, and whether the store is durable.",
+        "tags": [
+          "health"
         ]
       }
     }

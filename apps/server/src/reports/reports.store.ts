@@ -39,19 +39,54 @@ export function hashPhone(e164: string): string {
   return createHash('sha256').update(e164).digest('hex');
 }
 
+export interface AddReport {
+  readonly id: string;
+  readonly reporterId: string;
+  readonly reportedPhone: string;
+  readonly category: ReportCategory;
+  readonly description: string;
+  readonly evidenceKeys: readonly string[];
+  readonly now: Date;
+}
+
+/**
+ * What a store has to be able to do, and nothing more.
+ *
+ * Two reads, and they are not the same size: `publishedFor` is reachable by
+ * anybody and filters on `publishedAt` in the query itself, `allFor` is
+ * reachable only behind the reviewer guard. Everything else is a write or a
+ * lookup by capability.
+ *
+ * Every method takes `now` rather than reading the clock, so the retention
+ * behaviour is testable without waiting a year.
+ */
+export abstract class ReportsStore {
+  abstract add(input: AddReport): Promise<StoredReport> | StoredReport;
+  abstract publishedFor(phone: string, now?: Date): Promise<readonly StoredReport[]> | readonly StoredReport[];
+  abstract allFor(phone: string): Promise<readonly StoredReport[]> | readonly StoredReport[];
+  abstract byId(id: string): Promise<StoredReport | undefined> | StoredReport | undefined;
+  abstract byReplyToken(token: string): Promise<StoredReport | undefined> | StoredReport | undefined;
+  abstract queue(now?: Date): Promise<readonly StoredReport[]> | readonly StoredReport[];
+  abstract replace(row: StoredReport): Promise<void> | void;
+  abstract purgeExpired(now: Date): Promise<number> | number;
+  /** Whether this survives a restart. `/healthz` says so out loud. */
+  abstract readonly durable: boolean;
+}
+
+/**
+ * The in-memory store.
+ *
+ * Kept after Postgres arrived, because every test in this repository runs
+ * against both — and a test suite that only exercises the implementation it was
+ * written against proves nothing about the one that ships.
+ */
 @Injectable()
-export class ReportsStore {
+export class InMemoryReportsStore extends ReportsStore {
+  readonly durable = false;
+
   private readonly rows = new Map<string, StoredReport>();
 
-  add(input: {
-    id: string;
-    reporterId: string;
-    reportedPhone: string;
-    category: ReportCategory;
-    description: string;
-    evidenceKeys: readonly string[];
-    now: Date;
-  }): StoredReport {
+  add(input: AddReport): StoredReport {
     const row: StoredReport = {
       id: input.id,
       status: 'submitted',

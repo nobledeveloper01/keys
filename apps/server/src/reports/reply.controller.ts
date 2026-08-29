@@ -35,8 +35,8 @@ export class ReplyController {
   @Get()
   @ApiOperation({ summary: 'What was said about you. Requires the token texted to your number.' })
   @ApiOkResponse({ type: ReplyView })
-  show(@Query('token') token?: string) {
-    const row = this.store.byReplyToken((token ?? '').trim());
+  async show(@Query('token') token?: string) {
+    const row = await this.store.byReplyToken((token ?? '').trim());
     if (!row) throw new NotFoundException('This link is not valid.');
 
     return {
@@ -56,8 +56,8 @@ export class ReplyController {
   @ApiOperation({ summary: 'Answer a report about your number.' })
   @ApiBody({ type: SubmitReplyBody })
   @ApiCreatedResponse({ description: 'The answer is on the record.' })
-  reply(@Body() body: { token?: string; reply?: string }) {
-    const row = this.store.byReplyToken((body.token ?? '').trim());
+  async reply(@Body() body: { token?: string; reply?: string }) {
+    const row = await this.store.byReplyToken((body.token ?? '').trim());
     if (!row) throw new NotFoundException('This link is not valid.');
 
     const text = (body.reply ?? '').trim();
@@ -80,7 +80,7 @@ export class ReplyController {
       );
     }
 
-    this.store.replace({ ...row, hasReply: true, reply: text });
+    await this.store.replace({ ...row, hasReply: true, reply: text });
 
     return {
       received: true,

@@ -5,6 +5,33 @@ import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { ReportsStore } from '../src/reports/reports.store';
 
+/*
+  Run against every store, not just the one that is easy to run against.
+
+  A suite that only exercises the in-memory store proves something about a
+  `Map`. The claim being made here is about the server that ships, and that one
+  is talking to Postgres — where the reads are SQL, the filters are `WHERE`
+  clauses, and a mistake looks completely different.
+
+  `KEYS_TEST_DATABASE_URL` unset skips the Postgres pass rather than failing, so
+  a clone with no database still runs the suite. It is announced when it is
+  skipped, because a silently halved test run is the thing this whole file
+  exists to be the opposite of.
+*/
+const DATABASE_URL = process.env.KEYS_TEST_DATABASE_URL;
+if (!DATABASE_URL) {
+  console.warn(
+    '\n  ! KEYS_TEST_DATABASE_URL is not set — this suite is running against ' +
+      'the in-memory store only.\n    The shipping server uses Postgres. Set it to ' +
+      'cover both.\n',
+  );
+}
+
+const STORES: Array<[name: string, url: string | undefined]> = [
+  ['in memory', undefined],
+  ...(DATABASE_URL ? ([['postgres', DATABASE_URL]] as Array<[string, string]>) : []),
+];
+
 /**
  * Phase 1's exit gate.
  *
@@ -21,6 +48,10 @@ import { ReportsStore } from '../src/reports/reports.store';
 const PHONE = '+2348012345678';
 const SECRET = 'the sworn evidence that has not been reviewed by anybody yet';
 const TOKEN = 'x'.repeat(48);
+// A real UUID, because the durable store's primary key is one and a friendly
+// string would fail there for a reason that has nothing to do with what is
+// being tested.
+const REPORT_ID = '8f1c2b6e-4a3d-4c9e-9f21-5b7d0e6a1c34';
 
 interface Route {
   readonly method: string;
@@ -55,7 +86,7 @@ function candidatesFor(reportId: string, replyToken: string): string[] {
   return [reportId, PHONE, encodeURIComponent(PHONE), replyToken, '', 'all', '*'];
 }
 
-describe('no unreviewed report escapes', () => {
+describe.each(STORES)('no unreviewed report escapes (%s)', (_name, databaseUrl) => {
   let app: INestApplication;
   let store: ReportsStore;
   let reportId: string;
@@ -63,13 +94,24 @@ describe('no unreviewed report escapes', () => {
 
   beforeAll(async () => {
     process.env.KEYS_REVIEWER_TOKEN = TOKEN;
+    if (databaseUrl) {
+      process.env.KEYS_DATABASE_URL = databaseUrl;
+    } else {
+      delete process.env.KEYS_DATABASE_URL;
+    }
+
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
     await app.init();
 
     store = app.get(ReportsStore);
-    const row = store.add({
-      id: 'report-under-test',
+    // A clean table. The suite asserts on counts, and a row left by the last
+    // run would make it pass or fail for reasons nothing here describes.
+    for (const row of await store.allFor(PHONE)) await store.replace({ ...row, expiresAt: new Date(0) });
+    await store.purgeExpired(new Date());
+
+    const row = await store.add({
+      id: REPORT_ID,
       reporterId: 'someone-who-must-not-be-named',
       reportedPhone: PHONE,
       category: 'inspection_fee_scam',
@@ -82,8 +124,13 @@ describe('no unreviewed report escapes', () => {
   });
 
   afterAll(async () => {
+    for (const row of await store.allFor(PHONE)) {
+      await store.replace({ ...row, expiresAt: new Date(0) });
+    }
+    await store.purgeExpired(new Date());
     await app.close();
     delete process.env.KEYS_REVIEWER_TOKEN;
+    delete process.env.KEYS_DATABASE_URL;
   });
 
   it('has routes to test, and knows how many', () => {
@@ -99,8 +146,8 @@ describe('no unreviewed report escapes', () => {
     expect(routes.length).toBeGreaterThanOrEqual(7);
   });
 
-  it('the report is genuinely unreviewed', () => {
-    const row = store.byId(reportId)!;
+  it('the report is genuinely unreviewed', async () => {
+    const row = (await store.byId(reportId))!;
     expect(row.status).toBe('submitted');
     expect(row.publishedAt).toBeNull();
   });

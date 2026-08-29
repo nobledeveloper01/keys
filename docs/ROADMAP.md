@@ -60,10 +60,16 @@ three targets now import `@keys/domain` and all three are compiled by `make ci`.
 It is recorded here rather than backdated, because a gate called green early is
 worth more as a visible debt than as a corrected date.
 
+**Postgres closed too.** Reports are durable, the publication rule is enforced
+in the domain, in the query *and* in the table
+([ADR-0005](adr/0005-a-rule-this-serious-lives-in-three-places.md)), and both
+server suites run against every store implementation rather than only the
+in-memory one. **PostGIS is not installed**; nothing needs it until listings in
+phase 3.
+
 Still open from this phase: **the native projects** (`ios/` and `android/` are
-not generated, so the app runs nowhere yet), **Postgres and PostGIS** (the store
-is in memory and `/healthz` says `durable: false`), and **CI building mobile
-artefacts**.
+not generated, so the app compiles and its screens are tested but it runs on no
+device yet), and **CI building mobile artefacts**.
 
 ---
 

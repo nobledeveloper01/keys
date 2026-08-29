@@ -40,6 +40,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   test: a lookup that could not reach the server must not render as zero upheld
   reports. Proven by making the screen commit exactly that mistake.
 - `POST /v1/review/:id/evidence`.
+- **A durable store.** `ReportsStore` is an interface with two implementations,
+  and the server picks Postgres when `KEYS_DATABASE_URL` is set. The fallback to
+  memory announces itself — `/healthz` asks the store rather than the
+  environment — because a server that quietly loses every report on restart
+  while every log line looks normal is the worse failure.
+- The publication rule as three `CHECK` constraints on the `reports` table, each
+  proved by inserting a row that breaks it and watching Postgres name it. See
+  [ADR-0005](docs/adr/0005-a-rule-this-serious-lives-in-three-places.md).
+- Both server suites are parameterised over every store, and `make test` finds a
+  database when one is reachable and says plainly when it cannot.
 
 ### Changed
 
@@ -57,6 +67,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `wired-check` asks about symbols rather than modules for the seams too, after
   the module-level rule reported clean while three exports in `state/server.tsx`
   were dead.
+- `turbo` was dropping `KEYS_TEST_DATABASE_URL` — it filters the environment by
+  default — so the server suites ran against a `Map` while the Makefile was
+  handing them a database. Declared in `turbo.json`.
 - `doc-check` checks which phase the roadmap marks **current**, not merely that
   the number appears somewhere. It had passed for the whole of phase 1 while the
   roadmap still said phase 0.

@@ -1,4 +1,8 @@
-import { ReportsStore } from '../src/reports/reports.store';
+import {
+  InMemoryReportsStore,
+  ReportsStore,
+} from '../src/reports/reports.store';
+import { PostgresReportsStore } from '../src/reports/reports.postgres';
 
 /**
  * The store filter, held directly.
@@ -9,79 +13,144 @@ import { ReportsStore } from '../src/reports/reports.store';
  * filters again. Two filters, one of them load-bearing and one of them unheld
  * by anything — until a later change makes the unheld one the last line.
  *
- * So it is held here, on its own, without a controller in the way.
+ * So it is held here, on its own, without a controller in the way — and against
+ * both stores, because in Postgres the same rule is a `WHERE` clause and a
+ * mistake in it looks nothing like a mistake in an `Array.filter`.
  */
+
 const PHONE = '+2348011122233';
+const OTHER = '+2349099988877';
+const DATABASE_URL = process.env.KEYS_TEST_DATABASE_URL;
 
-function seed() {
-  const store = new ReportsStore();
-  const row = store.add({
-    id: 'r1',
-    reporterId: 'reporter',
-    reportedPhone: PHONE,
-    category: 'fake_listing',
-    description: 'A flat that had already been let three times.',
-    evidenceKeys: ['chat.png'],
-    now: new Date('2026-01-01T00:00:00Z'),
+const STORES: Array<[string, () => ReportsStore]> = [
+  ['in memory', () => new InMemoryReportsStore()],
+  ...(DATABASE_URL
+    ? ([['postgres', () => new PostgresReportsStore(DATABASE_URL)]] as Array<
+        [string, () => ReportsStore]
+      >)
+    : []),
+];
+
+const uuid = (n: number) => `0000000${n}-0000-4000-8000-00000000000${n}`;
+
+describe.each(STORES)('the public read cannot see unpublished reports (%s)', (name, make) => {
+  let store: ReportsStore;
+  let id: string;
+
+  beforeEach(async () => {
+    store = make();
+    const init = store as { onModuleInit?: () => Promise<void> };
+    if (init.onModuleInit) await init.onModuleInit();
+
+    // Each case starts from an empty table. Postgres does not forget between
+    // tests the way a new `Map` does.
+    for (const phone of [PHONE, OTHER]) {
+      for (const row of await store.allFor(phone)) {
+        await store.replace({ ...row, expiresAt: new Date(0) });
+      }
+    }
+    await store.purgeExpired(new Date());
+
+    id = uuid(1);
+    await store.add({
+      id,
+      reporterId: 'reporter',
+      reportedPhone: PHONE,
+      category: 'fake_listing',
+      description: 'A flat that had already been let three times.',
+      evidenceKeys: ['chat.png'],
+      now: new Date('2026-01-01T00:00:00Z'),
+    });
   });
-  return { store, row };
-}
 
-describe('the public read cannot see unpublished reports', () => {
-  it('excludes a submitted report', () => {
-    const { store } = seed();
-    expect(store.publishedFor(PHONE)).toHaveLength(0);
+  afterEach(async () => {
+    for (const phone of [PHONE, OTHER]) {
+      for (const row of await store.allFor(phone)) {
+        await store.replace({ ...row, expiresAt: new Date(0) });
+      }
+    }
+    await store.purgeExpired(new Date());
+    const done = store as { onModuleDestroy?: () => Promise<void> };
+    if (done.onModuleDestroy) await done.onModuleDestroy();
   });
 
-  it('excludes a report under review', () => {
-    const { store, row } = seed();
-    store.replace({ ...row, status: 'under_review' });
-    expect(store.publishedFor(PHONE)).toHaveLength(0);
+  const row = async () => (await store.byId(id))!;
+
+  it('excludes a submitted report', async () => {
+    expect(await store.publishedFor(PHONE)).toHaveLength(0);
   });
 
-  it('excludes a report decided but never given a publication date', () => {
-    const { store, row } = seed();
-    store.replace({ ...row, status: 'not_upheld', publishedAt: null });
-    expect(store.publishedFor(PHONE)).toHaveLength(0);
+  it('excludes a report under review', async () => {
+    await store.replace({ ...(await row()), status: 'under_review' });
+    expect(await store.publishedFor(PHONE)).toHaveLength(0);
   });
 
-  it('includes one only once it has a publication date', () => {
-    const { store, row } = seed();
-    store.replace({ ...row, status: 'upheld', publishedAt: new Date('2026-01-09T00:00:00Z') });
-    expect(store.publishedFor(PHONE)).toHaveLength(1);
+  it('excludes a report decided but never given a publication date', async () => {
+    await store.replace({ ...(await row()), status: 'not_upheld', publishedAt: null });
+    expect(await store.publishedFor(PHONE)).toHaveLength(0);
   });
 
-  it('never returns another number’s reports', () => {
-    const { store, row } = seed();
-    store.replace({ ...row, status: 'upheld', publishedAt: new Date('2026-01-09T00:00:00Z') });
-    expect(store.publishedFor('+2349099988877')).toHaveLength(0);
+  it('includes one only once it has a publication date', async () => {
+    await store.replace({
+      ...(await row()),
+      status: 'upheld',
+      publishedAt: new Date('2026-01-09T00:00:00Z'),
+    });
+    expect(await store.publishedFor(PHONE)).toHaveLength(1);
   });
 
-  it('drops a report once its deletion date has passed, on the read itself', () => {
-    const { store, row } = seed();
-    store.replace({ ...row, status: 'not_upheld', expiresAt: new Date('2027-01-01T00:00:00Z') });
+  it('never returns another number’s reports', async () => {
+    await store.replace({
+      ...(await row()),
+      status: 'upheld',
+      publishedAt: new Date('2026-01-09T00:00:00Z'),
+    });
+    expect(await store.publishedFor(OTHER)).toHaveLength(0);
+  });
+
+  it('drops a report once its deletion date has passed, on the read itself', async () => {
+    await store.replace({
+      ...(await row()),
+      status: 'not_upheld',
+      expiresAt: new Date('2027-01-01T00:00:00Z'),
+    });
 
     // The day before: still held, because a reviewer looking for a pattern of
     // eleven dismissed reports needs the ten that came first.
-    expect(store.allFor(PHONE)).toHaveLength(1);
-    expect(store.queue(new Date('2026-12-31T00:00:00Z'))).toHaveLength(0); // decided, so not queued
-    expect(store.allFor(PHONE)).toHaveLength(1);
+    await store.publishedFor(PHONE, new Date('2026-12-31T00:00:00Z'));
+    expect(await store.allFor(PHONE)).toHaveLength(1);
 
     // The day after: gone, and gone because the read purged it rather than
     // because a scheduler somewhere was still running.
-    store.publishedFor(PHONE, new Date('2027-01-02T00:00:00Z'));
-    expect(store.allFor(PHONE)).toHaveLength(0);
-    expect(store.byId(row.id)).toBeUndefined();
+    await store.publishedFor(PHONE, new Date('2027-01-02T00:00:00Z'));
+    expect(await store.allFor(PHONE)).toHaveLength(0);
+    expect(await store.byId(id)).toBeUndefined();
   });
 
-  it('never drops a report that has no deletion date', () => {
-    const { store, row } = seed();
-    store.publishedFor(PHONE, new Date('2099-01-01T00:00:00Z'));
-    expect(store.byId(row.id)).toBeDefined();
+  it('never drops a report that has no deletion date', async () => {
+    await store.publishedFor(PHONE, new Date('2099-01-01T00:00:00Z'));
+    expect(await store.byId(id)).toBeDefined();
   });
 
-  it('the reviewer read sees what the public read hides, so this is not passing by returning nothing', () => {
-    const { store } = seed();
-    expect(store.allFor(PHONE)).toHaveLength(1);
+  it('the reviewer read sees what the public read hides, so this is not passing by returning nothing', async () => {
+    expect(await store.allFor(PHONE)).toHaveLength(1);
   });
+
+  if (name === 'postgres') {
+    it('the table itself refuses a published report that nobody upheld', async () => {
+      /*
+        The third place the rule lives, and the only one a psql session cannot
+        walk past. `review()` decides it, `publishedFor` filters on it, and this
+        refuses to hold a row that breaks it — each guarding a different way of
+        getting it wrong.
+      */
+      await expect(
+        store.replace({
+          ...(await row()),
+          status: 'submitted',
+          publishedAt: new Date('2026-01-09T00:00:00Z'),
+        }),
+      ).rejects.toThrow(/reports_only_upheld_is_published/);
+    });
+  }
 });

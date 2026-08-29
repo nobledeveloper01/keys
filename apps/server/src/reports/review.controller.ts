@@ -67,15 +67,16 @@ export class ReviewController {
   @Get('queue')
   @ApiOperation({ summary: 'Reports awaiting a decision.' })
   @ApiOkResponse({ type: ReviewView, isArray: true })
-  queue() {
-    return { reports: this.store.queue().map((r) => this.view(r)) };
+  async queue() {
+    const rows = await this.store.queue();
+    return { reports: rows.map((r) => this.view(r)) };
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'One report, in full, for review.' })
   @ApiOkResponse({ type: ReviewView })
-  one(@Param('id') id: string) {
-    const row = this.store.byId(id);
+  async one(@Param('id') id: string) {
+    const row = await this.store.byId(id);
     if (!row) throw new NotFoundException('No such report.');
     return this.view(row);
   }
@@ -87,7 +88,7 @@ export class ReviewController {
   })
   @ApiBody({ type: EvidenceBody })
   @ApiOkResponse({ type: ReviewView })
-  evidence(@Param('id') id: string, @Body() body: { note?: string; source?: string }) {
+  async evidence(@Param('id') id: string, @Body() body: { note?: string; source?: string }) {
     /*
       Phase 1 has no file upload — object storage lands in phase 3 — and
       `review()` refuses to uphold a report with no evidence. Without this the
@@ -107,12 +108,12 @@ export class ReviewController {
       );
     }
 
-    const row = this.store.byId(id);
+    const row = await this.store.byId(id);
     if (!row) throw new NotFoundException('No such report.');
 
     const key = `reviewer-attested:${source}:${note}`;
-    this.store.replace({ ...row, evidenceKeys: [...row.evidenceKeys, key] });
-    return this.view(this.store.byId(id)!);
+    await this.store.replace({ ...row, evidenceKeys: [...row.evidenceKeys, key] });
+    return this.view((await this.store.byId(id))!);
   }
 
   @Post(':id/decision')
@@ -122,7 +123,7 @@ export class ReviewController {
   @ApiOperation({ summary: 'Decide a report. The domain refuses what policy forbids.' })
   @ApiBody({ type: DecisionBody })
   @ApiOkResponse({ type: DecisionResponse })
-  decide(@Param('id') id: string, @Body() body: { decision?: string }) {
+  async decide(@Param('id') id: string, @Body() body: { decision?: string }) {
     const decision = DECISIONS.find((d) => d === body.decision);
     if (!decision) {
       throw new BadRequestException(
@@ -130,7 +131,7 @@ export class ReviewController {
       );
     }
 
-    const row = this.store.byId(id);
+    const row = await this.store.byId(id);
     if (!row) throw new NotFoundException('No such report.');
 
     /*
@@ -149,7 +150,7 @@ export class ReviewController {
       });
     }
 
-    this.store.replace({
+    await this.store.replace({
       ...row,
       status: result.status,
       publishedAt: result.publishedAt,

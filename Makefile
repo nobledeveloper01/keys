@@ -14,9 +14,29 @@ help:
 setup:
 	pnpm install
 
-## test: the domain tests, and every app's own
+## db: create the local databases the tests and dev server use
+db:
+	@createdb keys_test 2>/dev/null || true
+	@createdb keys_dev  2>/dev/null || true
+	@echo "keys_test and keys_dev ready"
+
+## test: the domain tests, and every app's own — against Postgres when it is reachable
 test:
-	pnpm test
+	@# The server suites run against every store implementation. Without a
+	@# database they run against a Map, which proves something about a Map and
+	@# not about the server that ships — so this finds one if it can, and says
+	@# plainly when it cannot rather than passing quietly on half the coverage.
+	@if pg_isready -q 2>/dev/null; then \
+		createdb keys_test 2>/dev/null || true; \
+		KEYS_TEST_DATABASE_URL="postgres://$${USER}@localhost/keys_test" pnpm test; \
+	else \
+		echo ""; \
+		echo "  ! No Postgres reachable. The server suites will run against the"; \
+		echo "    in-memory store only, which is not what ships. Start Postgres"; \
+		echo "    and re-run to cover both."; \
+		echo ""; \
+		pnpm test; \
+	fi
 
 ## typecheck: tsc across the workspace
 typecheck:
@@ -64,4 +84,4 @@ clean:
 	rm -rf apps/server/dist packages/*/dist
 	@echo "cleaned — node_modules left alone"
 
-.PHONY: help setup test typecheck lint boundary doc-check wired-check untranslated api api-fresh gates ci clean
+.PHONY: help setup db test typecheck lint boundary doc-check wired-check untranslated api api-fresh gates ci clean
