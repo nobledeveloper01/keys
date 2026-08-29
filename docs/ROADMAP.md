@@ -53,14 +53,24 @@ proven in CI, with the boundary rule proved to fire by being made to fail.
 
 ---
 
-## Phase 1 — The Scam Registry (Weeks 4–8) — the wedge
+## Phase 1 — The Scam Registry (Weeks 4–8) — the wedge — **software gate green**
 Public lookup with no account, reporting with evidence, **the human-review console**, right of
 reply with the 7-day window, publication gating, expiry and resolution.
 
 **Exit gates:**
-1. **No unreviewed report is publicly retrievable by any query path.** Release blocker.
-2. Right-of-reply flow works end to end, including for reported parties who have no Keys account.
-3. Review console throughput measured — this number sets the growth pace.
+1. ✅ **Software — no unreviewed report is publicly retrievable by any query path.**
+   `apps/server/test/no-unreviewed-report-escapes.test.ts` reads the routes out of the
+   running router rather than naming them, so a route added later is covered on the day
+   it is written. Proven to fail by removing the reviewer guard, leaking the reporter id,
+   and adding a debug route that dumps the store. See [ADR 0002](adr/0002-nothing-is-published-until-a-person-upheld-it.md).
+2. ⏳ **Software — right-of-reply flow works end to end, including for reported parties
+   who have no Keys account.** The capability is generated, stored and honoured; nothing
+   delivers it yet. **Blocked on the SMS provider in phase 3.**
+   See [ADR 0003](adr/0003-the-accused-answers-with-a-texted-capability-not-an-account.md).
+3. ⏳ **Human — review console throughput measured.** Needs a real reviewer and real
+   reports; cannot be measured against fixtures.
+4. ⏳ **Human — legal review of the report policy by a Nigerian lawyer.**
+   **Blocks public launch outright.** No test result substitutes for it.
 
 **Launched publicly at the end of this phase**, standalone, with no listings at all.
 

@@ -2,7 +2,7 @@
 #
 # Captures a screenshot from the booted iOS simulator into docs/screenshots.
 #
-#   ./scripts/screenshot.sh 01-trips-light
+#   ./scripts/screenshot.sh 01-lookup-light
 #
 # Quantised on the way in. A raw simulator PNG is around 2 MB and twenty of
 # them would be most of this repository; at 256 colours they are a tenth of
@@ -19,7 +19,7 @@ cd "$(dirname "$0")/.."
 name="${1:-}"
 platform="${2:-ios}"
 if [ -z "$name" ]; then
-  echo "usage: $0 <name> [ios|android]   e.g. $0 01-trips" >&2
+  echo "usage: $0 <name> [ios|android]   e.g. $0 01-lookup" >&2
   exit 1
 fi
 

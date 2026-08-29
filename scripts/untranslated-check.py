@@ -15,7 +15,7 @@ because something walked past its predecessor:
    `label="Loaded"` sat on the fleet screen through a clean run.
 3. Text between tags on the same line as them: `<Text>Your fleet</Text>` is
    never alone on its line.
-4. Prose sharing a line with an expression. `{count} trips completed` is two
+4. Prose sharing a line with an expression. `{count} reports upheld` is two
    words of English and the string is not the line, which hid roughly forty
    strings across eighteen screens.
 5. A quoted string inside a JSX expression: `{held ? 'On file' : 'Not
@@ -145,7 +145,7 @@ def sweep(paths):
                 found[p].append((i, m.group(1)))
 
             # Prose in a JSX text node that shares its line with an expression.
-            # `{count} trips completed` is two words of English and the check
+            # `{count} reports upheld` is two words of English and the check
             # above cannot see it, because the line is not the string. Blank
             # the `{...}` out and look at what is left.
             bare = re.sub(r'\{[^{}]*\}', ' ', line).strip()
@@ -153,7 +153,7 @@ def sweep(paths):
                 '<' not in bare
                 and '=' not in bare
                 and ':' not in bare
-                # `view.ok` and `trip.live` are two words to a regex and a
+                # `view.ok` and `report.upheld` are two words to a regex and a
                 # property access to everybody else.
                 and not re.search(r'[A-Za-z]\.[A-Za-z]', bare)
                 and not KEYWORD.match(bare)
@@ -183,14 +183,31 @@ def sweep(paths):
                     found[p].append((i, text.strip()))
     return found
 
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+SCREENS = ROOT / 'apps/mobile/src'
+
 if __name__ == '__main__':
-    args = sys.argv[1:] or [
-        str(p) for p in sorted(pathlib.Path('apps/mobile/src').rglob('*.tsx'))
-    ]
+    # Anchored to the repository rather than to the working directory. The
+    # relative path this used to carry made the gate scan nothing whenever it
+    # was run from anywhere but the root, and print a clean line while doing it.
+    args = sys.argv[1:] or [str(p) for p in sorted(SCREENS.rglob('*.tsx'))]
+
+    if not args:
+        print(f'this gate scanned no .tsx files under {SCREENS.relative_to(ROOT)}')
+        print('the path is wrong or the screens moved — it cannot pass by finding nothing')
+        sys.exit(1)
+
     found = sweep(args)
     total = sum(len(v) for v in found.values())
-    print(f'{total} strings across {len(found)} files\n')
+    print(f'{total} untranslated strings across {len(args)} files scanned\n')
     for path, hits in sorted(found.items(), key=lambda kv: -len(kv[1])):
         print(f'--- {path} ({len(hits)})')
         for i, s in hits[:200]:
             print(f'  {i}: {s}')
+
+    if total:
+        print()
+        print("put it through say(), or write it in every language, but do not ship it in one")
+    # Exits non-zero. It is named in `make gates`; a gate that always exits 0 is
+    # a line in a Makefile, not a gate.
+    sys.exit(1 if total else 0)

@@ -140,30 +140,6 @@ export function say(language: Language, phrase: Phrase): string {
   return TABLES[language][phrase];
 }
 
-/** Every phrase at once, for a screen that wants them all. */
-export function phrases(language: Language): Readonly<Record<Phrase, string>> {
-  return TABLES[language];
-}
-
-/**
- * What each language is called, in itself.
- *
- * Never "Yoruba (Nigeria)" and never an English exonym. A person picking their
- * language should find it written the way they write it.
- */
-export function describeLanguage(language: Language): string {
-  switch (language) {
-    case 'ha':
-      return 'Hausa';
-    case 'yo':
-      return 'Yorùbá';
-    case 'ig':
-      return 'Igbo';
-    case 'en':
-      return 'English';
-  }
-}
-
 /**
  * The languages on offer, English last.
  *

@@ -64,10 +64,10 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / 'apps/mobile/src'
 TESTS = ROOT / 'apps/mobile/__tests__'
 
-SERVER_SRC = ROOT / 'server/src'
-SERVER_TESTS = ROOT / 'server/tests'
-REPOSITORIES = SERVER_SRC / 'Backhaul.Infrastructure/Repositories'
-DOMAIN = SERVER_SRC / 'Backhaul.Domain'
+SERVER_SRC = ROOT / 'apps/server/src'
+SERVER_TESTS = ROOT / 'apps/server/test'
+DOMAIN_SRC = ROOT / 'packages/domain/src'
+DOMAIN_TESTS = ROOT / 'packages/domain/test'
 
 EXEMPT = 'wired-check:'
 
@@ -497,30 +497,127 @@ def unwired_server_methods(
     return found
 
 
-def unwired_repository_methods() -> list[str]:
-    """Repository methods no controller — and so no request — ever reaches."""
-    return unwired_server_methods(
-        REPOSITORIES,
-        'no caller anywhere in server/src outside its own file',
-        tests_count=False,
-    )
+DOMAIN_EXPORT_RE = re.compile(
+    r'^export\s+(?:async\s+)?'
+    r'(?:function|const)\s+'
+    r'([A-Za-z_][A-Za-z0-9_]*)',
+    re.MULTILINE,
+)
 
 
-def unwired_domain_methods() -> list[str]:
-    """Domain mirrors with neither a caller nor a parity case."""
-    return unwired_server_methods(
-        DOMAIN,
-        'no caller outside its own file and no reference in server/tests',
-        tests_count=True,
-    )
+def _domain_symbols() -> dict:
+    """
+    Every value the domain exports, with the file it lives in and where its
+    definition starts.
+
+    Types are deliberately absent. A type is used structurally by callers who
+    never write its name, so "nobody names it" says nothing about whether it is
+    doing work — and a gate that is wrong about a whole category is a gate
+    people learn to skip.
+    """
+    symbols = {}
+    for path in sorted(DOMAIN_SRC.rglob('*.ts')):
+        if not path.is_file() or path.name == 'index.ts':
+            continue
+        text = body(path)
+        for match in DOMAIN_EXPORT_RE.finditer(text):
+            symbols[match.group(1)] = {
+                'path': path,
+                'text': text,
+                'start': match.start(),
+                'line': text.count('\n', 0, match.start()) + 1,
+                'exempt': exempted_above(text, match.start()),
+            }
+    return symbols
+
+
+def unwired_domain_exports() -> list[str]:
+    """
+    Anything `packages/domain` exports whose name appears nowhere but its own
+    definition.
+
+    The domain is the one package both the phone and the server import, which
+    is exactly why dead weight accumulates in it: a rule written here type-
+    checks, tests green, and is called by nobody.
+
+    The rule is deliberately the narrow one. An earlier draft walked the call
+    graph and refused to count same-file callers, and it named the four
+    vocabulary tables — which a private `TABLES` const holds together — as
+    dead. A gate that is wrong about live code is a gate people learn to skip,
+    so this asks only the question it can answer without being wrong: does
+    anything, anywhere, ever write this name down again?
+
+    What it therefore misses: two dead helpers that call each other. That is a
+    real hole and it is the price of never crying wolf.
+
+    A test is not a caller. A rule proved and never applied is precisely the
+    defect this gate exists to name.
+    """
+    symbols = _domain_symbols()
+    if not symbols:
+        return []
+
+    searched = [
+        p
+        for root in (SRC, SERVER_SRC, DOMAIN_SRC)
+        if root.exists()
+        for p in root.rglob('*.ts*')
+        if p.is_file()
+    ]
+
+    found = []
+    for name, info in sorted(symbols.items()):
+        if info['exempt']:
+            continue
+
+        pattern = re.compile(rf'\b{re.escape(name)}\b')
+        uses = 0
+        for path in searched:
+            text = body(path)
+            if path == info['path']:
+                # Its own definition does not vouch for it. Everything else in
+                # its own file does.
+                text = text[: info['start']] + text[info['start'] + len(name) + 40 :]
+            uses += len(pattern.findall(text))
+            if uses:
+                break
+
+        if not uses:
+            rel = info['path'].relative_to(ROOT)
+            found.append(
+                f"{name} — {rel}:{info['line']} — "
+                'exported by the domain and named by nothing else in the codebase'
+            )
+    return found
+
+
+def scanned_nothing() -> list[str]:
+    """
+    The gate's own liveness check.
+
+    Every root this script reads was correct for a different repository once.
+    When one of them stops existing the rule that used it silently reports
+    clean, and a clean report from a rule that scanned nothing is worse than
+    no rule: it is a green tick over unexamined code. Twice now a guard in this
+    codebase has passed that way. This makes it fail instead.
+    """
+    empty = [
+        str(root.relative_to(ROOT))
+        for root in (SRC, SERVER_SRC, DOMAIN_SRC)
+        if not root.exists() or not any(root.rglob('*.ts*'))
+    ]
+    return [
+        f'{root} — this gate scanned nothing here; the path is wrong or the code moved'
+        for root in empty
+    ]
 
 
 def main() -> int:
     problems = (
-        unwired_modules()
+        scanned_nothing()
+        + unwired_modules()
         + unwired_client_methods()
-        + unwired_repository_methods()
-        + unwired_domain_methods()
+        + unwired_domain_exports()
     )
 
     if not problems:

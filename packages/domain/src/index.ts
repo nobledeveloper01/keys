@@ -12,3 +12,4 @@
  * `is_verified` cannot mean two different things on two surfaces.
  */
 export * from './language.ts';
+export * from './reports.ts';
