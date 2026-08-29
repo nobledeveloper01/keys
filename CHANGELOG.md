@@ -50,6 +50,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   [ADR-0005](docs/adr/0005-a-rule-this-serious-lives-in-three-places.md).
 - Both server suites are parameterised over every store, and `make test` finds a
   database when one is reachable and says plainly when it cannot.
+- `.githooks/pre-push` runs `make ci` before anything leaves the machine, after
+  a commit went out while its CI run was still in the background and the
+  `api-fresh` failure in it went unread. `make setup` points git at it.
 
 ### Changed
 

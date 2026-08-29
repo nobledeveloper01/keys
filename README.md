@@ -84,10 +84,15 @@ Named here rather than left to be discovered:
 ### Running it
 
 ```bash
-make setup                 # pnpm install, once
+make setup                 # pnpm install, the local databases, and the git
+                           # hooks — once
 make ci                    # every gate: typecheck, lint, boundary, docs,
                            # wired, untranslated, api-fresh, and the tests
 ```
+
+`make setup` points git at `.githooks`, so `make ci` runs before every push.
+`--no-verify` skips it, deliberately: a hook that cannot be skipped is a hook
+people delete.
 
 The server, with a reviewer token long enough for the guard to accept:
 

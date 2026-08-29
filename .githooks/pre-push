@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# Run the gates before anything leaves this machine.
+#
+# Written after pushing a commit whose CI had not been read — the `api-fresh`
+# gate had caught a stale generated client, and the commit went out anyway
+# because the check was running in the background and nobody looked. A gate
+# nobody reads is the same thing as a gate that cannot fail.
+#
+# Enable it with `make setup`, or:
+#
+#     git config core.hooksPath .githooks
+#
+# `--no-verify` skips it. That is deliberate — a hook you cannot skip is a hook
+# people delete.
+set -euo pipefail
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "running the gates before pushing…"
+if ! make ci; then
+  echo
+  echo "  ✗ the gates failed. Nothing was pushed."
+  echo "    Fix it, or push with --no-verify if you know why."
+  exit 1
+fi

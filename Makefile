@@ -10,9 +10,13 @@
 help:
 	@grep -E '^##' Makefile | sed 's/## //'
 
-## setup: install everything
+## setup: install everything, and point git at the tracked hooks
 setup:
 	pnpm install
+	@git config core.hooksPath .githooks
+	@echo "hooks enabled — the gates run before a push"
+	@createdb keys_test 2>/dev/null || true
+	@createdb keys_dev  2>/dev/null || true
 
 ## db: create the local databases the tests and dev server use
 db:
