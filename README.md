@@ -19,7 +19,25 @@ See [`docs/00-PRODUCT-STATEMENT.md`](docs/00-PRODUCT-STATEMENT.md) for the full 
 
 ## Status
 
-Specified, not yet built. Fourth in the portfolio build order.
+**Phase 0 of 8. Building.** `PHASE` holds the number and
+[`docs/ROADMAP.md`](docs/ROADMAP.md) holds the gates.
+
+Phase 0 is the foundation: one rules package imported by the React Native app,
+the web app and the NestJS server, with the boundary rule proved to fire.
+
+| | |
+|---|---|
+| Mobile | React Native 0.87, New Architecture, TypeScript strict |
+| Web | React with SSR — listing pages are a business requirement, not a roadmap item |
+| Server | **NestJS on Node 22**, importing the same rules the phone runs |
+| Data | PostgreSQL with PostGIS |
+| Rules | `packages/domain`, pure TypeScript, four consumers, [Apache-2.0](packages/domain/LICENSE) |
+
+**There is no parity suite here, and that is the point.** The last project in
+this portfolio had a C# server mirroring a TypeScript domain, held together by
+generated fixtures. This one imports the domain, so a rule cannot drift because
+there is only one of it. See
+[ADR-0001](docs/adr/0001-the-server-imports-the-domain-rather-than-mirroring-it.md).
 
 ## The insight
 
@@ -79,3 +97,24 @@ activity, so server-rendered listing pages are a business requirement, not a roa
 
 Geotagged capture is deliberately impossible on web. That limitation *is* the guarantee: a
 verified listing requires that a person physically stood at the property.
+
+
+---
+
+## Licensing
+
+Two licences, because the two halves have opposite jobs.
+
+**The application is under the [Business Source License 1.1](LICENSE).** You may
+run it in production to list, verify, let and manage properties belonging to you
+or your clients. You may not offer Keys itself to third parties as a hosted
+listing, verification or tenancy service. On **2030-08-29** it converts to
+Apache-2.0 automatically.
+
+**The rules are Apache-2.0**: [`packages/domain`](packages/domain/).
+
+That split is not symmetry. Keys makes public claims about other people — that a
+listing is verified, that a phone number was reported — and **a claim about
+somebody, decided by rules they may not read, is a claim with no standing.** The
+verification logic and the report policy live in one auditable package so that
+the person a claim is made about can check it.

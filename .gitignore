@@ -1,6 +1,18 @@
-# Internal working documents stay local. Only the product statement is tracked.
+# Internal working documents stay local; the shipped ones are allow-listed.
+#
+# This block is a trap and has already sprung once, on Grid: a document was
+# written, committed with a message saying so, and was not on GitHub for a day,
+# because it was not on the list and `git add` had nothing to add. Adding a
+# document here is half the job — `scripts/doc-check.sh` asserts each required
+# document is actually *tracked*, which is the half that catches it.
 docs/*
 !docs/00-PRODUCT-STATEMENT.md
+!docs/ROADMAP.md
+!docs/JOURNAL.md
+!docs/FEATURE-BACKLOG.md
+!docs/TOOLCHAIN.md
+!docs/adr/
+!docs/screenshots/
 
 # OS / editors
 .DS_Store
@@ -20,3 +32,45 @@ android/build/
 android/app/build/
 .env
 .env.local
+
+# CI is tracked; the `docs/*` allow-list above does not reach it.
+!.github/
+
+# Build output and task cache
+dist/
+.turbo/
+*.tsbuildinfo
+
+# .NET
+[Bb]in/
+[Oo]bj/
+*.user
+
+# React Native
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+apps/mobile/ios/*.xcworkspace/xcuserdata/
+apps/mobile/android/.gradle/
+apps/mobile/android/build/
+apps/mobile/android/app/build/
+apps/mobile/.xcode.env.local
+
+# Gradle and Xcode output from *any* module, not only the app's.
+#
+# A gitignore pattern containing a slash is anchored to the file it is written
+# in, so every `android/build/` rule above matches the repository root and
+# nothing else. `packages/tracking-native` is also an Android module, and 168
+# of its `.dex` files, class files and transform caches were committed — 1.3 MB
+# of build output that `git status` reported as clean, because tracked files
+# are not untracked files. Unanchored, so the next native module is covered
+# before it exists.
+**/android/build/
+**/android/.gradle/
+**/ios/build/
+
+# Local development tokens and the log of the server that seeded them. Both are
+# written by `make round-trip`, both die with that process, and neither belongs
+# anywhere near a commit.
+.dev-tokens.json
+.round-trip-server.log
+.round-trip-server.pid
