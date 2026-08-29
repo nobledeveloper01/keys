@@ -98,7 +98,7 @@ FATAL | Not enough space to create userdata partition.
 The SDK itself is 8.4 GB. Set `disk.dataPartition.size=4096M` in
 `~/.android/avd/<name>.avd/config.ini`; 4 GB boots and holds a debug APK.
 
-**A value import from `@backhaul/domain` needs the package built; a type
+**A value import from `@keys/domain` needs the package built; a type
 import does not.** `scripts/round-trip.ts` runs the app's own client under
 Node's type stripping with no bundler, so `import type { … }` is erased and
 costs nothing — but the moment the client imported an actual constant

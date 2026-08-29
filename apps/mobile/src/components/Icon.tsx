@@ -67,7 +67,7 @@ interface Props {
    * whole paragraph — so a line that wraps to three leaves it floating in the
    * gap between lines two and three instead of sitting beside the first word,
    * which reads as a bullet that has come loose. Yorùbá and Igbo run longer
-   * than English and the driver face is set at `bodyDriver` before the
+   * than English and the renter face is set at `bodyOutdoor` before the
    * reader's own scaling is applied, so almost every row wraps eventually;
    * several wrap at the default size.
    *

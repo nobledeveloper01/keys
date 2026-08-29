@@ -6,6 +6,53 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-30 — The mobile app had never been compiled
+
+**Did.** Made `apps/mobile` a package, wrote the app root, a language picker and
+the lookup screen, and the first mobile test. Reseeded the design system from
+the previous product's vocabulary to this one. Fixed two more gates that could
+not fail. Documentation brought in line with what exists.
+
+### What surprised us
+
+**Seventeen files had never been compiled by anything.** `apps/mobile` held the
+ported components, `jest.setup.js`, and no `package.json` and no tsconfig — so
+it was not a workspace package, turbo never saw it, and no gate had ever read a
+line of it. Making it one produced sixteen type errors, including
+`Unready.tsx` importing `refusalWords` from `../state/words`, a module that does
+not exist. It had been sitting in the repository since phase 0.
+
+Phase 0's gate said "one domain package imported by mobile, web and server". It
+was called green on the server alone. That is recorded in the roadmap rather
+than backdated: a gate called green early is worth more as visible debt than as
+a corrected date.
+
+**The palette described trucks.** `moving`, `stopped`, `stale` and `exception`
+came across with the design system and are now `clear`, `caution`, `offline` and
+`alarm`. A token whose name describes another product is a token somebody will
+eventually use for the wrong thing, and in this product the wrong thing is
+colouring a failed lookup red — telling a reader a number is dangerous when the
+truth is the phone could not ask.
+
+**Two more gates could not fail.** `@keys/api`'s test script ended in `|| true`
+and there were no tests to run, so it reported success unconditionally. And
+`scripts/api-fresh.sh` died under `set -e` printing nothing at all when `nest`
+lost its executable bit in a pnpm relink — twenty minutes of a gate failing
+silently. It now names the step it was on.
+
+That is five gates in two days that were green and could not have gone red. The
+pattern is consistent enough to be worth stating plainly: **a gate is not done
+when it passes, it is done when you have watched it fail.**
+
+**The first mobile test is the one the whole product turns on.** A lookup that
+could not reach the server must not render as `0`, because `0` reads as *no
+upheld reports against this number* — a false all-clear to somebody about to
+hand over an inspection fee. `Query` has kept `unreachable` apart from `ready`
+since it was ported, but the type only makes the distinction available. Proved
+by making the screen commit exactly that mistake and watching it go red.
+
+---
+
 ## 2026-08-29 — Phase 1, and three guards that could not fail
 
 **Did.** Built the scam registry: publication policy in the domain as an

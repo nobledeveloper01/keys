@@ -19,25 +19,110 @@ See [`docs/00-PRODUCT-STATEMENT.md`](docs/00-PRODUCT-STATEMENT.md) for the full 
 
 ## Status
 
-**Phase 0 of 8. Building.** `PHASE` holds the number and
-[`docs/ROADMAP.md`](docs/ROADMAP.md) holds the gates.
-
-Phase 0 is the foundation: one rules package imported by the React Native app,
-the web app and the NestJS server, with the boundary rule proved to fire.
+**Phase 1 of 8. The scam registry works; nothing is deployed.** `PHASE` holds
+the number and [`docs/ROADMAP.md`](docs/ROADMAP.md) holds the gates, each one
+split into what blocks the next phase and what blocks a release.
 
 | | |
 |---|---|
 | Mobile | React Native 0.87, New Architecture, TypeScript strict |
-| Web | React with SSR — listing pages are a business requirement, not a roadmap item |
-| Server | **NestJS on Node 22**, importing the same rules the phone runs |
-| Data | PostgreSQL with PostGIS |
-| Rules | `packages/domain`, pure TypeScript, four consumers, [Apache-2.0](packages/domain/LICENSE) |
+| Web | Next.js 15 with SSR — listing pages are a business requirement, not a roadmap item |
+| Server | **NestJS 11 on Node 22**, importing the same rules the phone runs |
+| Data | PostgreSQL with PostGIS — **not yet; the store is in memory** |
+| Rules | `packages/domain`, pure TypeScript, three consumers, [Apache-2.0](packages/domain/LICENSE) |
+| Wire | `packages/api`, generated from the controllers, [gated against drift](scripts/api-fresh.sh) |
+| Languages | English, Hausa, Yoruba and Igbo, in every string the app renders |
 
 **There is no parity suite here, and that is the point.** The last project in
 this portfolio had a C# server mirroring a TypeScript domain, held together by
 generated fixtures. This one imports the domain, so a rule cannot drift because
 there is only one of it. See
 [ADR-0001](docs/adr/0001-the-server-imports-the-domain-rather-than-mirroring-it.md).
+
+### What works end to end
+
+Run the server and the web app (below) and you can, right now:
+
+- **Check a number.** `0803…`, `+234 803…` and `803…` all normalise to the same
+  number, because a registry that treats them as three answers *nothing found*
+  about a number it holds — which on this product is not an empty result, it is
+  a false all-clear.
+- **Report one.** The page states what happens next *before* it asks for
+  anything: a person reads it, the number gets seven days to answer, it appears
+  only if upheld, and only for two years.
+- **Watch it not be published.** The report is submitted, the lookup still says
+  zero, and the review console refuses to uphold it — first for having no
+  evidence, then because the reply window is open. Both refusals come from
+  `packages/domain`, not from the console.
+- **Answer one.** `/reply?token=…` shows the reported party what was said, with
+  *nothing has been published* above the accusation rather than below it, and
+  never the reporter.
+
+And on the phone: the language picker, then the lookup screen, in whichever of
+the four languages was chosen.
+
+### What is not built
+
+Named here rather than left to be discovered:
+
+- **No native projects.** `ios/` and `android/` are not generated, so the app
+  compiles and its screens are tested, but it runs on no device yet.
+- **No database.** The store is in memory. `/healthz` answers `durable: false`
+  so this cannot be mistaken for a deployment.
+- **No SMS**, so the reply token is generated and honoured but never delivered.
+  This is phase 1's second exit gate and it is open.
+- **No file upload.** Object storage is phase 3, and the domain refuses to
+  uphold a report with no evidence, so a reviewer records what they saw and how
+  it reached them — keyed `reviewer-attested:` so an audit can tell the
+  difference. See [the roadmap](docs/ROADMAP.md#phase-1--the-scam-registry-weeks-48--the-wedge--current).
+- **No legal review.** Phase 1 carries a human gate — a Nigerian lawyer reading
+  the report policy — and it blocks public launch outright. No test result
+  substitutes for it.
+
+### Running it
+
+```bash
+make setup                 # pnpm install, once
+make ci                    # every gate: typecheck, lint, boundary, docs,
+                           # wired, untranslated, api-fresh, and the tests
+```
+
+The server, with a reviewer token long enough for the guard to accept:
+
+```bash
+KEYS_REVIEWER_TOKEN=$(openssl rand -hex 24) PORT=5211 pnpm --filter @keys/server start
+```
+
+The web surface, pointed at it:
+
+```bash
+KEYS_API_URL=http://127.0.0.1:5211 pnpm --filter @keys/web dev
+```
+
+`KEYS_API_URL` has no localhost fallback, deliberately: a production build
+silently pointing at somebody's laptop is worse than one that refuses to start.
+
+### The gates
+
+`make ci` runs eight of them, and every one has been **proved to fail** by
+breaking what it guards and watching it go red:
+
+| Gate | Holds |
+|---|---|
+| `typecheck` | Four packages, TypeScript strict, `exactOptionalPropertyTypes` |
+| `lint` | ESLint across every package |
+| `boundary` | `packages/domain` imports nothing platform-specific |
+| `doc-check` | Required documents exist, are tracked, and the roadmap marks the phase `PHASE` says |
+| `wired-check` | Nothing is exported, tested, and called by nothing |
+| `untranslated` | No English string is rendered by a screen without going through `say()` |
+| `api-fresh` | The generated client still matches the controllers |
+| `test` | 59 across the four packages: 34 domain, 19 server, 4 wire, 2 app |
+
+Three of these could not fail when phase 1 began — they were ported from the
+previous project and were scanning directories that do not exist here, or
+returning zero unconditionally. That is written up in
+[ADR-0004](docs/adr/0004-a-gate-that-cannot-fail-is-not-a-gate.md), and every
+gate now fails when it examines nothing.
 
 ## The insight
 

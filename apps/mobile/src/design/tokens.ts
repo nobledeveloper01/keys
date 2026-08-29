@@ -107,7 +107,7 @@ export const type = {
   title: { fontSize: 19, lineHeight: 25, fontFamily: family.semibold, letterSpacing: -0.2 },
   body: { fontSize: 16, lineHeight: 24, fontFamily: family.regular, letterSpacing: -0.1 },
   /** The driver face default: read in a cab, in motion. */
-  bodyDriver: { fontSize: 19, lineHeight: 28, fontFamily: family.regular, letterSpacing: -0.1 },
+  bodyOutdoor: { fontSize: 19, lineHeight: 28, fontFamily: family.regular, letterSpacing: -0.1 },
   label: { fontSize: 14, lineHeight: 20, fontFamily: family.medium, letterSpacing: 0 },
   /**
    * Section headings inside a card. Small, wide-tracked, upper-case.
@@ -143,7 +143,7 @@ export const MAX_SCALE: Record<Variant, number | undefined> = {
   headline: 1.6,
   title: 1.8,
   body: undefined,
-  bodyDriver: undefined,
+  bodyOutdoor: undefined,
   label: undefined,
   overline: 1.6,
 };

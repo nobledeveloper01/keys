@@ -13,54 +13,75 @@ reference and the tokens are the source of truth in
 
 | Face | Wants | Default type | Target size |
 |---|---|---|---|
-| **Driver** | To be left alone | `bodyDriver` — 19/28 | **64 dp** |
-| **Shipper** | A map and an ETA | `body` — 16/24 | 48 dp |
-| **Fleet** | Utilisation | `body` — 16/24 | 48 dp |
+| **Renter** | To not lose ₦10,000 | `bodyOutdoor` — 19/28 | **64 dp** |
+| **Agent** | A clean record, and listings that let | `body` — 16/24 | 48 dp |
+| **Reviewer** | To get through the queue without being wrong | `body` — 16/24 | 48 dp |
 
-The driver face is not the shipper face with bigger text. It is a different
-product for a different person with different motivation: the driver did not
-choose this app, is paid whether or not they use it, and is reading it in a
-moving cab, possibly wearing gloves, on a mounted phone. **Driver screen time
-is the enemy.** Every interaction the driver has to perform is a cost, and the
-right number of them per trip is close to zero.
+The renter face is not the agent face with bigger text. It is a different
+product for a different person in a different place: **the renter is standing
+outside a compound**, in daylight, on a cheap screen, about to decide whether to
+hand cash to somebody in front of them. They did not choose this app; somebody
+sent them a link. Everything they need has to fit one screen, work with no
+account, and be legible at arm's length in the sun.
+
+The agent and the reviewer are both sitting down.
+
+**The reviewer face is a product surface, not an admin panel.** Its throughput
+is the hard constraint on how fast Keys can enter a city, so it is designed like
+something a person uses for six hours, not like something bolted on for
+ourselves.
 
 ---
 
 ## The four rules that are easy to break by accident
 
-### 1. Show the age of everything
+### 1. Never let "we could not ask" look like "we checked"
 
-A position from 40 minutes ago is not a position now. Every position, ETA and
-status carries its age, and past 30 minutes the age is what is emphasised —
-not the value.
+A lookup that failed has told the reader nothing. Rendered as `0`, it says *no
+upheld reports against this number* about a number the app never asked about —
+a false all-clear, to somebody deciding whether to pay an inspection fee.
 
-This is the same rule Grid enforces about measured versus modelled, arrived at
-for the same reason: a figure shown with more confidence than its provenance
-supports is worse than no figure. `Eta.isModelled` and `CleanedTrack`'s fix
-quality both exist to be rendered, not just computed.
+This is the same rule the tracking product in this portfolio enforces about the
+age of a position, and Grid about measured versus modelled, arrived at for the same reason: **a figure shown
+with more confidence than its provenance supports is worse than no figure.**
+`Query` keeps `unreachable` and `refused` apart from `ready` all the way to the
+screen, and `apps/mobile/__tests__/unreachable-is-not-zero.test.tsx` exists
+because the type only makes the distinction *available*.
 
-### 2. Stale is grey, never red
+A clean result carries its own caveat in the same breath: *most scams are never
+reported, and a number used for the first time today has nothing against it
+either.*
 
-`stale` is `#6E7B8A`, deliberately not an alarm colour. A gap in coverage is a
-fact about Nigerian network infrastructure, not a fault of the driver, and
-colouring it as an alarm trains shippers to distrust drivers for something
-nobody controls.
+### 2. Not knowing is grey, never red
 
-The copy follows the colour: *"No signal since 3:40pm. This stretch of the
-Lagos–Ibadan road often has none."* Never blame the driver for the network.
+`offline` is `#6E7B8A`, deliberately not an alarm colour, and `alarm` is
+reserved for one thing: a report a person reviewed and upheld.
 
-### 3. Ranges, not false precision
+Colouring a failed request red tells somebody a number is dangerous when the
+truth is that the phone could not ask — which is the first rule's mistake in
+the other direction, and the more damaging one, because it is an accusation.
+`Card`'s `alarm` emphasis is never used for a request that failed; that is
+`Unready`'s job.
 
-ETAs are ranges. Rates are bands. A single number reads as a promise, and
-neither the road nor the diesel price will keep it. `quote()` returns
-`low`/`mid`/`high` and `eta()` returns `earliest`/`expected`/`latest` because
-the domain refuses to hand a screen a single figure it could render as one.
+### 3. Say who decided, and what the other person got to do about it
 
-### 4. Tracking is consented, visible and bounded
+A count of reports is a claim about a named person. Every surface that shows one
+also says a person reviewed it, and that whoever holds the number had seven days
+to answer before it appeared.
 
-The driver can always see what is being shared and with whom, and the sharing
-stops when the trip does. `shouldTrack()` returns false for every terminal
-state, and that is a product rule before it is a battery optimisation.
+The reported party's own page states **nothing has been published** above the
+accusation rather than below it, because somebody reading an SMS about
+themselves reads the first sentence and not necessarily the fourth.
+
+### 4. The reporter is never named, to anybody
+
+Not to the reported party, not to a reviewer, not to the reporter's own client
+echoing back what they just submitted. `StoredReport.reporterId` is documented
+as never returned in any role, the reviewer's view omits it, and the adversarial
+route test asserts it appears in no response body from any route.
+
+A reporter whose identity reaches the accused is a reporter who gets a visit,
+and after the first one nobody reports anything — which ends the registry.
 
 ---
 
@@ -74,7 +95,7 @@ surface. Same token name in both, so no screen has to know which theme it is in.
 |---|---|---|---|
 | `flat` | no shadow | no shadow | Supporting detail inside a card |
 | `raised` | 3 dp, 6% | `surfaceRaised` | The card being read |
-| `lifted` | 8 dp, 10% | `surfaceRaised` | The driver's action button |
+| `lifted` | 8 dp, 10% | `surfaceRaised` | The one action a screen wants pressed |
 
 One `accent` card per screen, and only one. More than one primary is none.
 
@@ -82,11 +103,11 @@ One `accent` card per screen, and only one. More than one primary is none.
 
 Drawn in `src/components/Icon.tsx`, on a 24×24 grid at 1.75 stroke with round
 caps. **No emoji, ever** — an emoji is font-dependent, renders differently on
-every handset in the driver segment, and cannot be themed. Mixed stroke weights
+every handset Keys targets, and cannot be themed. Mixed stroke weights
 are the clearest tell of an interface assembled rather than designed.
 
 Three sizes, as tokens: `sm` (16) for inline glyphs, `md` (20) for controls,
-`lg` (28) for the driver face where a glance has to land.
+`lg` (28) for the renter face, where a glance has to land.
 
 ## Appearance
 
@@ -97,7 +118,8 @@ dark. See ADR-0007.
 The control names the current mode in words as well as an icon. An icon-only
 theme toggle is the textbook case of shape and colour carrying meaning alone.
 
-It lives on the shipper face and nowhere else: the driver face has one job.
+It lives in settings and nowhere else. The renter face has one job, and a
+person standing outside a compound is not there to choose a theme.
 
 ## Colour
 
@@ -109,16 +131,22 @@ It lives on the shipper face and nowhere else: the driver face has one job.
 | `textPrimary` | `#0C1119` | `#EBEFF4` | Body |
 | `textSecondary` | `#5A6675` | `#9BA7B5` | Labels |
 | `accent` | `#1A4FA0` | `#5B93E0` | Primary action |
-| `moving` | `#1B7F4B` | `#4FBF84` | Truck in motion |
-| `stopped` | `#B4690E` | `#E0A44A` | Stationary beyond threshold |
-| `stale` | `#6E7B8A` | `#8A96A5` | Position older than 30 min |
-| `exception` | `#B0281F` | `#E8695E` | Damage, incident, deviation |
+| `clear` | `#1B7F4B` | `#4FBF84` | Nothing upheld; a verified agent |
+| `caution` | `#B4690E` | `#E0A44A` | Under review, awaiting a reply |
+| `offline` | `#6E7B8A` | `#8A96A5` | The app could not ask — **never red** |
+| `alarm` | `#B0281F` | `#E8695E` | A report a person upheld, and nothing else |
 | `verifiedTier` | `#1A4FA0` | `#5B93E0` | Verified badge |
 | `businessTier` | `#1B7F4B` | `#4FBF84` | Business badge |
 | `trustedTier` | `#9A6B12` | `#D6A93F` | Trusted badge |
 
 Colour never carries meaning alone. Every state that has a colour also has a
-label or an icon, because the map is read in sunlight through a windscreen.
+label or an icon, because this is read in Nigerian daylight on a cheap screen
+far more often than anywhere comfortable.
+
+These four were `moving`, `stopped`, `stale` and `exception` when the palette
+arrived from the previous project, where they described trucks. A token whose
+name describes another product is a token somebody will use for the wrong
+thing.
 
 ---
 
@@ -128,7 +156,7 @@ label or an icon, because the map is read in sunlight through a windscreen.
 
 iOS gets SF Pro and Android gets Roboto, so the same screen has different
 metrics on each and neither is the one the spacing was set against. On the
-Transsion handsets that dominate the driver segment, "the system face" is
+Transsion handsets that dominate the segment Keys is built for, "the system face" is
 whatever the OEM shipped. Bundling one face is the difference between an app
 that was designed and one that was assembled.
 
@@ -149,7 +177,7 @@ noticed.
 | `headline` | 26 / 32 | Screen titles |
 | `title` | 19 / 25 | Card titles |
 | `body` | 16 / 24 | Default |
-| `bodyDriver` | 19 / 28 | Driver face default |
+| `bodyOutdoor` | 19 / 28 | Renter face default — read at arm's length, in the sun |
 | `label` | 14 / 20 | Metadata |
 | `mono` | 16 / 22 tabular | Plates, rates, weights |
 
@@ -181,15 +209,21 @@ nudges its neighbours and the whole list twitches under the thumb.
 
 Plain and operational. Say what happened and what it means for the reader.
 
-- **Never blame the driver for the network.** "No signal since 3:40pm", not
-  "the driver has not reported".
-- **A refusal explains what would fix it.** Every `unknown` result in the
-  domain carries a `detail` sentence written to be rendered directly. "Only 2
-  positions so far. An estimate from this truck's own pace needs 4."
-- **Say the figure is an estimate where it is one**, in the same breath as the
-  figure — not in a footnote.
-- **No exclamation marks.** Nothing in freight is exciting to the person
-  reading about it at 11pm.
+- **Never blame the reader for the network.** "We cannot reach Keys. Your
+  reports are still there; this phone cannot see them right now." Never "no
+  reports found".
+- **A refusal explains what would fix it.** Every refusal in the domain carries
+  a `detail` sentence written to be rendered directly. "The reported party has
+  7 days left to answer. A report cannot be upheld before then unless they have
+  already replied."
+- **Say what a clean result does not mean**, in the same breath as the number —
+  not in a footnote. "No upheld reports" and "safe" are not the same sentence,
+  and the reader will hear the second unless told otherwise.
+- **Never imply guilt the process has not established.** "Reported" is not
+  "scammer". Nothing is upheld until a person upheld it, and the copy says who
+  that was and what the other party got to do about it.
+- **No exclamation marks.** Nobody reading about a number that took their
+  ₦20,000 needs enthusiasm.
 
 ---
 
@@ -205,6 +239,13 @@ Plain and operational. Say what happened and what it means for the reader.
       no screen defines its own padding, radius, border or hex
 - [ ] Screen-reader labelled; colour never the sole carrier of meaning
 - [ ] Every error path has a forward path — no dead ends
-- [ ] Driver-face targets at 64 dp, shipper and fleet at 48 dp
+- [ ] Renter-face targets at 64 dp, agent and reviewer at 48 dp
 - [ ] Verified on a physical low-end Android (Tecno or Infinix, 2 GB RAM)
 - [ ] Copy read against the voice rules above
+- [ ] **Every string through `say()`**, and written in all four languages —
+      not English with three placeholders. `make untranslated` fails the build
+      on a screen that ships one language, and the domain's own test fails on a
+      table filled in by copying English
+- [ ] **Nothing the app could not verify is rendered as a fact.** A failed
+      request is `unreachable`, never zero, never empty, never grey text saying
+      "none"
