@@ -25,12 +25,20 @@ done
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
+# `set -e` with no message is a gate that fails and says nothing, which is how
+# a broken binary in node_modules cost twenty minutes once. Name the step.
+step() { CURRENT="$1"; }
+trap 'code=$?; [ "$code" -ne 0 ] && echo "${red}✗${off} failed while ${CURRENT:-running}: exit $code" >&2; rm -rf "$work"' EXIT
+
 cp "$DOC" "$work/openapi.before.json"
 cp "$SCHEMA" "$work/schema.before.ts"
 
-pnpm --filter @keys/server run build >/dev/null 2>&1
+step 'building the server'
+pnpm --filter @keys/server run build >/dev/null
+step 'emitting the OpenAPI document'
 node apps/server/dist/emit-openapi.js >/dev/null
-pnpm --filter @keys/api exec openapi-typescript openapi.json -o src/schema.ts >/dev/null 2>&1
+step 'generating the client types'
+pnpm --filter @keys/api exec openapi-typescript openapi.json -o src/schema.ts >/dev/null
 
 stale=0
 if ! diff -q "$work/openapi.before.json" "$DOC" >/dev/null; then

@@ -41,7 +41,7 @@ closed by writing more code.
 
 ---
 
-## Phase 0 — Foundation · **current**
+## Phase 0 — Foundation
 
 Monorepo with mobile, web, server and shared packages. Domain boundary lint.
 React Native New Architecture. Next.js with SSR. Design tokens across both UI
@@ -51,9 +51,23 @@ previews.
 **Software gate:** one domain package imported by mobile, web and server,
 proven in CI, with the boundary rule proved to fire by being made to fail.
 
+**Was called green early, and closed during phase 1.** The gate was met on the
+server alone. `apps/mobile` was not a package — seventeen ported `.tsx` files,
+no manifest, no tsconfig — so nothing had ever compiled them. Making it one
+surfaced sixteen type errors and an import of a module that does not exist. All
+three targets now import `@keys/domain` and all three are compiled by `make ci`.
+
+It is recorded here rather than backdated, because a gate called green early is
+worth more as a visible debt than as a corrected date.
+
+Still open from this phase: **the native projects** (`ios/` and `android/` are
+not generated, so the app runs nowhere yet), **Postgres and PostGIS** (the store
+is in memory and `/healthz` says `durable: false`), and **CI building mobile
+artefacts**.
+
 ---
 
-## Phase 1 — The Scam Registry (Weeks 4–8) — the wedge — **software gate green**
+## Phase 1 — The Scam Registry (Weeks 4–8) — the wedge · **current**
 Public lookup with no account, reporting with evidence, **the human-review console**, right of
 reply with the 7-day window, publication gating, expiry and resolution.
 

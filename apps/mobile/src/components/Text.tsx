@@ -4,7 +4,7 @@ import { MAX_SCALE, mono, type as typeScale } from '../design/tokens';
 import { useColours } from '../design/theme';
 
 type Variant = keyof typeof typeScale;
-type Tone = 'primary' | 'secondary' | 'accent' | 'moving' | 'stopped' | 'stale' | 'exception';
+type Tone = 'primary' | 'secondary' | 'accent' | 'clear' | 'caution' | 'offline' | 'alarm';
 
 interface Props extends TextProps {
   readonly variant?: Variant;
@@ -33,10 +33,10 @@ export function Text({
     primary: colours.textPrimary,
     secondary: colours.textSecondary,
     accent: colours.accent,
-    moving: colours.moving,
-    stopped: colours.stopped,
-    stale: colours.stale,
-    exception: colours.exception,
+    clear: colours.clear,
+    caution: colours.caution,
+    offline: colours.offline,
+    alarm: colours.alarm,
   };
 
   const base = typeScale[variant] as TextStyle;

@@ -32,6 +32,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
   Generating it immediately caught the document advertising `200` on POSTs the
   server answers with `201`.
+- `apps/mobile` is a package. It held seventeen `.tsx` files, no manifest and no
+  tsconfig, so nothing had ever compiled them. Compiling them for the first time
+  found sixteen errors, including an import of `../state/words`, a module that
+  does not exist.
+- The app root, a language picker and the lookup screen, and the first mobile
+  test: a lookup that could not reach the server must not render as zero upheld
+  reports. Proven by making the screen commit exactly that mistake.
+- `POST /v1/review/:id/evidence`.
+
+### Changed
+
+- The mobile palette says what it means in this product. `moving`, `stopped`,
+  `exception` and `stale` described trucks; they are now `clear`, `caution`,
+  `alarm` and `offline`. `Card` gained an `alarm` emphasis, which is never used
+  for a request that failed — telling somebody a number is dangerous when the
+  truth is the phone could not ask is the same false statement in the other
+  direction.
+- `@keys/api` exposes results as well as exceptions. Server-side rendering wants
+  exceptions; a phone wants `unreachable` and `refused` kept apart all the way
+  to the screen.
+- The four language tables gained thirty-one phrases the ported components and
+  the new screens actually use.
+- `wired-check` asks about symbols rather than modules for the seams too, after
+  the module-level rule reported clean while three exports in `state/server.tsx`
+  were dead.
+- `doc-check` checks which phase the roadmap marks **current**, not merely that
+  the number appears somewhere. It had passed for the whole of phase 1 while the
+  roadmap still said phase 0.
 
 ### Fixed
 
@@ -47,6 +75,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `packages/domain/src/trip.ts`, `phrases()` and `describeLanguage()` — ported
   from Backhaul and called by nothing. Deleted rather than exempted.
+- `useTripData`, `useMine` and `emptiness` — the first is about trips and a
+  `DemoTrip` that does not exist here, the second is `useQuery` with another
+  name, and the third has no list to be called from yet. All three come back
+  when something calls them.
 
 
 ### Added

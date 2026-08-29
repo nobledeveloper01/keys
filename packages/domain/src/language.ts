@@ -59,7 +59,34 @@ export type Phrase =
   | 'this_number_was_reported'
   | 'under_review'
   | 'search'
-  | 'close';
+  | 'close'
+  | 'back'
+  | 'clear_the_search'
+  | 'loading_state'
+  | 'selected_tap_to_remove'
+  | 'tap_to_filter_by_this'
+  | 'appearance_light'
+  | 'appearance_dark'
+  | 'appearance_auto'
+  | 'cannot_reach_the_server'
+  | 'it_is_still_there'
+  | 'the_server_said_no'
+  | 'saved_here_will_send'
+  | 'waiting_to_send'
+  | 'check_a_number_hint'
+  | 'check_a_number_help'
+  | 'not_a_nigerian_number'
+  | 'nothing_upheld'
+  | 'not_a_clean_bill'
+  | 'reviewed_by_a_person'
+  | 'upheld_reports'
+  | 'one_upheld_report'
+  | 'report_this_number'
+  | 'no_reports_yet_detail'
+  | 'no_signal_saved_here'
+  | 'refused_reply_window_open'
+  | 'refused_no_evidence'
+  | 'refused_already_decided';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -76,6 +103,33 @@ export const EN: Readonly<Record<Phrase, string>> = {
   under_review: "Under review",
   search: "Search",
   close: "Close",
+  back: "Back",
+  clear_the_search: "Clear the search",
+  loading_state: "Loading",
+  selected_tap_to_remove: "Selected. Tap to remove.",
+  tap_to_filter_by_this: "Tap to filter by this.",
+  appearance_light: "Light",
+  appearance_dark: "Dark",
+  appearance_auto: "Match my phone",
+  cannot_reach_the_server: "We cannot reach Keys",
+  it_is_still_there: "Your reports are still there. This phone cannot see them right now.",
+  the_server_said_no: "That did not go through",
+  saved_here_will_send: "Saved on this phone. It will send when you have signal.",
+  no_signal_saved_here: "No signal",
+  refused_reply_window_open: "The seven days are not up yet.",
+  refused_no_evidence: "There is nothing attached to assess.",
+  refused_already_decided: "Somebody has already decided this one.",
+  waiting_to_send: "waiting to send",
+  check_a_number_hint: "0803 123 4567",
+  check_a_number_help: "Any format. 0803…, +234 803…, or 803….",
+  not_a_nigerian_number: "That does not look like a Nigerian phone number.",
+  nothing_upheld: "No upheld reports against this number.",
+  not_a_clean_bill: "That is not a clean bill of health. Most scams are never reported. Pay nothing before you have seen the place and met the person.",
+  reviewed_by_a_person: "Each of these was reviewed by a person, and whoever holds this number had seven days to answer.",
+  upheld_reports: "upheld reports",
+  one_upheld_report: "One upheld report against this number.",
+  report_this_number: "Report this number",
+  no_reports_yet_detail: "Type a number above to check it. No account needed.",
 };
 
 export const HA: Readonly<Record<Phrase, string>> = {
@@ -93,6 +147,33 @@ export const HA: Readonly<Record<Phrase, string>> = {
   under_review: "Ana duba shi",
   search: "Bincika",
   close: "Rufe",
+  back: "Koma baya",
+  clear_the_search: "Share bincike",
+  loading_state: "Ana ɗauka",
+  selected_tap_to_remove: "An zaɓa. Danna don cirewa.",
+  tap_to_filter_by_this: "Danna don tace da wannan.",
+  appearance_light: "Haske",
+  appearance_dark: "Duhu",
+  appearance_auto: "Kamar wayata",
+  cannot_reach_the_server: "Ba mu iya isa Keys",
+  it_is_still_there: "Rahotanninka na nan. Wannan wayar ba ta ganin su yanzu.",
+  the_server_said_no: "Wannan bai wuce ba",
+  saved_here_will_send: "An ajiye a wannan wayar. Za a aika idan an sami sigina.",
+  no_signal_saved_here: "Babu sigina",
+  refused_reply_window_open: "Kwanaki bakwai ba su cika ba tukuna.",
+  refused_no_evidence: "Babu wata shaida da aka haɗa.",
+  refused_already_decided: "An riga an yanke hukunci a kan wannan.",
+  waiting_to_send: "na jiran aikawa",
+  check_a_number_hint: "0803 123 4567",
+  check_a_number_help: "Kowace sura. 0803…, +234 803…, ko 803….",
+  not_a_nigerian_number: "Wannan bai yi kama da lambar wayar Najeriya ba.",
+  nothing_upheld: "Babu rahoton da aka tabbatar a kan wannan lambar.",
+  not_a_clean_bill: "Wannan ba shaidar tsafta ba ce. Yawancin zamba ba a taɓa ba da rahoto ba. Kada ka biya kafin ka ga wurin ka kuma sadu da mutumin.",
+  reviewed_by_a_person: "Mutum ne ya duba kowanne, kuma wanda ke da wannan lambar ya sami kwana bakwai don amsawa.",
+  upheld_reports: "rahotannin da aka tabbatar",
+  one_upheld_report: "Rahoto ɗaya da aka tabbatar a kan wannan lambar.",
+  report_this_number: "Ba da rahoton wannan lambar",
+  no_reports_yet_detail: "Rubuta lamba a sama don dubawa. Ba a buƙatar asusu.",
 };
 
 export const YO: Readonly<Record<Phrase, string>> = {
@@ -110,6 +191,33 @@ export const YO: Readonly<Record<Phrase, string>> = {
   under_review: "À ń yẹ̀ ẹ́ wò",
   search: "Wá",
   close: "Tì í",
+  back: "Padà",
+  clear_the_search: "Pa àwárí rẹ́",
+  loading_state: "Ń gbé wọlé",
+  selected_tap_to_remove: "A ti yàn. Tẹ̀ láti yọ kúrò.",
+  tap_to_filter_by_this: "Tẹ̀ láti ṣàyẹ̀wò pẹ̀lú èyí.",
+  appearance_light: "Ìmọ́lẹ̀",
+  appearance_dark: "Òkùnkùn",
+  appearance_auto: "Bí fóònù mi",
+  cannot_reach_the_server: "A kò lè dé Keys",
+  it_is_still_there: "Àwọn ìròyìn rẹ ṣì wà níbẹ̀. Fóònù yìí kò rí wọn báyìí.",
+  the_server_said_no: "Èyí kò lọ",
+  saved_here_will_send: "A tì í pamọ́ sí fóònù yìí. Yóò lọ nígbà tí o bá ní ìsopọ̀.",
+  no_signal_saved_here: "Kò sí ìsopọ̀",
+  refused_reply_window_open: "Ọjọ́ méje kò tí ì pé.",
+  refused_no_evidence: "Kò sí ẹ̀rí kankan tí a so mọ́ ọn.",
+  refused_already_decided: "Ẹnìkan ti pinnu lórí èyí tẹ́lẹ̀.",
+  waiting_to_send: "ń dúró láti lọ",
+  check_a_number_hint: "0803 123 4567",
+  check_a_number_help: "Ìrísí èyíkéyìí. 0803…, +234 803…, tàbí 803….",
+  not_a_nigerian_number: "Èyí kò dà bí nọ́mbà fóònù Nàìjíríà.",
+  nothing_upheld: "Kò sí ìròyìn tí a fọwọ́sí lórí nọ́mbà yìí.",
+  not_a_clean_bill: "Èyí kì í ṣe ẹ̀rí mímọ́. Ọ̀pọ̀ jìbìtì ni a kò ròyìn rí. Má sanwó kí o tó rí ibẹ̀ kí o sì bá ẹni náà pàdé.",
+  reviewed_by_a_person: "Ènìyàn ló ṣàyẹ̀wò ọ̀kọ̀ọ̀kan, ẹni tó ní nọ́mbà yìí sì ní ọjọ́ méje láti dáhùn.",
+  upheld_reports: "ìròyìn tí a fọwọ́sí",
+  one_upheld_report: "Ìròyìn kan tí a fọwọ́sí lórí nọ́mbà yìí.",
+  report_this_number: "Ròyìn nọ́mbà yìí",
+  no_reports_yet_detail: "Tẹ nọ́mbà sí òkè láti ṣàyẹ̀wò. Kò sí àkọọ́lẹ̀ tí a nílò.",
 };
 
 export const IG: Readonly<Record<Phrase, string>> = {
@@ -127,6 +235,33 @@ export const IG: Readonly<Record<Phrase, string>> = {
   under_review: "A na-enyocha ya",
   search: "Chọọ",
   close: "Mechie",
+  back: "Laghachi",
+  clear_the_search: "Hichapụ nchọta",
+  loading_state: "Na-ebudata",
+  selected_tap_to_remove: "Ahọrọla ya. Pịa iwepụ.",
+  tap_to_filter_by_this: "Pịa iji nke a nyochaa.",
+  appearance_light: "Ìhè",
+  appearance_dark: "Ọchịchịrị",
+  appearance_auto: "Dị ka ekwentị m",
+  cannot_reach_the_server: "Anyị enweghị ike iru Keys",
+  it_is_still_there: "Akụkọ gị ka dị. Ekwentị a anaghị ahụ ha ugbu a.",
+  the_server_said_no: "Nke ahụ agaghị",
+  saved_here_will_send: "Echekwara ya na ekwentị a. Ọ ga-eziga mgbe ị nwere netwọk.",
+  no_signal_saved_here: "Enweghị netwọk",
+  refused_reply_window_open: "Ụbọchị asaa erubeghị.",
+  refused_no_evidence: "Ọ dịghị ihe akaebe e jikọtara na ya.",
+  refused_already_decided: "Otu onye ekpebiela nke a.",
+  waiting_to_send: "na-echere izipu",
+  check_a_number_hint: "0803 123 4567",
+  check_a_number_help: "Ụdị ọ bụla. 0803…, +234 803…, ma ọ bụ 803….",
+  not_a_nigerian_number: "Nke a adịghị ka nọmba ekwentị Naịjirịa.",
+  nothing_upheld: "Ọ dịghị akụkọ akwadoro megide nọmba a.",
+  not_a_clean_bill: "Nke a abụghị akwụkwọ ahụike dị ọcha. Ọtụtụ aghụghọ ka a na-akọghị. Akwụla ụgwọ tupu ị hụ ebe ahụ ma zute onye ahụ.",
+  reviewed_by_a_person: "Mmadụ nyochara nke ọ bụla, onye nwere nọmba a nwekwara ụbọchị asaa iji zaa.",
+  upheld_reports: "akụkọ akwadoro",
+  one_upheld_report: "Otu akụkọ akwadoro megide nọmba a.",
+  report_this_number: "Kọọ nọmba a",
+  no_reports_yet_detail: "Pịnye nọmba n’elu ka ị lelee ya. Ọ dịghị akaụntụ achọrọ.",
 };
 
 const TABLES: Readonly<Record<Language, Readonly<Record<Phrase, string>>>> = {

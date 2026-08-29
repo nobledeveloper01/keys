@@ -58,20 +58,20 @@ export function OfflineBanner({ online, queued }: Props) {
       style={[
         styles.root,
         {
-          backgroundColor: colours.staleWash,
-          borderColor: colours.stale,
+          backgroundColor: colours.offlineWash,
+          borderColor: colours.offline,
           opacity: height,
         },
       ]}
     >
-      <Icon name="signal-off" size="sm" colour={colours.stale} />
+      <Icon name="signal-off" size="sm" colour={colours.offline} />
       <View style={styles.body}>
-        <Text variant="label" tone="stale">
+        <Text variant="label" tone="offline">
           {queued === null
             ? t('no_signal')
             : queued === 0
-              ? t('no_signal_still_recording')
-              : `${queued} ${t('positions_saved_waiting')}`}
+              ? t('no_signal_saved_here')
+              : `${queued} ${t('waiting_to_send')}`}
         </Text>
       </View>
     </Animated.View>

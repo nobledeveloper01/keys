@@ -17,18 +17,28 @@ export const palette = {
     onAccent: '#FFFFFF',
     /** A wash of the accent, for the one card that should lead the eye. */
     accentWash: '#EAF0FA',
-    /** Washes for each status, so a chip reads at a glance without shouting. */
-    movingWash: '#E6F4EC',
-    stoppedWash: '#FAF0E1',
-    staleWash: '#EDEFF2',
-    exceptionWash: '#FBEAE8',
+    /*
+      Washes for each status, so a chip reads at a glance without shouting.
+
+      The names say what they mean in this product: `clear` is a number with
+      nothing upheld against it, `alarm` is one with something, `caution` is
+      under review, and `offline` is the app not knowing. They were `moving`,
+      `stopped`, `exception` and `stale` when this palette arrived from the
+      previous project, which described trucks.
+    */
+    clearWash: '#E6F4EC',
+    cautionWash: '#FAF0E1',
+    offlineWash: '#EDEFF2',
+    alarmWash: '#FBEAE8',
     /** One step above `surface`, for a card that must sit on top of another. */
     surfaceRaised: '#FFFFFF',
-    moving: '#1B7F4B',
-    stopped: '#B4690E',
-    /** Grey, never red. A coverage gap is not the driver's fault. */
-    stale: '#6E7B8A',
-    exception: '#B0281F',
+    clear: '#1B7F4B',
+    caution: '#B4690E',
+    /* Grey, never red. Not knowing is not the same as bad news, and colouring
+       it red tells somebody a number is dangerous when the truth is that the
+       phone could not ask. */
+    offline: '#6E7B8A',
+    alarm: '#B0281F',
     verifiedTier: '#1A4FA0',
     businessTier: '#1B7F4B',
     trustedTier: '#9A6B12',
@@ -42,15 +52,15 @@ export const palette = {
     accent: '#5B93E0',
     onAccent: '#08111F',
     accentWash: '#16233A',
-    movingWash: '#13291F',
-    stoppedWash: '#2A2113',
-    staleWash: '#1B2028',
-    exceptionWash: '#2E1917',
+    clearWash: '#13291F',
+    cautionWash: '#2A2113',
+    offlineWash: '#1B2028',
+    alarmWash: '#2E1917',
     surfaceRaised: '#1A212B',
-    moving: '#4FBF84',
-    stopped: '#E0A44A',
-    stale: '#8A96A5',
-    exception: '#E8695E',
+    clear: '#4FBF84',
+    caution: '#E0A44A',
+    offline: '#8A96A5',
+    alarm: '#E8695E',
     verifiedTier: '#5B93E0',
     businessTier: '#4FBF84',
     trustedTier: '#D6A93F',
@@ -215,7 +225,7 @@ export const elevation: Readonly<Record<'light' | 'dark', Elevation>> = {
  * Minimum touch targets.
  *
  * The driver number is not a rounding-up of the shipper one. A driver may be
- * wearing gloves, the phone may be mounted, and the cab is moving.
+ * wearing gloves, the phone may be mounted, and the cab is clear.
  */
 export const target = { standard: 48, driver: 64 } as const;
 

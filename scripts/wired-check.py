@@ -62,6 +62,10 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / 'apps/mobile/src'
+# The app entry sits beside `src`, not inside it, and it is the only consumer
+# of the providers. Scanning only `src` reported `LanguageProvider` as a seam
+# nothing was on the other side of while `App.tsx` was mounting it.
+MOBILE_ROOT = ROOT / 'apps/mobile'
 TESTS = ROOT / 'apps/mobile/__tests__'
 
 SERVER_SRC = ROOT / 'apps/server/src'
@@ -505,7 +509,7 @@ DOMAIN_EXPORT_RE = re.compile(
 )
 
 
-def _domain_symbols() -> dict:
+def _symbols_under(root: pathlib.Path) -> dict:
     """
     Every value the domain exports, with the file it lives in and where its
     definition starts.
@@ -516,7 +520,7 @@ def _domain_symbols() -> dict:
     people learn to skip.
     """
     symbols = {}
-    for path in sorted(DOMAIN_SRC.rglob('*.ts')):
+    for path in sorted(root.rglob('*.ts*')):
         if not path.is_file() or path.name == 'index.ts':
             continue
         text = body(path)
@@ -553,15 +557,42 @@ def unwired_domain_exports() -> list[str]:
     A test is not a caller. A rule proved and never applied is precisely the
     defect this gate exists to name.
     """
-    symbols = _domain_symbols()
+    return _unwired_under(
+        DOMAIN_SRC,
+        'exported by the domain and named by nothing else in the codebase',
+    )
+
+
+# The seams. A hook or a native module nobody calls is the same defect as a
+# domain rule nobody applies, and the module-level version of this rule missed
+# three dead exports in `state/server.tsx` because one type in the same file
+# was imported.
+SEAMS = [ROOT / 'apps/mobile/src/state', ROOT / 'apps/mobile/src/native']
+
+
+def unwired_seam_exports() -> list[str]:
+    found: list[str] = []
+    for root in SEAMS:
+        if not root.exists():
+            continue
+        found += _unwired_under(root, 'a seam nothing is on the other side of')
+    return found
+
+
+def _unwired_under(root: pathlib.Path, label: str) -> list[str]:
+    symbols = _symbols_under(root)
     if not symbols:
         return []
 
     searched = [
         p
-        for root in (SRC, SERVER_SRC, DOMAIN_SRC)
-        if root.exists()
-        for p in root.rglob('*.ts*')
+        for scan in (SRC, SERVER_SRC, DOMAIN_SRC)
+        if scan.exists()
+        for p in scan.rglob('*.ts*')
+        if p.is_file()
+    ] + [
+        p
+        for p in MOBILE_ROOT.glob('*.ts*')
         if p.is_file()
     ]
 
@@ -584,10 +615,7 @@ def unwired_domain_exports() -> list[str]:
 
         if not uses:
             rel = info['path'].relative_to(ROOT)
-            found.append(
-                f"{name} — {rel}:{info['line']} — "
-                'exported by the domain and named by nothing else in the codebase'
-            )
+            found.append(f"{name} — {rel}:{info['line']} — {label}")
     return found
 
 
@@ -618,6 +646,7 @@ def main() -> int:
         + unwired_modules()
         + unwired_client_methods()
         + unwired_domain_exports()
+        + unwired_seam_exports()
     )
 
     if not problems:

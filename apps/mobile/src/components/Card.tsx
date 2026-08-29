@@ -6,7 +6,7 @@ import { Text } from './Text';
 import { radius, space } from '../design/tokens';
 import { useColours, useElevation } from '../design/theme';
 
-type Emphasis = 'plain' | 'raised' | 'accent';
+type Emphasis = 'plain' | 'raised' | 'accent' | 'alarm';
 
 interface Props {
   readonly children: ReactNode;
@@ -28,6 +28,12 @@ interface Props {
  * read, `accent` for the one card per screen that should be looked at first,
  * `plain` for supporting detail. One primary per screen; more than one is
  * none.
+ *
+ * `alarm` is the fourth and it is not decoration. It says a person reviewed
+ * something and upheld it, and it is never used for a request that failed or a
+ * number the app could not check — those are `Unready`'s job, and colouring
+ * them the same red would tell somebody a number is dangerous when the truth
+ * is that the phone could not ask.
  */
 export function Card({
   children,
@@ -40,13 +46,20 @@ export function Card({
   const elevation = useElevation();
 
   const surface =
-    emphasis === 'accent'
-      ? colours.accentWash
-      : emphasis === 'raised'
-        ? colours.surfaceRaised
-        : colours.surfaceDim;
+    emphasis === 'alarm'
+      ? colours.alarmWash
+      : emphasis === 'accent'
+        ? colours.accentWash
+        : emphasis === 'raised'
+          ? colours.surfaceRaised
+          : colours.surfaceDim;
 
-  const border = emphasis === 'accent' ? colours.accent : colours.outline;
+  const border =
+    emphasis === 'alarm'
+      ? colours.alarm
+      : emphasis === 'accent'
+        ? colours.accent
+        : colours.outline;
 
   return (
     <View
@@ -56,7 +69,10 @@ export function Card({
         {
           backgroundColor: surface,
           borderColor: border,
-          borderWidth: emphasis === 'accent' ? 1.5 : StyleSheet.hairlineWidth * 2,
+          borderWidth:
+            emphasis === 'accent' || emphasis === 'alarm'
+              ? 1.5
+              : StyleSheet.hairlineWidth * 2,
         },
         style,
       ]}

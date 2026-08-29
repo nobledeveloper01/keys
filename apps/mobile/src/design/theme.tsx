@@ -15,9 +15,9 @@ import { elevation, palette, type Colours, type Elevation } from './tokens';
 /**
  * What the user asked for, which is not the same as what is rendered.
  *
- * `system` follows the handset. The other two override it — a driver whose
+ * `system` follows the handset. The other two override it — someone whose
  * phone is in dark mode may still want the brighter screen in a cab at
- * midday, and a shipper reading a settlement in an office may want the
+ * midday, and a reviewer working through a queue in an office may want the
  * opposite.
  */
 export type ThemePreference = 'light' | 'dark' | 'system';
@@ -27,7 +27,7 @@ export type ThemePreference = 'light' | 'dark' | 'system';
  *
  * Not `system`. This is read outdoors in Nigerian daylight far more often than
  * it is read in the dark, and a phone that happens to be in dark mode should
- * not decide that for a driver at a loading bay at noon. Anyone who wants dark
+ * not decide that for somebody standing outside a compound at noon. Anyone who wants dark
  * can say so, and the choice sticks for the session.
  */
 const DEFAULT: ThemePreference = 'light';

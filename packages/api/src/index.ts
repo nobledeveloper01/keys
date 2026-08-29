@@ -48,13 +48,72 @@ export type DecisionMade =
  * code would leave the app inventing its own worse sentence.
  */
 export class ApiError extends Error {
-  constructor(
-    readonly status: number,
-    override readonly message: string,
-    readonly refused?: string,
-  ) {
+  readonly status: number;
+  readonly refused: string | undefined;
+
+  // Fields assigned in the body rather than declared as constructor parameter
+  // properties: Node runs this package's tests by stripping types, and it
+  // cannot strip a parameter property because the property only exists in the
+  // types it is removing.
+  constructor(status: number, message: string, refused?: string) {
     super(message);
     this.name = 'ApiError';
+    this.status = status;
+    this.refused = refused;
+  }
+}
+
+/**
+ * Why a request did not produce a value.
+ *
+ * `unreachable` and `refused` are kept apart all the way to the screen. A
+ * phone with no signal has not been told anything, and rendering that as an
+ * empty list tells somebody their reports do not exist when the truth is that
+ * the app cannot see them. On a Nigerian network that distinction is the
+ * difference between a working app and a lying one.
+ */
+export type ApiFailure =
+  | { readonly kind: 'unreachable' }
+  | {
+      readonly kind: 'refused';
+      readonly status: number;
+      /** The server's own machine-readable reason, where it gave one. */
+      readonly code: string | null;
+      /** The server's own sentence, written for a reader. */
+      readonly detail: string;
+    };
+
+export type ApiResult<T> =
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly failure: ApiFailure };
+
+/**
+ * Turns a throwing call into a result.
+ *
+ * Two surfaces on one implementation. Server-side rendering wants exceptions,
+ * because a page that cannot load should fail loudly and be caught once. A
+ * phone wants a value, because "the network is down" is a state a screen
+ * renders rather than an error a screen catches.
+ */
+export async function attempt<T>(run: () => Promise<T>): Promise<ApiResult<T>> {
+  try {
+    return { ok: true, value: await run() };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return {
+        ok: false,
+        failure: {
+          kind: 'refused',
+          status: error.status,
+          code: error.refused ?? null,
+          detail: error.message,
+        },
+      };
+    }
+    // Anything that is not an answer from the server is a failure to reach it:
+    // DNS, a dropped connection, an aborted fetch. None of them are refusals
+    // and none of them mean the data is not there.
+    return { ok: false, failure: { kind: 'unreachable' } };
   }
 }
 

@@ -111,7 +111,7 @@ export function Splash({ onDone, ready }: Props) {
   // means it arrives fast and stops gently, which is what a heavy thing does.
   const truckX = run.interpolate({ inputRange: [0, 1], outputRange: [-140, 0] });
 
-  // The arrow lands after the truck has stopped, in the second half of the
+  // The arrow lands after the truck has caution, in the second half of the
   // run — the load arriving *after* the truck is the sentence being told.
   const arrowIn = run.interpolate({
     inputRange: [0, 0.55, 1],
