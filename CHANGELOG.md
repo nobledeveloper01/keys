@@ -16,6 +16,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Retention: a dismissed report carries the date it will be deleted, and the
   store purges on the read rather than on a schedule that can stop running.
 - ADR 0002, 0003 and 0004.
+- The generated API client: NestJS emits `packages/api/openapi.json` from the
+  controllers' own decorators, `openapi-typescript` turns it into `schema.ts`,
+  and `scripts/api-fresh.sh` fails the build when either drifts. Response DTOs
+  so the document describes what comes back, not just what goes in.
+
+  Generating it immediately caught the document advertising `200` on POSTs the
+  server answers with `201`.
 
 ### Fixed
 

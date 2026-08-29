@@ -7,20 +7,22 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
-import { standing, type ReportCategory } from '@keys/domain';
+import { REPORT_CATEGORIES, isReportCategory, standing } from '@keys/domain';
 
+import {
+  LookupResponse,
+  ReportAcceptedResponse,
+  SubmitReportBody,
+} from './reports.dto';
 import { ReportsStore } from './reports.store';
-
-const CATEGORIES: readonly ReportCategory[] = [
-  'fake_listing',
-  'inspection_fee_scam',
-  'property_already_let',
-  'impersonation',
-  'undisclosed_fees',
-  'no_show',
-];
 
 /**
  * The scam registry's public face. No account, by design.
@@ -43,6 +45,7 @@ export class ReportsController {
   @ApiOperation({
     summary: 'What is publicly known about a number. No account required.',
   })
+  @ApiOkResponse({ type: LookupResponse })
   lookup(@Query('phone') phone?: string) {
     if (!phone || phone.trim().length < 7) {
       throw new BadRequestException('Give a phone number to look up.');
@@ -77,6 +80,11 @@ export class ReportsController {
 
   @Post('reports')
   @ApiOperation({ summary: 'Report a number. Nothing is published until a person reviews it.' })
+  @ApiBody({ type: SubmitReportBody })
+  // Created, not OK. Nest answers a POST with 201 and the document has to say
+  // the same thing, or the generated client is typed against a response the
+  // server never sends.
+  @ApiCreatedResponse({ type: ReportAcceptedResponse })
   report(
     @Body()
     body: {
@@ -87,12 +95,12 @@ export class ReportsController {
       reporterId?: string;
     },
   ) {
-    const category = CATEGORIES.find((c) => c === body.category);
-    if (!category) {
+    if (!isReportCategory(body.category)) {
       throw new BadRequestException(
-        `A report needs one of these categories: ${CATEGORIES.join(', ')}.`,
+        `A report needs one of these categories: ${REPORT_CATEGORIES.join(', ')}.`,
       );
     }
+    const category = body.category;
     if (!body.reportedPhone || body.reportedPhone.trim().length < 7) {
       throw new BadRequestException('Give the phone number you are reporting.');
     }

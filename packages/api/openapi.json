@@ -1,0 +1,566 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "HealthController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Liveness, and whether the store is durable.",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/v1/registry/lookup": {
+      "get": {
+        "operationId": "ReportsController_lookup",
+        "parameters": [
+          {
+            "name": "phone",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LookupResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "What is publicly known about a number. No account required.",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/registry/reports": {
+      "post": {
+        "operationId": "ReportsController_report",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitReportBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportAcceptedResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Report a number. Nothing is published until a person reviews it.",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/registry/reply": {
+      "get": {
+        "operationId": "ReplyController_show",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplyView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "What was said about you. Requires the token texted to your number.",
+        "tags": [
+          "registry"
+        ]
+      },
+      "post": {
+        "operationId": "ReplyController_reply",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitReplyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The answer is on the record."
+          }
+        },
+        "summary": "Answer a report about your number.",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
+    "/v1/review/queue": {
+      "get": {
+        "operationId": "ReviewController_queue",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "reviewer": []
+          }
+        ],
+        "summary": "Reports awaiting a decision.",
+        "tags": [
+          "review"
+        ]
+      }
+    },
+    "/v1/review/{id}": {
+      "get": {
+        "operationId": "ReviewController_one",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "reviewer": []
+          }
+        ],
+        "summary": "One report, in full, for review.",
+        "tags": [
+          "review"
+        ]
+      }
+    },
+    "/v1/review/{id}/decision": {
+      "post": {
+        "operationId": "ReviewController_decide",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "reviewer": []
+          }
+        ],
+        "summary": "Decide a report. The domain refuses what policy forbids.",
+        "tags": [
+          "review"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Keys",
+    "description": "Renting in Nigeria without paying a stranger for a flat that was already let.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "reviewer": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-reviewer-token"
+      }
+    },
+    "schemas": {
+      "LookupResponse": {
+        "type": "object",
+        "properties": {
+          "checked": {
+            "type": "boolean",
+            "description": "Always true. Present so that \"we checked and found nothing\" cannot be confused with \"the request failed\"."
+          },
+          "upheldReports": {
+            "type": "number",
+            "description": "Reports a person reviewed and upheld. Never a count of submissions."
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "fake_listing",
+                "inspection_fee_scam",
+                "property_already_let",
+                "impersonation",
+                "undisclosed_fees",
+                "no_show"
+              ]
+            }
+          },
+          "mostRecent": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "everyReportHadRightOfReply": {
+            "type": "boolean",
+            "description": "False if any published report went unanswered within its reply window."
+          },
+          "meaning": {
+            "type": "string",
+            "description": "Plain words for the reader. Zero upheld is not a clean bill of health."
+          }
+        },
+        "required": [
+          "checked",
+          "upheldReports",
+          "categories",
+          "mostRecent",
+          "everyReportHadRightOfReply",
+          "meaning"
+        ]
+      },
+      "SubmitReportBody": {
+        "type": "object",
+        "properties": {
+          "reportedPhone": {
+            "type": "string",
+            "example": "+2348012345678"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "fake_listing",
+              "inspection_fee_scam",
+              "property_already_let",
+              "impersonation",
+              "undisclosed_fees",
+              "no_show"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 20,
+            "description": "A report nobody can assess cannot be upheld."
+          },
+          "evidenceKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "reportedPhone",
+          "category",
+          "description"
+        ]
+      },
+      "ReportAcceptedResponse": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "under_review",
+              "awaiting_reply",
+              "upheld",
+              "not_upheld",
+              "insufficient_evidence",
+              "resolved",
+              "expired"
+            ]
+          },
+          "replyDeadlineAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "whatHappensNext": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "received",
+          "status",
+          "replyDeadlineAt",
+          "whatHappensNext"
+        ]
+      },
+      "ReplyView": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "fake_listing",
+              "inspection_fee_scam",
+              "property_already_let",
+              "impersonation",
+              "undisclosed_fees",
+              "no_show"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "replyBy": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "alreadyReplied": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "description",
+          "submittedAt",
+          "replyBy",
+          "alreadyReplied",
+          "note"
+        ]
+      },
+      "SubmitReplyBody": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The token texted to the number that was reported."
+          },
+          "reply": {
+            "type": "string",
+            "minLength": 10
+          }
+        },
+        "required": [
+          "token",
+          "reply"
+        ]
+      },
+      "ReviewView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "under_review",
+              "awaiting_reply",
+              "upheld",
+              "not_upheld",
+              "insufficient_evidence",
+              "resolved",
+              "expired"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "fake_listing",
+              "inspection_fee_scam",
+              "property_already_let",
+              "impersonation",
+              "undisclosed_fees",
+              "no_show"
+            ]
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "replyDeadlineAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string"
+          },
+          "evidenceCount": {
+            "type": "number"
+          },
+          "hasReply": {
+            "type": "boolean"
+          },
+          "reply": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "category",
+          "submittedAt",
+          "replyDeadlineAt",
+          "publishedAt",
+          "description",
+          "evidenceCount",
+          "hasReply",
+          "reply"
+        ]
+      },
+      "DecisionBody": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "upheld",
+              "not_upheld",
+              "insufficient_evidence"
+            ]
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "DecisionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "under_review",
+              "awaiting_reply",
+              "upheld",
+              "not_upheld",
+              "insufficient_evidence",
+              "resolved",
+              "expired"
+            ]
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "nowVisiblePublicly": {
+            "type": "boolean",
+            "description": "Said out loud so a reviewer knows what they just did in public."
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "publishedAt",
+          "nowVisiblePublicly"
+        ]
+      }
+    }
+  }
+}

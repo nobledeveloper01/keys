@@ -8,8 +8,15 @@ import {
   Query,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
+import { ReplyView, SubmitReplyBody } from './reports.dto';
 import { ReportsStore } from './reports.store';
 
 /**
@@ -27,6 +34,7 @@ export class ReplyController {
 
   @Get()
   @ApiOperation({ summary: 'What was said about you. Requires the token texted to your number.' })
+  @ApiOkResponse({ type: ReplyView })
   show(@Query('token') token?: string) {
     const row = this.store.byReplyToken((token ?? '').trim());
     if (!row) throw new NotFoundException('This link is not valid.');
@@ -46,6 +54,8 @@ export class ReplyController {
 
   @Post()
   @ApiOperation({ summary: 'Answer a report about your number.' })
+  @ApiBody({ type: SubmitReplyBody })
+  @ApiCreatedResponse({ description: 'The answer is on the record.' })
   reply(@Body() body: { token?: string; reply?: string }) {
     const row = this.store.byReplyToken((body.token ?? '').trim());
     if (!row) throw new NotFoundException('This link is not valid.');

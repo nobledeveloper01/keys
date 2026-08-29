@@ -43,10 +43,20 @@ untranslated:
 	python3 scripts/untranslated-check.py
 
 ## gates: every blocking check, without the tests
-gates: typecheck lint boundary doc-check wired-check untranslated
+gates: typecheck lint boundary doc-check wired-check untranslated api-fresh
 
 ## ci: the gate
 ci: gates test
+
+## api: regenerate openapi.json and the typed client from the controllers
+api:
+	pnpm --filter @keys/server run build
+	node apps/server/dist/emit-openapi.js
+	pnpm --filter @keys/api exec openapi-typescript openapi.json -o src/schema.ts
+
+## api-fresh: fail when the generated client no longer matches the controllers
+api-fresh:
+	@./scripts/api-fresh.sh
 
 ## clean: build output and caches; node_modules is left alone
 clean:
@@ -54,4 +64,4 @@ clean:
 	rm -rf apps/server/dist packages/*/dist
 	@echo "cleaned — node_modules left alone"
 
-.PHONY: help setup test typecheck lint boundary doc-check wired-check untranslated gates ci clean
+.PHONY: help setup test typecheck lint boundary doc-check wired-check untranslated api api-fresh gates ci clean

@@ -3,16 +3,28 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
   UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { review, type Decision } from '@keys/domain';
 
+import {
+  DecisionBody,
+  DecisionResponse,
+  ReviewView,
+} from './reports.dto';
 import { ReportsStore, type StoredReport } from './reports.store';
 import { ReviewerGuard } from './reviewer.guard';
 
@@ -26,6 +38,7 @@ const DECISIONS: readonly Decision[] = ['upheld', 'not_upheld', 'insufficient_ev
  * remove protection rather than forget to add it.
  */
 @ApiTags('review')
+@ApiSecurity('reviewer')
 @UseGuards(ReviewerGuard)
 @Controller('v1/review')
 export class ReviewController {
@@ -52,12 +65,14 @@ export class ReviewController {
 
   @Get('queue')
   @ApiOperation({ summary: 'Reports awaiting a decision.' })
+  @ApiOkResponse({ type: ReviewView, isArray: true })
   queue() {
     return { reports: this.store.queue().map((r) => this.view(r)) };
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'One report, in full, for review.' })
+  @ApiOkResponse({ type: ReviewView })
   one(@Param('id') id: string) {
     const row = this.store.byId(id);
     if (!row) throw new NotFoundException('No such report.');
@@ -65,7 +80,12 @@ export class ReviewController {
   }
 
   @Post(':id/decision')
+  // A decision creates nothing; it records one. 200 rather than Nest's default
+  // 201, so the status says what happened.
+  @HttpCode(200)
   @ApiOperation({ summary: 'Decide a report. The domain refuses what policy forbids.' })
+  @ApiBody({ type: DecisionBody })
+  @ApiOkResponse({ type: DecisionResponse })
   decide(@Param('id') id: string, @Body() body: { decision?: string }) {
     const decision = DECISIONS.find((d) => d === body.decision);
     if (!decision) {

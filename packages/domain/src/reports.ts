@@ -13,24 +13,42 @@
  * there is no code path that sets it any other way.
  */
 
-/** What a report alleges. Closed on purpose: free-text categories cannot be counted, and a registry that cannot count is a rumour. */
-export type ReportCategory =
-  | 'fake_listing'
-  | 'inspection_fee_scam'
-  | 'property_already_let'
-  | 'impersonation'
-  | 'undisclosed_fees'
-  | 'no_show';
+/**
+ * What a report alleges. Closed on purpose: free-text categories cannot be
+ * counted, and a registry that cannot count is a rumour.
+ *
+ * Declared as a value rather than a bare union so that the server can validate
+ * against it and the OpenAPI document can enumerate it. A union type alone
+ * means every consumer writes the list out again, and the fourth copy is the
+ * one that is missing an entry.
+ */
+export const REPORT_CATEGORIES = [
+  'fake_listing',
+  'inspection_fee_scam',
+  'property_already_let',
+  'impersonation',
+  'undisclosed_fees',
+  'no_show',
+] as const;
 
-export type ReportStatus =
-  | 'submitted'
-  | 'under_review'
-  | 'awaiting_reply'
-  | 'upheld'
-  | 'not_upheld'
-  | 'insufficient_evidence'
-  | 'resolved'
-  | 'expired';
+export type ReportCategory = (typeof REPORT_CATEGORIES)[number];
+
+export function isReportCategory(value: unknown): value is ReportCategory {
+  return REPORT_CATEGORIES.includes(value as ReportCategory);
+}
+
+export const REPORT_STATUSES = [
+  'submitted',
+  'under_review',
+  'awaiting_reply',
+  'upheld',
+  'not_upheld',
+  'insufficient_evidence',
+  'resolved',
+  'expired',
+] as const;
+
+export type ReportStatus = (typeof REPORT_STATUSES)[number];
 
 /** How long the reported party has to answer before a decision may be taken. */
 export const REPLY_WINDOW_DAYS = 7;

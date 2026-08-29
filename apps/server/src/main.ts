@@ -1,7 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
+import { describe } from './openapi';
 
 /*
   CORS is an allow-list by name, and never a wildcard.
@@ -26,25 +27,16 @@ async function bootstrap() {
 
   app.enableCors({
     origin: origins,
-    allowedHeaders: ['authorization', 'content-type'],
+    // The review console is a browser app, so the header its guard reads has
+    // to survive preflight. Omitting it makes the console fail in a way that
+    // looks like an auth bug rather than a CORS one.
+    allowedHeaders: ['authorization', 'content-type', 'x-reviewer-token'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   });
 
-  SwaggerModule.setup(
-    'swagger',
-    app,
-    SwaggerModule.createDocument(
-      app,
-      new DocumentBuilder()
-        .setTitle('Keys API')
-        .setDescription(
-          'Verified rental listings and tenancy management for Nigerian cities. ' +
-            'Keys verifies authority to let, not title or ownership, and handles no money.',
-        )
-        .setVersion('0.0.1')
-        .build(),
-    ),
-  );
+  // The same document the generated client is built from. Two descriptions
+  // of one API is how the client goes stale while every file still compiles.
+  SwaggerModule.setup('swagger', app, describe(app));
 
   await app.listen(Number(process.env.PORT ?? 5211), '127.0.0.1');
 }

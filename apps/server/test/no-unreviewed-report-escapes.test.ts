@@ -186,8 +186,10 @@ describe('no unreviewed report escapes', () => {
     await request(app.getHttpServer())
       .post(`/v1/review/${reportId}/decision`)
       .set('x-reviewer-token', TOKEN)
+      // 200, not Nest's default 201: a decision records something, it does not
+      // create a resource. The OpenAPI document says the same.
       .send({ decision: 'upheld' })
-      .expect(201);
+      .expect(200);
 
     const after = await request(app.getHttpServer())
       .get('/v1/registry/lookup')
