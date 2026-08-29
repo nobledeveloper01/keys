@@ -6,6 +6,59 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-29 — Phase 1, and three guards that could not fail
+
+**Did.** Built the scam registry: publication policy in the domain as an
+allow-list, three doors onto one store, the reviewer console, right of reply by
+a texted capability, retention with a deletion date on the row. The web wedge
+as server-rendered pages — check a number, report one, answer one, no account.
+The API client generated from the controllers, with a gate that fails when it
+drifts. Phase 1's software gate is green; two human gates and the SMS provider
+are open.
+
+### What surprised us
+
+**The exit gate passed while the thing it guards was broken.** I broke it four
+ways on purpose. Removing `@UseGuards` from the review console: caught. Leaking
+`reporterId`: caught. Adding a debug route that dumps the store: caught, which
+is the one that proves the route enumeration is doing work rather than testing
+a list I wrote. Dropping `publishedAt !== null` from the store's public read:
+**passed.** Every route test stayed green, because the controller filters a
+second time through the domain. The filter whose own comment calls it "the one
+that matters" was held by nothing, and it is the last line standing the first
+time somebody changes that controller. It has its own test now, with no
+controller in the way.
+
+**Three of the four guards ported in phase 0 could not fail.** `wired-check`
+printed "everything exported is wired to something" while `NOT_UPHELD_RETENTION_MONTHS`
+had no caller anywhere — its rules still named Backhaul's C# repository
+directories, so it was scanning nothing and saying so in the language of
+success. `untranslated-check` was listed in `make gates` and exited zero
+unconditionally, and resolved its scan path against the working directory, so
+from any folder but the root it examined no files and printed a clean line.
+Both fixed, both now fail when they examine nothing, both proven by breaking
+them.
+
+That is the same defect the guards exist to catch, one level up: written,
+plausible, connected to nothing. Porting a guard between repositories is
+writing a new guard, and it passing on arrival is evidence of nothing. Written
+down as [ADR 0004](adr/0004-a-gate-that-cannot-fail-is-not-a-gate.md).
+
+**Generating the client caught a lie in the document.** `@ApiOkResponse` on a
+POST described a `200` the server never sends; Nest answers `201`. A
+hand-written client would have carried that for a year.
+
+**And running the actual product found what no unit test could.** The web
+report form collects no evidence, `review()` refuses to uphold without
+evidence, and file upload belongs to phase 3. Two correct decisions with no
+path between them, and every report reachable from the public form permanently
+unupholdable. Fifth time this shape has appeared across these two projects.
+The bridge is a reviewer recording evidence they obtained out of band, keyed
+`reviewer-attested:` so an audit can see exactly what it is, and phase 3
+replaces it.
+
+---
+
 ## 2026-08-29 — Phase 0, and a guard that reported clean over a copy
 
 **Did.** Started Keys. Monorepo with mobile, web, server and two shared

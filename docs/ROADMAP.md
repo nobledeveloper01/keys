@@ -64,13 +64,26 @@ reply with the 7-day window, publication gating, expiry and resolution.
    it is written. Proven to fail by removing the reviewer guard, leaking the reporter id,
    and adding a debug route that dumps the store. See [ADR 0002](adr/0002-nothing-is-published-until-a-person-upheld-it.md).
 2. ⏳ **Software — right-of-reply flow works end to end, including for reported parties
-   who have no Keys account.** The capability is generated, stored and honoured; nothing
-   delivers it yet. **Blocked on the SMS provider in phase 3.**
+   who have no Keys account.** The capability is generated, stored and honoured, and
+   `/reply` on the web surface renders and posts against it. Nothing delivers the token
+   yet. **Blocked on the SMS provider in phase 3.**
    See [ADR 0003](adr/0003-the-accused-answers-with-a-texted-capability-not-an-account.md).
 3. ⏳ **Human — review console throughput measured.** Needs a real reviewer and real
    reports; cannot be measured against fixtures.
 4. ⏳ **Human — legal review of the report policy by a Nigerian lawyer.**
    **Blocks public launch outright.** No test result substitutes for it.
+
+**Known limitations at the end of phase 1**
+
+- **No file upload.** Object storage lands in phase 3, and `review()` refuses to uphold
+  a report with no evidence, so without a bridge every report reachable from the web
+  form would have been permanently unupholdable — two correct decisions with no path
+  between them. The bridge is `POST /v1/review/:id/evidence`, where a reviewer records
+  what they saw and how it reached them. It is weaker than a file and the row says so:
+  the key is prefixed `reviewer-attested:`. Phase 3 replaces it.
+- **The store is in memory.** Postgres and PostGIS land in phase 2; `/healthz` reports
+  `durable: false` so this cannot be mistaken for a deployment.
+- **No SMS.** See gate 2.
 
 **Launched publicly at the end of this phase**, standalone, with no listings at all.
 

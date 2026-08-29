@@ -107,6 +107,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/review/{id}/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record evidence a reviewer obtained, with how it arrived. */
+        post: operations["ReviewController_evidence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/review/{id}/decision": {
         parameters: {
             query?: never;
@@ -190,6 +207,15 @@ export interface components {
             evidenceCount: number;
             hasReply: boolean;
             reply: string | null;
+        };
+        EvidenceBody: {
+            /** @description What the evidence was. A reviewer auditing this later reads exactly this. */
+            note: string;
+            /**
+             * @description How it reached you. Phase 1 has no upload; phase 3 replaces this with files.
+             * @example emailed screenshots
+             */
+            source: string;
         };
         DecisionBody: {
             /** @enum {string} */
@@ -346,6 +372,31 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewView"];
+                };
+            };
+        };
+    };
+    ReviewController_evidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EvidenceBody"];
+            };
+        };
         responses: {
             200: {
                 headers: {

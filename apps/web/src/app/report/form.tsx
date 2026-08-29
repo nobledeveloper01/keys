@@ -1,0 +1,147 @@
+'use client';
+
+import { useState } from 'react';
+
+import { REPORT_CATEGORIES } from '@keys/domain';
+
+const CATEGORY_WORDS: Record<string, string> = {
+  fake_listing: 'The property did not exist',
+  inspection_fee_scam: 'They took an inspection fee for a viewing that never happened',
+  property_already_let: 'The property had already been let',
+  impersonation: 'They pretended to be an agent or landlord they were not',
+  undisclosed_fees: 'Fees appeared that were never mentioned',
+  no_show: 'They took the appointment and never turned up',
+};
+
+export function ReportForm() {
+  const [phone, setPhone] = useState('');
+  const [category, setCategory] = useState('');
+  const [description, setDescription] = useState('');
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  const [problem, setProblem] = useState<string | null>(null);
+  const [deadline, setDeadline] = useState<string | null>(null);
+
+  if (state === 'sent') {
+    return (
+      <div className="verdict clear">
+        <p>
+          <strong>Thank you. A person will review this.</strong>
+        </p>
+        <p className="small">
+          {deadline
+            ? `Whoever holds that number has until ${new Date(deadline).toLocaleDateString(
+                'en-NG',
+                { day: 'numeric', month: 'long' },
+              )} to answer. Nothing is published before then, and nothing is published unless it is upheld.`
+            : 'Nothing is published until it is upheld.'}
+        </p>
+      </div>
+    );
+  }
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setState('sending');
+    setProblem(null);
+    try {
+      const response = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ phone, category, description }),
+      });
+      const body: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        const shape = body as { detail?: string } | null;
+        setProblem(shape?.detail ?? 'That did not send. Try again.');
+        setState('failed');
+        return;
+      }
+      setDeadline((body as { replyDeadlineAt?: string } | null)?.replyDeadlineAt ?? null);
+      setState('sent');
+    } catch {
+      setProblem('That did not send. Check your connection and try again.');
+      setState('failed');
+    }
+  }
+
+  const field = {
+    width: '100%',
+    fontSize: 16,
+    minHeight: 48,
+    padding: '0.85rem 0.9rem',
+    borderRadius: 'var(--radius)',
+    border: '1px solid var(--line)',
+    background: 'var(--surface)',
+    color: 'var(--ink)',
+    margin: '0.4rem 0 1.1rem',
+  } as const;
+
+  return (
+    // `void`, not a floating promise: `submit` catches everything itself and
+      // resolves to nothing a handler could act on.
+    <form onSubmit={(event) => void submit(event)} style={{ display: 'block', marginTop: '1.5rem' }}>
+      <label htmlFor="phone">
+        <strong>The number you are reporting</strong>
+      </label>
+      <input
+        id="phone"
+        type="tel"
+        inputMode="tel"
+        required
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        placeholder="0803 123 4567"
+        style={field}
+      />
+
+      <label htmlFor="category">
+        <strong>What happened</strong>
+      </label>
+      <select
+        id="category"
+        required
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        style={field}
+      >
+        <option value="">Choose one…</option>
+        {REPORT_CATEGORIES.map((c) => (
+          <option key={c} value={c}>
+            {CATEGORY_WORDS[c] ?? c}
+          </option>
+        ))}
+      </select>
+
+      <label htmlFor="description">
+        <strong>In your own words</strong>
+      </label>
+      <textarea
+        id="description"
+        required
+        minLength={20}
+        rows={6}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="When, where, how much, and what they said."
+        style={{ ...field, minHeight: 140 }}
+        aria-describedby="description-help"
+      />
+      <p id="description-help" className="small quiet" style={{ marginTop: '-0.7rem' }}>
+        A reviewer can only uphold what they can assess. Dates and amounts help.
+      </p>
+
+      {problem && (
+        <p className="small" style={{ color: 'var(--alarm)' }} role="alert">
+          {problem}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={state === 'sending' || !phone || !category || description.trim().length < 20}
+      >
+        {state === 'sending' ? 'Sending…' : 'Send this report'}
+      </button>
+    </form>
+  );
+}

@@ -23,6 +23,7 @@ import { review, type Decision } from '@keys/domain';
 import {
   DecisionBody,
   DecisionResponse,
+  EvidenceBody,
   ReviewView,
 } from './reports.dto';
 import { ReportsStore, type StoredReport } from './reports.store';
@@ -77,6 +78,41 @@ export class ReviewController {
     const row = this.store.byId(id);
     if (!row) throw new NotFoundException('No such report.');
     return this.view(row);
+  }
+
+  @Post(':id/evidence')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Record evidence a reviewer obtained, with how it arrived.',
+  })
+  @ApiBody({ type: EvidenceBody })
+  @ApiOkResponse({ type: ReviewView })
+  evidence(@Param('id') id: string, @Body() body: { note?: string; source?: string }) {
+    /*
+      Phase 1 has no file upload — object storage lands in phase 3 — and
+      `review()` refuses to uphold a report with no evidence. Without this the
+      two decisions are each correct and the path between them does not exist:
+      every report reachable from the web form would be permanently unupholdable.
+
+      So evidence is recorded rather than uploaded, and what is recorded is the
+      reviewer's own account of what they saw and how it reached them. That is
+      weaker than a file and the record says so, in the row, where anybody
+      auditing a decision will find it.
+    */
+    const note = (body.note ?? '').trim();
+    const source = (body.source ?? '').trim();
+    if (note.length < 20 || source.length < 3) {
+      throw new BadRequestException(
+        'Say what the evidence was, in at least twenty characters, and how it reached you.',
+      );
+    }
+
+    const row = this.store.byId(id);
+    if (!row) throw new NotFoundException('No such report.');
+
+    const key = `reviewer-attested:${source}:${note}`;
+    this.store.replace({ ...row, evidenceKeys: [...row.evidenceKeys, key] });
+    return this.view(this.store.byId(id)!);
   }
 
   @Post(':id/decision')

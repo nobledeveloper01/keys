@@ -103,6 +103,21 @@ export class ReviewView {
   @ApiProperty({ type: String, nullable: true }) reply!: string | null;
 }
 
+export class EvidenceBody {
+  @ApiProperty({
+    minLength: 20,
+    description: 'What the evidence was. A reviewer auditing this later reads exactly this.',
+  })
+  note!: string;
+
+  @ApiProperty({
+    minLength: 3,
+    example: 'emailed screenshots',
+    description: 'How it reached you. Phase 1 has no upload; phase 3 replaces this with files.',
+  })
+  source!: string;
+}
+
 export class DecisionBody {
   @ApiProperty({ enum: ['upheld', 'not_upheld', 'insufficient_evidence'] })
   decision!: string;

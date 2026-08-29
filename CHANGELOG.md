@@ -16,6 +16,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Retention: a dismissed report carries the date it will be deleted, and the
   store purges on the read rather than on a schedule that can stop running.
 - ADR 0002, 0003 and 0004.
+- `apps/web` — the wedge as a server-rendered page. Check a number, report one,
+  answer one, with no account and nothing to install. The result has a URL, so
+  it can be sent to somebody. Numbers are normalised, because 0803, +234 803 and
+  803 are one number and a registry that treats them as three answers "nothing
+  found" about a number it holds.
+- `POST /v1/review/:id/evidence` — a reviewer records evidence obtained out of
+  band, prefixed `reviewer-attested:`. Phase 1 has no upload and `review()`
+  refuses to uphold without evidence; without this the web report form led
+  nowhere.
 - The generated API client: NestJS emits `packages/api/openapi.json` from the
   controllers' own decorators, `openapi-typescript` turns it into `schema.ts`,
   and `scripts/api-fresh.sh` fails the build when either drifts. Response DTOs

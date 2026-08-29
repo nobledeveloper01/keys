@@ -199,6 +199,52 @@
         ]
       }
     },
+    "/v1/review/{id}/evidence": {
+      "post": {
+        "operationId": "ReviewController_evidence",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "reviewer": []
+          }
+        ],
+        "summary": "Record evidence a reviewer obtained, with how it arrived.",
+        "tags": [
+          "review"
+        ]
+      }
+    },
     "/v1/review/{id}/decision": {
       "post": {
         "operationId": "ReviewController_decide",
@@ -507,6 +553,26 @@
           "evidenceCount",
           "hasReply",
           "reply"
+        ]
+      },
+      "EvidenceBody": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "minLength": 20,
+            "description": "What the evidence was. A reviewer auditing this later reads exactly this."
+          },
+          "source": {
+            "type": "string",
+            "minLength": 3,
+            "example": "emailed screenshots",
+            "description": "How it reached you. Phase 1 has no upload; phase 3 replaces this with files."
+          }
+        },
+        "required": [
+          "note",
+          "source"
         ]
       },
       "DecisionBody": {
