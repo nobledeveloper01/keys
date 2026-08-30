@@ -54,10 +54,9 @@ export function ReplyForm({ token }: { token: string }) {
   return (
     // `void`, not a floating promise: `submit` catches everything itself and
       // resolves to nothing a handler could act on.
-    <form onSubmit={(event) => void submit(event)} style={{ display: 'block' }}>
-      <label htmlFor="reply">
-        <strong>Your answer</strong>
-      </label>
+    <form onSubmit={(event) => void submit(event)}>
+      <div className="field">
+      <label htmlFor="reply">Your answer</label>
       <textarea
         id="reply"
         value={text}
@@ -66,19 +65,10 @@ export function ReplyForm({ token }: { token: string }) {
         required
         minLength={10}
         placeholder="What actually happened?"
-        style={{
-          width: '100%',
-          fontSize: 16,
-          padding: '0.85rem 0.9rem',
-          borderRadius: 'var(--radius)',
-          border: '1px solid var(--line)',
-          background: 'var(--surface)',
-          color: 'var(--ink)',
-          margin: '0.5rem 0 1rem',
-        }}
       />
+      </div>
       {problem && (
-        <p className="small" style={{ color: 'var(--alarm)' }} role="alert">
+        <p className="error" role="alert">
           {problem}
         </p>
       )}

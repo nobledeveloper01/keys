@@ -64,25 +64,13 @@ export function ReportForm() {
     }
   }
 
-  const field = {
-    width: '100%',
-    fontSize: 16,
-    minHeight: 48,
-    padding: '0.85rem 0.9rem',
-    borderRadius: 'var(--radius)',
-    border: '1px solid var(--line)',
-    background: 'var(--surface)',
-    color: 'var(--ink)',
-    margin: '0.4rem 0 1.1rem',
-  } as const;
 
   return (
     // `void`, not a floating promise: `submit` catches everything itself and
       // resolves to nothing a handler could act on.
-    <form onSubmit={(event) => void submit(event)} style={{ display: 'block', marginTop: '1.5rem' }}>
-      <label htmlFor="phone">
-        <strong>The number you are reporting</strong>
-      </label>
+    <form onSubmit={(event) => void submit(event)}>
+      <div className="field">
+      <label htmlFor="phone">The number you are reporting</label>
       <input
         id="phone"
         type="tel"
@@ -91,18 +79,19 @@ export function ReportForm() {
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
         placeholder="0803 123 4567"
-        style={field}
+       
       />
 
-      <label htmlFor="category">
-        <strong>What happened</strong>
-      </label>
+      </div>
+
+      <div className="field">
+      <label htmlFor="category">What happened</label>
       <select
         id="category"
         required
         value={category}
         onChange={(e) => setCategory(e.target.value)}
-        style={field}
+       
       >
         <option value="">Choose one…</option>
         {REPORT_CATEGORIES.map((c) => (
@@ -112,9 +101,10 @@ export function ReportForm() {
         ))}
       </select>
 
-      <label htmlFor="description">
-        <strong>In your own words</strong>
-      </label>
+      </div>
+
+      <div className="field">
+      <label htmlFor="description">In your own words</label>
       <textarea
         id="description"
         required
@@ -123,15 +113,16 @@ export function ReportForm() {
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="When, where, how much, and what they said."
-        style={{ ...field, minHeight: 140 }}
+       
         aria-describedby="description-help"
       />
-      <p id="description-help" className="small quiet" style={{ marginTop: '-0.7rem' }}>
+      <p id="description-help" className="help">
         A reviewer can only uphold what they can assess. Dates and amounts help.
       </p>
+      </div>
 
       {problem && (
-        <p className="small" style={{ color: 'var(--alarm)' }} role="alert">
+        <p className="error" role="alert">
           {problem}
         </p>
       )}

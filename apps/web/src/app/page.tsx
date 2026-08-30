@@ -25,14 +25,14 @@ export default async function Home({
   return (
     <main>
       <h1>Check a number before you pay</h1>
-      <p className="quiet">
+      <p className="lede">
         Reports of rental scams in Nigeria, each one reviewed by a person before it
         appears here. No account. Nothing to install.
       </p>
 
       {/* A GET form, so the result has a URL somebody can send to a friend. */}
-      <form action="/" method="get">
-        <label htmlFor="phone" className="visually-hidden" style={{ position: 'absolute', left: '-9999px' }}>
+      <form action="/" method="get" className="row">
+        <label htmlFor="phone" className="sr-only">
           Phone number
         </label>
         <input
@@ -47,7 +47,7 @@ export default async function Home({
         />
         <button type="submit">Check</button>
       </form>
-      <p id="phone-help" className="quiet small">
+      <p id="phone-help" className="help">
         Any format. 0803…, +234 803…, or 803….
       </p>
 
@@ -64,10 +64,12 @@ export default async function Home({
 
       {phone && <Verdict phone={phone} />}
 
+      <hr />
+
       <p className="small quiet">
-        Been reported yourself?{' '}
-        <Link href="/reply">Answer it here</Link> — you have seven days before anything
-        can be published, and nothing is published unless a person upholds it.
+        Been reported yourself? <Link href="/reply">Answer it here</Link>. You have
+        seven days before anything can be published, and nothing is published unless a
+        person upholds it.
       </p>
     </main>
   );

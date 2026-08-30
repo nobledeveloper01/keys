@@ -83,6 +83,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **The web surface has a design layer.** It had a masthead on no page, so
+  nothing said what the site was — somebody arriving on `/reply` from an SMS had
+  no way to tell whose service had just accused them of something. There is now
+  a masthead with the mark, a footer carrying what Keys does and does not claim,
+  a type scale, and a spacing scale.
+- Plus Jakarta Sans, self-hosted through `next/font` so a reader on a Nigerian
+  connection makes no request to Google and the page cannot be blocked by
+  somebody else's CDN. The app keeps the platform face for the reason
+  `DESIGN.md` gives; the web has no such constraint.
+- The web palette is the app's, to the hex, including the indigo accent and the
+  four status colours.
+
 - **The splash was the freight project's.** A truck drove in from the left under
   the word *Backhaul*. It shipped that way and was found by watching the app
   start, not by any gate. Keys now has its own mark — a keyhole, drawn as one
@@ -121,6 +133,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   roadmap still said phase 0.
 
 ### Fixed
+
+- **The reply link rendered in the browser's default blue** — the one colour on
+  the page nobody chose, at about 3:1 against a dark background.
+- **`textarea` was monospace.** Browsers default it that way, so the report form
+  asked for the most important paragraph on the site in a different typeface
+  from everything around it.
+- `display: flex` was set on the bare `form` tag, so it caught the report page's
+  stack of fields as well as the one-row lookup it was written for. Styled as a
+  role now — the same mistake, in CSS, that turned a whole screen's buttons
+  invisible on the previous project.
+- Section headings in the review console were `<p><strong>`: visually a heading,
+  semantically a paragraph, so nothing established rank and a screen reader
+  could not jump between them.
+- A `<br />` after a block-level `<strong>` put an empty line inside every queue
+  row.
+- The hero was a fixed 2.5rem, which filled two-thirds of a 375px screen and
+  pushed the search field — the only thing anybody comes to the page for —
+  below the fold. Fluid now, and the wrapped button fills its row.
+- Every form control inherits the page's face and sits at a 16px minimum, so
+  iOS does not zoom the page on focus.
 
 - **The top safe-area inset was applied twice** — once by `SafeAreaView` at the
   app root and again by `ScreenHeader` — leaving 94 points of dead white space

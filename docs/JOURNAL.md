@@ -6,6 +6,47 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-30 — The web had no masthead, and nobody had noticed
+
+**Did.** The same pass on the web surface that the app got: looked at every
+page, in both schemes, at both widths, and fixed what was wrong.
+
+### What surprised us
+
+**Four pages and not one of them said what the site was.** Each opened with its
+own `<h1>` floating at the top of an empty column. The consequence is worst on
+`/reply`: somebody arriving there from an SMS, being told they have seven days
+to answer an accusation, had no way to tell whose service was accusing them.
+
+**`textarea` is monospace by default.** Browsers do that, and it meant the
+report form asked for the single most important paragraph on the site — the one
+a reviewer decides on — in a different typeface from every other word around
+it. Nobody writes that; it is the platform's default leaking through a
+stylesheet that never overrode it.
+
+**`display: flex` on the bare `form` tag** was written for the one-row lookup
+and caught the report page's whole stack of fields. That is the same mistake, in
+CSS, that turned every button's text invisible on the previous project: styling
+a tag when what was meant was a role. It has now been made twice in two
+codebases, which is enough to call it a habit rather than an accident.
+
+**The link colour was the browser's.** Default blue on a dark background, about
+3:1 — the one colour on the page nobody chose.
+
+### What went right
+
+The contrast audit came back clean in both schemes on the first run, because the
+palette was carried over from the app where the four status hues had already
+been argued about. Doing that work once and reusing it is the whole benefit of
+having a design system rather than a stylesheet.
+
+Two new gates: `splash-check` and `mark-check`. Both exist for the same reason —
+a storyboard cannot import a TypeScript constant, and a React Native SVG cannot
+import a DOM one, so in both cases the only thing standing between two copies
+and a slow drift is something that compares them on every build.
+
+---
+
 ## 2026-08-30 — The splash said Backhaul
 
 **Did.** A design pass on the running app, which is the pass nobody had done.

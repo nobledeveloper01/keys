@@ -1,109 +1,549 @@
 /*
-  Tokens first, in both schemes, before anything uses one.
+  The web surface's design layer.
 
-  A colour whose only definition sits inside a media query is a colour that is
-  undefined for somebody, and on the last project a global reset that styled
-  bare tags rather than roles turned every button's text the same colour as the
-  page. So: roles, not tags.
+  Tokens first, in both schemes, before anything uses one. A colour whose only
+  definition sits inside a media query is a colour that is undefined for
+  somebody — and on an earlier project a global reset that styled bare tags
+  rather than roles turned every button's text the same colour as the page. So:
+  roles, not tags, and every value defined in the light block before dark
+  redefines it.
+
+  The palette is the app's, to the hex. A product whose website and whose app
+  are different colours is two products as far as the reader is concerned.
 */
 :root {
+  /* Surfaces */
   --bg: #ffffff;
-  --surface: #f6f7f9;
-  --line: #e3e6ea;
-  --ink: #11151a;
-  --ink-quiet: #5a636e;
-  --clear: #0f7a4d;
-  --clear-bg: #e8f5ee;
-  --alarm: #a4231f;
-  --alarm-bg: #fbeceb;
-  --accent: #0b5ed7;
-  --radius: 12px;
-  --measure: 34rem;
+  --surface: #f7f8fa;
+  --surface-raised: #ffffff;
+  --line: #e2e6ec;
+  --line-strong: #cbd2dc;
+
+  /* Ink */
+  --ink: #10141b;
+  --ink-quiet: #545e6b;
+
+  /* Identity — deep indigo, clear of every status hue. See tokens.ts. */
+  --accent: #2e2a6e;
+  --accent-ink: #ffffff;
+  --accent-wash: #ecebf7;
+  --accent-hover: #241f5c;
+
+  /*
+    The four states, matching the app.
+
+    `alarm` means one thing only: a report a person reviewed and upheld. It is
+    never used for a request that failed — telling somebody a number is
+    dangerous when the truth is that we could not ask is an accusation.
+  */
+  --clear: #14683f;
+  --clear-wash: #e7f3ec;
+  --caution: #8a5109;
+  --caution-wash: #fbf1e2;
+  --alarm: #9e2119;
+  --alarm-wash: #fbecea;
+
+  /* Type scale, 1.25 from a 16px base, rounded to whole pixels. */
+  --t-xs: 0.8125rem;
+  --t-sm: 0.9375rem;
+  --t-base: 1rem;
+  --t-lg: 1.1875rem;
+  --t-xl: 1.5rem;
+  /*
+    Fluid between the small phone and the desktop.
+
+    A fixed 2.5rem hero filled two-thirds of a 375px screen and pushed the
+    search field — the only thing on the page anybody came to use — below the
+    fold. `clamp` scales it with the viewport instead of stepping at a
+    breakpoint.
+  */
+  --t-3xl: clamp(1.875rem, 1.35rem + 2.4vw, 2.5rem);
+  --t-2xl: clamp(1.5rem, 1.25rem + 1.1vw, 1.875rem);
+
+  /* Spacing, 4px scale. */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --measure: 40rem;
+
+  --shadow: 0 1px 2px rgb(16 20 27 / 0.04), 0 8px 24px -12px rgb(16 20 27 / 0.12);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0b0e11;
-    --surface: #151a20;
-    --line: #262d36;
+    --bg: #0b0e13;
+    --surface: #12161d;
+    --surface-raised: #171d26;
+    --line: #232b36;
+    --line-strong: #333d4b;
+
     --ink: #eef1f5;
-    --ink-quiet: #a2acb8;
-    --clear: #4ecb8b;
-    --clear-bg: #12251c;
-    --alarm: #ff8a82;
-    --alarm-bg: #2a1614;
-    --accent: #7ab0ff;
+    --ink-quiet: #9aa5b2;
+
+    --accent: #8a93f0;
+    --accent-ink: #0a0d18;
+    --accent-wash: #1b1930;
+    --accent-hover: #a3aaf5;
+
+    --clear: #58cf94;
+    --clear-wash: #10251b;
+    --caution: #e0a44a;
+    --caution-wash: #2a2113;
+    --alarm: #ff8d84;
+    --alarm-wash: #2b1512;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
   }
 }
 
-* { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font: 16px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+html {
   -webkit-text-size-adjust: 100%;
 }
 
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--t-base);
+  line-height: 1.6;
+  /* Optical sizing and a hair of negative tracking on a geometric face. */
+  letter-spacing: -0.006em;
+}
+
+/* --- chrome ------------------------------------------------------------- */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.brand-word {
+  font-size: var(--t-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.masthead-nav a {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--ink-quiet);
+  text-decoration: none;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-sm);
+}
+.masthead-nav a:hover {
+  color: var(--ink);
+  background: var(--surface);
+}
+
 main {
+  flex: 1;
+  width: 100%;
   max-width: var(--measure);
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: var(--s-7) var(--s-5) var(--s-8);
 }
 
-h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 0.35rem; }
-p { margin: 0 0 1rem; }
-.quiet { color: var(--ink-quiet); }
-
-form { display: flex; gap: 0.5rem; margin: 1.5rem 0; flex-wrap: wrap; }
-
-input[type='tel'] {
-  flex: 1 1 12rem;
-  /* 16px minimum, or iOS zooms the page on focus and the layout jumps. */
-  font-size: 16px;
-  padding: 0.85rem 0.9rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  color: var(--ink);
-  min-height: 48px;
+.footer {
+  border-top: 1px solid var(--line);
+  padding: var(--s-5);
+  max-width: var(--measure);
+  margin: 0 auto;
+  width: 100%;
+}
+.footer p {
+  margin: 0 0 var(--s-2);
+  font-size: var(--t-xs);
+  color: var(--ink-quiet);
+}
+.footer-quiet {
+  margin-bottom: 0;
 }
 
-button {
-  font-size: 16px;
-  font-weight: 600;
-  padding: 0.85rem 1.4rem;
-  min-height: 48px;
-  border: 0;
-  border-radius: var(--radius);
-  background: var(--accent);
-  color: #fff;
-  cursor: pointer;
+/* --- type --------------------------------------------------------------- */
+
+h1 {
+  font-size: var(--t-3xl);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  margin: 0 0 var(--s-3);
+  /* Wraps before a word that would be left alone on the last line. */
+  text-wrap: balance;
 }
 
-@media (prefers-color-scheme: dark) {
-  button { color: #08131f; }
+h2 {
+  font-size: var(--t-xl);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  margin: var(--s-6) 0 var(--s-3);
+}
+
+p {
+  margin: 0 0 var(--s-4);
+  text-wrap: pretty;
+}
+
+.lede {
+  font-size: var(--t-lg);
+  color: var(--ink-quiet);
+  max-width: 34rem;
+}
+
+.quiet {
+  color: var(--ink-quiet);
+}
+.small {
+  font-size: var(--t-sm);
+}
+
+/*
+  Links are styled as links.
+
+  The reply link on the home page was rendering in the browser's default blue on
+  a dark background — the one colour on the page nobody chose, at about 3:1
+  against it. Anchors inside prose get the accent and an underline that clears
+  the descenders.
+*/
+a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+a:hover {
+  color: var(--accent-hover);
 }
 
 :focus-visible {
-  outline: 3px solid var(--accent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
+  border-radius: 4px;
 }
+
+/* --- controls ----------------------------------------------------------- */
+
+/*
+  Every control inherits the page's face.
+
+  `textarea` does not by default — browsers give it a monospace stack — so the
+  report form asked for the most important paragraph on the site in a different
+  typeface from everything around it.
+*/
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+label {
+  display: block;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  margin-bottom: var(--s-2);
+}
+
+input[type='tel'],
+input[type='text'],
+input[type='password'],
+select,
+textarea {
+  width: 100%;
+  /* 16px minimum, or iOS zooms the page on focus and the layout jumps. */
+  font-size: max(1rem, var(--t-base));
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.875rem;
+  min-height: 48px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+textarea {
+  min-height: 8.5rem;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--ink-quiet);
+  opacity: 0.75;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.field {
+  margin-bottom: var(--s-5);
+}
+
+.help {
+  font-size: var(--t-sm);
+  color: var(--ink-quiet);
+  margin: var(--s-2) 0 0;
+}
+
+/*
+  The lookup form is one row on a wide screen and two on a narrow one.
+
+  It was `display: flex` on the bare `form` tag, which caught every form on the
+  site including the report page's stack of fields. Styled as a role now, not as
+  a tag — the same mistake, in CSS, that turned a whole screen's buttons
+  invisible on the previous project.
+*/
+.row {
+  display: flex;
+  gap: var(--s-3);
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.row > input {
+  flex: 1 1 14rem;
+  width: auto;
+}
+/*
+  Once the row has wrapped, the button takes the full width rather than sitting
+  at its content width against the left edge — a stranded button under a
+  full-width field reads as unfinished.
+*/
+.row > button {
+  flex: 1 1 auto;
+}
+@media (min-width: 30rem) {
+  .row > button {
+    flex: 0 0 auto;
+  }
+}
+
+button {
+  font-size: var(--t-base);
+  font-weight: 650;
+  padding: 0.75rem 1.375rem;
+  min-height: 48px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  transition: background 120ms ease, transform 80ms ease;
+}
+button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.button-quiet {
+  background: transparent;
+  color: var(--ink-quiet);
+  border-color: var(--line-strong);
+}
+.button-quiet:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.button-danger {
+  background: var(--alarm);
+  color: #fff;
+}
+.button-danger:hover:not(:disabled) {
+  background: var(--alarm);
+  filter: brightness(0.92);
+}
+
+.actions {
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  margin-top: var(--s-4);
+}
+
+/* --- verdict ------------------------------------------------------------ */
 
 .verdict {
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1.25rem;
-  margin: 1.5rem 0;
-  background: var(--surface);
+  padding: var(--s-5);
+  margin: var(--s-5) 0;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
 }
-.verdict.clear { background: var(--clear-bg); border-color: var(--clear); }
-.verdict.alarm { background: var(--alarm-bg); border-color: var(--alarm); }
+.verdict.clear {
+  background: var(--clear-wash);
+  border-color: color-mix(in srgb, var(--clear) 45%, transparent);
+}
+.verdict.alarm {
+  background: var(--alarm-wash);
+  border-color: color-mix(in srgb, var(--alarm) 55%, transparent);
+}
+.verdict > :last-child {
+  margin-bottom: 0;
+}
 
-.count { font-size: 2.4rem; font-weight: 700; line-height: 1; margin: 0 0 0.5rem; }
-.verdict.clear .count { color: var(--clear); }
-.verdict.alarm .count { color: var(--alarm); }
+.count {
+  font-size: var(--t-3xl);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 0 0 var(--s-2);
+  /* Tabular, so a count changing in place does not shift the words beside it. */
+  font-variant-numeric: tabular-nums;
+}
+.verdict.clear .count {
+  color: var(--clear);
+}
+.verdict.alarm .count {
+  color: var(--alarm);
+}
 
-ul.categories { margin: 0.75rem 0 0; padding-left: 1.2rem; }
-.small { font-size: 0.9rem; }
+.categories {
+  margin: var(--s-3) 0 0;
+  padding-left: 1.15rem;
+}
+.categories li {
+  margin-bottom: var(--s-1);
+}
+
+.steps {
+  margin: var(--s-2) 0 0;
+  padding-left: 1.25rem;
+  font-size: var(--t-sm);
+}
+.steps li {
+  margin-bottom: var(--s-2);
+}
+
+.error {
+  color: var(--alarm);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+
+/* --- queue -------------------------------------------------------------- */
+
+.queue-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--surface-raised);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--s-4) var(--s-5);
+  margin-bottom: var(--s-3);
+  font-weight: 400;
+  box-shadow: none;
+}
+.queue-item:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--line-strong);
+}
+.queue-item strong {
+  display: block;
+  font-size: var(--t-lg);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin-bottom: var(--s-1);
+}
+
+.history {
+  list-style: none;
+  padding: 0;
+  margin: var(--s-3) 0 0;
+}
+.history li {
+  border-left: 2px solid var(--line-strong);
+  padding: 0 0 var(--s-3) var(--s-4);
+  font-size: var(--t-sm);
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: var(--s-6) 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/*
+  Visible to a screen reader and to nobody else.
+
+  The lookup label was doing this with `position: absolute; left: -9999px`
+  inline, which works and which every page then has to repeat.
+*/
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

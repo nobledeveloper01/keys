@@ -1,10 +1,5 @@
 {
-  "/api/review/route": "app/api/review/route.js",
-  "/api/reply/route": "app/api/reply/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/report/route": "app/api/report/route.js",
-  "/review/page": "app/review/page.js",
   "/page": "app/page.js",
-  "/reply/page": "app/reply/page.js",
+  "/review/page": "app/review/page.js",
   "/report/page": "app/report/page.js"
 }

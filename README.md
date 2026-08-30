@@ -162,7 +162,7 @@ widen what is allowed.
 
 ### The gates
 
-`make ci` runs nine of them, and every one has been **proved to fail** by
+`make ci` runs eleven of them, and every one has been **proved to fail** by
 breaking what it guards and watching it go red:
 
 | Gate | Holds |
@@ -175,6 +175,8 @@ breaking what it guards and watching it go red:
 | `untranslated` | No English string is rendered by a screen without going through `say()` |
 | `api-fresh` | The generated client still matches the controllers |
 | `bundle-check` | **The app actually bundles**, and all four languages are in the artefact a device runs |
+| `splash-check` | The native launch screen and the JavaScript splash are the same colour, so a cold start does not flash |
+| `mark-check` | The app and the web draw the same mark, to the path |
 | `test` | 85 across the four packages: 34 domain, 45 server, 4 wire, 2 app |
 
 The server suites run **against every store implementation** — in memory and

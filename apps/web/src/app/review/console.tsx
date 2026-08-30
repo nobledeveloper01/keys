@@ -117,6 +117,7 @@ export function Console() {
           anonymous, including declining to uphold something.
         </p>
         <form
+          className="row"
           onSubmit={(event) => {
             event.preventDefault();
             void refresh(token);
@@ -129,21 +130,11 @@ export function Console() {
             onChange={(e) => setToken(e.target.value)}
             placeholder="Reviewer token"
             aria-label="Reviewer token"
-            style={{
-              flex: '1 1 16rem',
-              fontSize: 16,
-              minHeight: 48,
-              padding: '0.85rem 0.9rem',
-              borderRadius: 'var(--radius)',
-              border: '1px solid var(--line)',
-              background: 'var(--surface)',
-              color: 'var(--ink)',
-            }}
           />
           <button type="submit">Open the queue</button>
         </form>
         {problem && (
-          <p className="small" style={{ color: 'var(--alarm)' }} role="alert">
+          <p className="error" role="alert">
             {problem}
           </p>
         )}
@@ -207,19 +198,14 @@ export function Console() {
                 setProblem(e instanceof Error ? e.message : 'That did not work.'),
               );
           }}
-          style={{
-            display: 'block',
-            width: '100%',
-            textAlign: 'left',
-            background: 'var(--surface)',
-            color: 'var(--ink)',
-            border: '1px solid var(--line)',
-            marginBottom: '0.75rem',
-            padding: '1rem',
-          }}
+          className="queue-item"
         >
+          {/*
+            No `<br />`. `.queue-item strong` is already a block with its own
+            margin, so the break added a second empty line between the title
+            and its meta — a gap that looked like a missing element.
+          */}
           <strong>{CATEGORY_WORDS[report.category] ?? report.category}</strong>
-          <br />
           <span className="small quiet">
             {report.evidenceCount === 0 ? 'No evidence attached · ' : `${report.evidenceCount} attached · `}
             {report.hasReply ? 'answered' : 'no answer yet'} · reply window closes{' '}
@@ -232,7 +218,7 @@ export function Console() {
       ))}
 
       {problem && (
-        <p className="small" style={{ color: 'var(--alarm)' }} role="alert">
+        <p className="error" role="alert">
           {problem}
         </p>
       )}
@@ -269,20 +255,10 @@ function One({
     }
   }
 
-  const field = {
-    width: '100%',
-    fontSize: 16,
-    padding: '0.85rem 0.9rem',
-    borderRadius: 'var(--radius)',
-    border: '1px solid var(--line)',
-    background: 'var(--surface)',
-    color: 'var(--ink)',
-    margin: '0.4rem 0 1rem',
-  } as const;
 
   return (
     <main>
-      <button onClick={onDone} style={{ background: 'none', color: 'var(--accent)', padding: 0 }}>
+      <button onClick={onDone} className="button-quiet">
         ← Back to the queue
       </button>
 
@@ -301,9 +277,7 @@ function One({
         <p>{report.description}</p>
       </div>
 
-      <p>
-        <strong>Their answer</strong>
-      </p>
+      <h2>Their answer</h2>
       {report.hasReply ? (
         <div className="verdict clear">
           <p>{report.reply}</p>
@@ -318,58 +292,60 @@ function One({
         </div>
       )}
 
-      <p>
-        <strong>Evidence</strong> — {report.evidenceCount} attached
-      </p>
+      <h2>Evidence</h2>
+      <p className="quiet small">{report.evidenceCount} attached</p>
       {report.evidenceCount === 0 && (
         <p className="small quiet">
           Nothing can be upheld without evidence. Record what you were sent, and how.
         </p>
       )}
-      <label htmlFor="note" className="small">
-        What the evidence is
-      </label>
+      <div className="field">
+      <label htmlFor="note">What the evidence is</label>
       <textarea
         id="note"
         rows={3}
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        style={field}
+       
       />
-      <label htmlFor="source" className="small">
-        How it reached you
-      </label>
-      <input id="source" value={source} onChange={(e) => setSource(e.target.value)} style={field} />
+      </div>
+      <div className="field">
+      <label htmlFor="source">How it reached you</label>
+      <input id="source" value={source} onChange={(e) => setSource(e.target.value)} />
+      </div>
       <button
+        className="button-quiet"
         disabled={busy || note.trim().length < 20 || source.trim().length < 3}
         onClick={() => void act(`/v1/review/${report.id}/evidence`, { note, source })}
       >
         Record this evidence
       </button>
 
-      <hr style={{ border: 0, borderTop: '1px solid var(--line)', margin: '2rem 0' }} />
+      <hr />
 
-      <p>
-        <strong>Your decision</strong>
+      <h2>Your decision</h2>
+      <div className="field">
+      <label htmlFor="reasoning">Why you decided that</label>
+      <p className="help">
+        Somebody may have to answer for this a year from now, and it will be this
+        sentence they read.
       </p>
-      <label htmlFor="reasoning" className="small">
-        Why. Somebody may have to answer for this a year from now, and it will be
-        this sentence they read.
-      </label>
       <textarea
         id="reasoning"
         rows={4}
         value={reasoning}
         onChange={(e) => setReasoning(e.target.value)}
-        style={field}
+       
       />
 
-      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      </div>
+
+      <div className="actions">
         {(['upheld', 'not_upheld', 'insufficient_evidence'] as const).map((decision) => (
           <button
             key={decision}
             disabled={busy || reasoning.trim().length < 20}
-            style={decision === 'upheld' ? { background: 'var(--alarm)' } : undefined}
+            className={decision === 'upheld' ? 'button-danger' : 'button-quiet'}
             onClick={() =>
               void act(`/v1/review/${report.id}/decision`, { decision, reasoning })
             }
@@ -384,17 +360,15 @@ function One({
       </div>
 
       {problem && (
-        <p className="small" style={{ color: 'var(--alarm)' }} role="alert">
+        <p className="error" role="alert">
           {problem}
         </p>
       )}
 
       {report.history && report.history.length > 0 && (
         <>
-          <p style={{ marginTop: '2rem' }}>
-            <strong>What has already been done to this report</strong>
-          </p>
-          <ul className="small">
+          <h2>What has already been done to this report</h2>
+          <ul className="history">
             {report.history.map((h, i) => (
               <li key={i}>
                 <strong>{h.reviewer}</strong> — {h.action.replace(/_/g, ' ')} —{' '}

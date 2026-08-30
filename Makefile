@@ -67,7 +67,7 @@ untranslated:
 	python3 scripts/untranslated-check.py
 
 ## gates: every blocking check, without the tests
-gates: typecheck lint boundary doc-check wired-check untranslated api-fresh bundle-check splash-check
+gates: typecheck lint boundary doc-check wired-check untranslated api-fresh bundle-check splash-check mark-check
 
 ## ci: the gate
 ci: gates test
@@ -90,10 +90,14 @@ bundle-check:
 splash-check:
 	@python3 scripts/splash-colour-check.py
 
+## mark-check: the app and the web draw the same mark
+mark-check:
+	@python3 scripts/mark-check.py
+
 ## clean: build output and caches; node_modules is left alone
 clean:
 	find . -name '*.tsbuildinfo' -not -path './node_modules/*' -delete
 	rm -rf apps/server/dist packages/*/dist
 	@echo "cleaned — node_modules left alone"
 
-.PHONY: help setup db test typecheck lint boundary doc-check wired-check untranslated api api-fresh bundle-check splash-check gates ci clean
+.PHONY: help setup db test typecheck lint boundary doc-check wired-check untranslated api api-fresh bundle-check splash-check mark-check gates ci clean
