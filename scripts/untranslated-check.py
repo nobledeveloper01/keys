@@ -190,7 +190,15 @@ if __name__ == '__main__':
     # Anchored to the repository rather than to the working directory. The
     # relative path this used to carry made the gate scan nothing whenever it
     # was run from anywhere but the root, and print a clean line while doing it.
-    args = sys.argv[1:] or [str(p) for p in sorted(SCREENS.rglob('*.tsx'))]
+    # `App.tsx` sits beside `src`, not inside it, and it is a screen like any
+    # other — the gate not covering the app root is exactly the shape of blind
+    # spot the liveness check below exists for.
+    args = sys.argv[1:] or [
+        str(p)
+        for p in sorted(
+            [*SCREENS.rglob('*.tsx'), *(SCREENS.parent / 'App.tsx').parent.glob('App.tsx')],
+        )
+    ]
 
     if not args:
         print(f'this gate scanned no .tsx files under {SCREENS.relative_to(ROOT)}')

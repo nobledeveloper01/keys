@@ -67,9 +67,19 @@ server suites run against every store implementation rather than only the
 in-memory one. **PostGIS is not installed**; nothing needs it until listings in
 phase 3.
 
-Still open from this phase: **the native projects** (`ios/` and `android/` are
-not generated, so the app compiles and its screens are tested but it runs on no
-device yet), and **CI building mobile artefacts**.
+**The native projects are in**, from the React Native 0.87.1 template with the
+bundle identifier `ng.keys.app` and a Metro config that watches the workspace.
+iOS compiles for the simulator. **Android has not been compiled on this
+machine** — there is no JDK installed — so it is the unmodified template and
+nobody has watched it succeed.
+
+`make bundle-check` now proves the JavaScript half builds and that all four
+languages reach the artefact a device runs, which nothing previously did: `tsc`
+and Metro resolve modules by different rules and in a monorepo they disagree for
+a living.
+
+Still open from this phase: **an Android build somebody has watched succeed**,
+and **CI building mobile artefacts**.
 
 ---
 

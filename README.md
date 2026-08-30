@@ -70,8 +70,14 @@ the four languages was chosen.
 
 Named here rather than left to be discovered:
 
-- **No native projects.** `ios/` and `android/` are not generated, so the app
-  compiles and its screens are tested, but it runs on no device yet.
+- **Android is unverified on this machine.** `ios/` and `android/` are the
+  official React Native 0.87.1 projects, adjusted for the monorepo. **iOS
+  compiles** — `xcodebuild ... -sdk iphonesimulator` reports `BUILD SUCCEEDED`.
+  Android has never been compiled here, because there is no JDK installed and
+  installing a toolchain was not mine to do. The Gradle project is the
+  unmodified template, so there is no specific reason to expect it to fail, but
+  nobody has watched it succeed either. `make bundle-check` does prove the
+  JavaScript half builds for Android.
 - **No PostGIS.** Reports need no geospatial index; listings will, in phase 3.
   Postgres itself is wired: reports survive a restart, and `/healthz` asks the
   store rather than the environment, so it cannot claim durability a running
@@ -117,6 +123,16 @@ KEYS_REVIEWER_TOKEN=$(openssl rand -hex 24) PORT=5211 \
   pnpm --filter @keys/server start
 ```
 
+The app, once per machine, for iOS:
+
+```bash
+cd apps/mobile/ios && LANG=en_US.UTF-8 pod install
+```
+
+The locale matters: CocoaPods 1.16 on Ruby 4 raises `Encoding::CompatibilityError`
+without a UTF-8 locale, and the error names Unicode normalisation rather than
+anything you did.
+
 The web surface, pointed at it:
 
 ```bash
@@ -146,7 +162,7 @@ widen what is allowed.
 
 ### The gates
 
-`make ci` runs eight of them, and every one has been **proved to fail** by
+`make ci` runs nine of them, and every one has been **proved to fail** by
 breaking what it guards and watching it go red:
 
 | Gate | Holds |
@@ -158,6 +174,7 @@ breaking what it guards and watching it go red:
 | `wired-check` | Nothing is exported, tested, and called by nothing |
 | `untranslated` | No English string is rendered by a screen without going through `say()` |
 | `api-fresh` | The generated client still matches the controllers |
+| `bundle-check` | **The app actually bundles**, and all four languages are in the artefact a device runs |
 | `test` | 85 across the four packages: 34 domain, 45 server, 4 wire, 2 app |
 
 The server suites run **against every store implementation** — in memory and

@@ -6,6 +6,51 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-30 — Nothing had ever proved the app builds
+
+**Did.** Generated the native projects, taught Metro where the monorepo is, got
+iOS compiling, and wrote the gate that proves the app bundles at all.
+
+### What surprised us
+
+**No gate in this repository answered "does the app build".** Typecheck, lint,
+boundary, wired, untranslated, api-fresh, and eighty-odd tests — and every one
+of them reads source. `tsc` resolves modules by TypeScript's rules and Metro
+resolves them by its own, and in a monorepo those two disagree for a living, so
+all of it can be green over an app that cannot be bundled. `make bundle-check`
+runs Metro for real and reads the artefact.
+
+**And the artefact is where the languages actually have to be.** The domain's
+tests prove the four tables are filled in and not copies of English; the
+untranslated gate proves no screen hardcodes English. Neither proves the words
+survive bundling — a resolver picking up a stale build of `@keys/domain` would
+leave both green and ship an English-only app. So the gate reads the four
+phrases out of the domain source and looks for them in the bundle.
+
+**Checking the bundle naively finds Hausa and misses Yoruba.** Non-ASCII is
+escaped, in at least two different ways — `\uXXXX` in some places, `\xNN` in
+others. `Duba lamba` is plain ASCII and matched; `Ṣàyẹ̀wò nọ́mbà kan` did not,
+and for twenty minutes it looked exactly like a missing translation. The gate
+decodes both escape forms before searching. Worth recording because the failure
+mode was *a gate reporting a bug that was not there*, which is the mirror image
+of everything else this week and just as expensive.
+
+**CocoaPods 1.16 on Ruby 4 needs a UTF-8 locale**, and says so by raising
+`Encoding::CompatibilityError` from `unicode_normalize` — an error about Unicode
+normalisation, from a command that was reading a Podfile path. `LANG=en_US.UTF-8`
+fixes it. Written into the README so the next person loses two minutes instead
+of twenty.
+
+**Android is not verified and the documentation says so.** There is no JDK on
+this machine, and installing a toolchain was not mine to do at two in the
+morning. The Gradle project is the unmodified template and there is no
+particular reason to expect it to fail — but nobody has watched it succeed, and
+after a week of finding things that were green and could not have been
+otherwise, "no reason to expect it to fail" is not a claim worth making in a
+README.
+
+---
+
 ## 2026-08-30 — The audit trail that recorded half of what it claimed
 
 **Did.** Built the review console at `/review`, gave every reviewer a name, made

@@ -50,6 +50,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   [ADR-0005](docs/adr/0005-a-rule-this-serious-lives-in-three-places.md).
 - Both server suites are parameterised over every store, and `make test` finds a
   database when one is reachable and says plainly when it cannot.
+- **The native projects.** `apps/mobile/ios` and `apps/mobile/android`, from
+  the React Native 0.87.1 template with the bundle identifier `ng.keys.app`, a
+  Metro config that watches the workspace and searches both `node_modules`, and
+  the build output gitignored. **iOS compiles for the simulator.** Android is
+  the unmodified template and has not been compiled here — no JDK on this
+  machine.
+- `make bundle-check` — the app bundles, and all four languages are present in
+  the artefact a device runs. Nothing else in the repository proved the app
+  builds at all: `tsc` and Metro resolve modules by different rules, and in a
+  monorepo they disagree for a living. Proved by breaking an import and by
+  copying a language table from English.
 - **The review console**, at `/review` on the web surface. One report at a time,
   everything needed to decide in one view, and no way to decide without saying
   why. Its proxy takes an allow-list of paths rather than forwarding whatever it
