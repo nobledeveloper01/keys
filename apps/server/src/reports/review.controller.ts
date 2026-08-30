@@ -4,9 +4,11 @@ import {
   Controller,
   Get,
   HttpCode,
+  Req,
   NotFoundException,
   Param,
   Post,
+  Query,
   UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
@@ -25,9 +27,10 @@ import {
   DecisionResponse,
   EvidenceBody,
   ReviewView,
+  ThroughputResponse,
 } from './reports.dto';
 import { ReportsStore, type StoredReport } from './reports.store';
-import { ReviewerGuard } from './reviewer.guard';
+import { ReviewerGuard, type RequestWithReviewer } from './reviewer.guard';
 
 const DECISIONS: readonly Decision[] = ['upheld', 'not_upheld', 'insufficient_evidence'];
 
@@ -72,13 +75,24 @@ export class ReviewController {
     return { reports: rows.map((r) => this.view(r)) };
   }
 
+  @Get('metrics')
+  @ApiOperation({
+    summary: 'What the queue is doing. Phase 1 does not close until this is watched.',
+  })
+  @ApiOkResponse({ type: ThroughputResponse })
+  async metrics(@Query('sinceDays') sinceDays?: string) {
+    const days = Number(sinceDays ?? 7);
+    const since = new Date(Date.now() - (Number.isFinite(days) ? days : 7) * 86_400_000);
+    return this.store.throughput(since);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'One report, in full, for review.' })
   @ApiOkResponse({ type: ReviewView })
   async one(@Param('id') id: string) {
     const row = await this.store.byId(id);
     if (!row) throw new NotFoundException('No such report.');
-    return this.view(row);
+    return { ...this.view(row), history: await this.store.decisionsFor(id) };
   }
 
   @Post(':id/evidence')
@@ -88,7 +102,11 @@ export class ReviewController {
   })
   @ApiBody({ type: EvidenceBody })
   @ApiOkResponse({ type: ReviewView })
-  async evidence(@Param('id') id: string, @Body() body: { note?: string; source?: string }) {
+  async evidence(
+    @Param('id') id: string,
+    @Body() body: { note?: string; source?: string },
+    @Req() request: RequestWithReviewer,
+  ) {
     /*
       Phase 1 has no file upload — object storage lands in phase 3 — and
       `review()` refuses to uphold a report with no evidence. Without this the
@@ -113,6 +131,13 @@ export class ReviewController {
 
     const key = `reviewer-attested:${source}:${note}`;
     await this.store.replace({ ...row, evidenceKeys: [...row.evidenceKeys, key] });
+    await this.store.record({
+      reportId: id,
+      reviewer: request.reviewer?.name ?? 'unattributed',
+      action: 'evidence_recorded',
+      reasoning: `${note} (${source})`,
+      at: new Date(),
+    });
     return this.view((await this.store.byId(id))!);
   }
 
@@ -123,11 +148,30 @@ export class ReviewController {
   @ApiOperation({ summary: 'Decide a report. The domain refuses what policy forbids.' })
   @ApiBody({ type: DecisionBody })
   @ApiOkResponse({ type: DecisionResponse })
-  async decide(@Param('id') id: string, @Body() body: { decision?: string }) {
+  async decide(
+    @Param('id') id: string,
+    @Body() body: { decision?: string; reasoning?: string },
+    @Req() request: RequestWithReviewer,
+  ) {
     const decision = DECISIONS.find((d) => d === body.decision);
     if (!decision) {
       throw new BadRequestException(
         `A decision must be one of: ${DECISIONS.join(', ')}.`,
+      );
+    }
+
+    /*
+      Reasoning is mandatory, and the length floor is not bureaucracy.
+
+      This decision may publish a public accusation about a named person, and it
+      has to be answerable a year from now to somebody who was not in the room.
+      "Looks legit" is not an answer, and a field that accepts it is a field
+      that will mostly contain it.
+    */
+    const reasoning = (body.reasoning ?? '').trim();
+    if (reasoning.length < 20) {
+      throw new BadRequestException(
+        'Say why, in at least twenty characters. This is the audit record for a public claim about a person.',
       );
     }
 
@@ -155,6 +199,16 @@ export class ReviewController {
       status: result.status,
       publishedAt: result.publishedAt,
       expiresAt: result.expiresAt,
+    });
+
+    // Recorded after the decision has actually been applied, so the audit trail
+    // cannot claim something the reports table does not show.
+    await this.store.record({
+      reportId: id,
+      reviewer: request.reviewer?.name ?? 'unattributed',
+      action: decision,
+      reasoning,
+      at: new Date(),
     });
 
     return {

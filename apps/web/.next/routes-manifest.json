@@ -43,6 +43,12 @@
       "regex": "^/report(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/report(?:/)?$"
+    },
+    {
+      "page": "/review",
+      "regex": "^/review(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/review(?:/)?$"
     }
   ],
   "dataRoutes": [],

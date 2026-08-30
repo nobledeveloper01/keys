@@ -6,6 +6,49 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-30 — The audit trail that recorded half of what it claimed
+
+**Did.** Built the review console at `/review`, gave every reviewer a name, made
+reasoning mandatory on every decision, and put both into an append-only
+`decisions` table. Added `GET /v1/review/metrics`, which is the instrument phase
+1's third exit gate needs.
+
+### What surprised us
+
+**The audit trail was recording evidence and not decisions.** I wrote the
+`record` call into the controller, wrote the test, and the test failed: an
+evidence entry, no decision entry. The patch had matched a string that appeared
+in both handlers and landed in the wrong one. Everything typechecked, the
+endpoint returned 200, the report was correctly upheld — and the row explaining
+why simply was not written.
+
+That is the same shape as everything else this week. The intention was in the
+code and the behaviour was not, and the only reason it was caught within a
+minute rather than a year is that something asserted the behaviour rather than
+the intention.
+
+**Attribution was in the spec from the beginning and had never been built.**
+Section 4 of the backend spec has always said "reviewer attribution and audit on
+every action". The console shipped behind one shared token. Every access was
+correctly gated and every decision was anonymous, which is fine for a queue of
+internal tasks and not fine for a surface that publishes accusations about named
+people. A year from now the only questions that matter about a challenged
+decision are who, when, and on what basis, and "the reports table says upheld"
+answers none of them.
+
+**Writing the token comparison, the obvious version is the leak.** Comparing
+lengths before `timingSafeEqual` — which throws on a length mismatch, so you
+have to — tells an attacker how long a real token is. Hashing both sides first
+makes every comparison the same length whatever was presented.
+
+**And a variable slip wrote a controller into a DTO file.** Two `pathlib.Path`
+handles, one `write_text` against the wrong one. Twenty-odd compiler errors, all
+of them the same cause, and thirty seconds to undo because everything was
+committed. Worth noting only because it is the argument for small commits, made
+by the day rather than by a book.
+
+---
+
 ## 2026-08-30 — A durable store, and turbo quietly halving the coverage
 
 **Did.** `ReportsStore` became an interface with an in-memory and a Postgres

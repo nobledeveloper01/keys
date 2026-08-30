@@ -50,6 +50,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   [ADR-0005](docs/adr/0005-a-rule-this-serious-lives-in-three-places.md).
 - Both server suites are parameterised over every store, and `make test` finds a
   database when one is reachable and says plainly when it cannot.
+- **The review console**, at `/review` on the web surface. One report at a time,
+  everything needed to decide in one view, and no way to decide without saying
+  why. Its proxy takes an allow-list of paths rather than forwarding whatever it
+  is handed, and the reviewer's token lives in `sessionStorage` — it reads every
+  unreviewed accusation in the registry and should not outlive the tab.
+- **Reviewer attribution and an audit trail.** `KEYS_REVIEWERS` holds
+  `name:token` pairs; every decision and every recorded piece of evidence is
+  written to an append-only `decisions` table with the reviewer's name and a
+  mandatory reason. `KEYS_REVIEWER_TOKEN` still works and resolves to
+  `unattributed`.
+- `GET /v1/review/metrics` — decisions by reviewer, queue depth, and the age of
+  the oldest waiting report. Phase 1's third exit gate needs this number.
 - `.githooks/pre-push` runs `make ci` before anything leaves the machine, after
   a commit went out while its CI run was still in the background and the
   `api-fresh` failure in it went unread. `make setup` points git at it.

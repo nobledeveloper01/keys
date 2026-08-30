@@ -148,6 +148,42 @@
         ]
       }
     },
+    "/v1/review/metrics": {
+      "get": {
+        "operationId": "ReviewController_metrics",
+        "parameters": [
+          {
+            "name": "sinceDays",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThroughputResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "reviewer": []
+          }
+        ],
+        "summary": "What the queue is doing. Phase 1 does not close until this is watched.",
+        "tags": [
+          "review"
+        ]
+      }
+    },
     "/v1/review/{id}": {
       "get": {
         "operationId": "ReviewController_one",
@@ -555,6 +591,37 @@
           "reply"
         ]
       },
+      "ThroughputResponse": {
+        "type": "object",
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decisions": {
+            "description": "What each reviewer decided. Named, because \"a reviewer\" is not an answer to \"who decided this\".",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "waiting": {
+            "type": "number",
+            "description": "Reports waiting. This is the constraint on how fast Keys can open a city."
+          },
+          "oldestWaitingSince": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "since",
+          "decisions",
+          "waiting",
+          "oldestWaitingSince"
+        ]
+      },
       "EvidenceBody": {
         "type": "object",
         "properties": {
@@ -585,10 +652,16 @@
               "not_upheld",
               "insufficient_evidence"
             ]
+          },
+          "reasoning": {
+            "type": "string",
+            "minLength": 20,
+            "description": "Why. Mandatory: this is the audit record for a public claim about a named person, and somebody may have to answer for it a year from now."
           }
         },
         "required": [
-          "decision"
+          "decision",
+          "reasoning"
         ]
       },
       "DecisionResponse": {

@@ -50,6 +50,41 @@ export interface AddReport {
 }
 
 /**
+ * One thing a reviewer did, and why.
+ *
+ * Append-only. Nothing in this product updates or deletes one, because a
+ * decision that publishes a public accusation about a named person has to be
+ * answerable a year later — and "the reports table says upheld" answers
+ * neither who nor on what reasoning.
+ */
+export interface Decision {
+  readonly reportId: string;
+  readonly reviewer: string;
+  readonly action: 'upheld' | 'not_upheld' | 'insufficient_evidence' | 'evidence_recorded';
+  readonly reasoning: string;
+  readonly at: Date;
+}
+
+/**
+ * What the review queue is doing.
+ *
+ * Phase 1's third exit gate is "review console throughput measured", because
+ * Keys enters a city at the pace the queue can sustain. A number nobody
+ * measures becomes a backlog and then becomes an exception to the rule that
+ * nothing is published unreviewed.
+ */
+export interface Throughput {
+  readonly since: Date;
+  readonly decisions: ReadonlyArray<{
+    readonly reviewer: string;
+    readonly action: string;
+    readonly count: number;
+  }>;
+  readonly waiting: number;
+  readonly oldestWaitingSince: Date | null;
+}
+
+/**
  * What a store has to be able to do, and nothing more.
  *
  * Two reads, and they are not the same size: `publishedFor` is reachable by
@@ -69,6 +104,9 @@ export abstract class ReportsStore {
   abstract queue(now?: Date): Promise<readonly StoredReport[]> | readonly StoredReport[];
   abstract replace(row: StoredReport): Promise<void> | void;
   abstract purgeExpired(now: Date): Promise<number> | number;
+  abstract record(entry: Decision): Promise<void> | void;
+  abstract decisionsFor(reportId: string): Promise<readonly Decision[]> | readonly Decision[];
+  abstract throughput(since: Date): Promise<Throughput> | Throughput;
   /** Whether this survives a restart. `/healthz` says so out loud. */
   abstract readonly durable: boolean;
 }
@@ -172,5 +210,39 @@ export class InMemoryReportsStore extends ReportsStore {
 
   replace(row: StoredReport): void {
     this.rows.set(row.id, row);
+  }
+
+  private readonly decisions: Decision[] = [];
+
+  record(entry: Decision): void {
+    this.decisions.push(entry);
+  }
+
+  decisionsFor(reportId: string): readonly Decision[] {
+    return this.decisions.filter((d) => d.reportId === reportId);
+  }
+
+  throughput(since: Date): Throughput {
+    const counts = new Map<string, number>();
+    for (const d of this.decisions) {
+      if (d.at.getTime() < since.getTime()) continue;
+      const key = `${d.reviewer}\u0000${d.action}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    const waiting = [...this.rows.values()].filter(
+      (r) => r.status === 'submitted' || r.status === 'under_review' || r.status === 'awaiting_reply',
+    );
+    return {
+      since,
+      decisions: [...counts].map(([key, count]) => {
+        const [reviewer, action] = key.split('\u0000');
+        return { reviewer: reviewer!, action: action!, count };
+      }),
+      waiting: waiting.length,
+      oldestWaitingSince: waiting.reduce<Date | null>(
+        (oldest, r) => (oldest === null || r.submittedAt < oldest ? r.submittedAt : oldest),
+        null,
+      ),
+    };
   }
 }

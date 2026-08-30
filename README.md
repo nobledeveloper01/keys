@@ -58,6 +58,11 @@ Run the server and the web app (below) and you can, right now:
   *nothing has been published* above the accusation rather than below it, and
   never the reporter.
 
+- **Review it.** `/review` is the console: the queue with its depth and its
+  oldest waiting report, one report at a time with everything needed to decide,
+  and no way to decide without naming yourself and saying why. Every action goes
+  to an append-only audit table.
+
 And on the phone: the language picker, then the lookup screen, in whichever of
 the four languages was chosen.
 
@@ -129,7 +134,8 @@ they are listed together rather than left in whichever file reads them.
 | Variable | Read by | Unset means |
 |---|---|---|
 | `KEYS_DATABASE_URL` | server | In-memory store. Announced: `/healthz` says `durable: false` |
-| `KEYS_REVIEWER_TOKEN` | server | **The review console refuses everybody.** An unconfigured server has no console, not an open one. Shorter than 32 characters is also refused |
+| `KEYS_REVIEWERS` | server | `name:token,name:token`. Resolves a token to the reviewer who holds it, so every audit row names a person |
+| `KEYS_REVIEWER_TOKEN` | server | The older single-token form. Works, and resolves to a reviewer called `unattributed`. With neither set **the console refuses everybody** — an unconfigured server has no console, not an open one. Tokens shorter than 32 characters are refused |
 | `KEYS_CORS_ORIGINS` | server | No browser may call the API. `*` is rejected at startup — the process will not boot |
 | `KEYS_API_URL` | web | **The web surface will not start.** There is no localhost fallback: a production build silently pointing at somebody's laptop is worse than one that refuses |
 | `KEYS_TEST_DATABASE_URL` | tests | Server suites run against the in-memory store only, and `make test` prints a warning saying so |
@@ -152,7 +158,7 @@ breaking what it guards and watching it go red:
 | `wired-check` | Nothing is exported, tested, and called by nothing |
 | `untranslated` | No English string is rendered by a screen without going through `say()` |
 | `api-fresh` | The generated client still matches the controllers |
-| `test` | 76 across the four packages: 34 domain, 36 server, 4 wire, 2 app |
+| `test` | 85 across the four packages: 34 domain, 45 server, 4 wire, 2 app |
 
 The server suites run **against every store implementation** — in memory and
 Postgres — because a suite that only exercises the `Map` proves something about

@@ -73,6 +73,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/review/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What the queue is doing. Phase 1 does not close until this is watched. */
+        get: operations["ReviewController_metrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/review/{id}": {
         parameters: {
             query?: never;
@@ -208,6 +225,16 @@ export interface components {
             hasReply: boolean;
             reply: string | null;
         };
+        ThroughputResponse: {
+            /** Format: date-time */
+            since: string;
+            /** @description What each reviewer decided. Named, because "a reviewer" is not an answer to "who decided this". */
+            decisions: string[];
+            /** @description Reports waiting. This is the constraint on how fast Keys can open a city. */
+            waiting: number;
+            /** Format: date-time */
+            oldestWaitingSince: string | null;
+        };
         EvidenceBody: {
             /** @description What the evidence was. A reviewer auditing this later reads exactly this. */
             note: string;
@@ -220,6 +247,8 @@ export interface components {
         DecisionBody: {
             /** @enum {string} */
             decision: "upheld" | "not_upheld" | "insufficient_evidence";
+            /** @description Why. Mandatory: this is the audit record for a public claim about a named person, and somebody may have to answer for it a year from now. */
+            reasoning: string;
         };
         DecisionResponse: {
             id: string;
@@ -341,6 +370,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewView"][];
+                };
+            };
+        };
+    };
+    ReviewController_metrics: {
+        parameters: {
+            query: {
+                sinceDays: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThroughputResponse"];
                 };
             };
         };

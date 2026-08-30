@@ -200,6 +200,37 @@ describe.each(STORES)('no unreviewed report escapes (%s)', (_name, databaseUrl) 
     expect(JSON.stringify(res.body)).not.toContain('someone-who-must-not-be-named');
   });
 
+  it('refuses a decision with no reasoning, because the audit record is the point', async () => {
+    for (const body of [
+      { decision: 'upheld' },
+      { decision: 'upheld', reasoning: '   ' },
+      { decision: 'upheld', reasoning: 'looks legit' },
+    ]) {
+      const res = await request(app.getHttpServer())
+        .post(`/v1/review/${reportId}/decision`)
+        .set('x-reviewer-token', TOKEN)
+        .send(body);
+      expect(res.status).toBe(400);
+    }
+
+    // And nothing happened to the report while it was being refused.
+    expect((await store.byId(reportId))!.publishedAt).toBeNull();
+  });
+
+  it('records who decided, and refuses to forget', async () => {
+    await request(app.getHttpServer())
+      .post(`/v1/review/${reportId}/evidence`)
+      .set('x-reviewer-token', TOKEN)
+      .send({ note: 'The bank transfer receipt, and the advert as posted.', source: 'emailed' })
+      .expect(200);
+
+    const history = await store.decisionsFor(reportId);
+    expect(history).toHaveLength(1);
+    expect(history[0]!.action).toBe('evidence_recorded');
+    expect(history[0]!.reviewer).toBe('unattributed');
+    expect(history[0]!.reasoning).toContain('bank transfer receipt');
+  });
+
   it('the public lookup reports nothing upheld while the report is unreviewed', async () => {
     const res = await request(app.getHttpServer())
       .get('/v1/registry/lookup')
@@ -235,7 +266,10 @@ describe.each(STORES)('no unreviewed report escapes (%s)', (_name, databaseUrl) 
       .set('x-reviewer-token', TOKEN)
       // 200, not Nest's default 201: a decision records something, it does not
       // create a resource. The OpenAPI document says the same.
-      .send({ decision: 'upheld' })
+      .send({
+        decision: 'upheld',
+        reasoning: 'Receipt and chat thread match the account given, and the reply does not address the fee.',
+      })
       .expect(200);
 
     const after = await request(app.getHttpServer())

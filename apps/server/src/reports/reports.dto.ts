@@ -121,6 +121,33 @@ export class EvidenceBody {
 export class DecisionBody {
   @ApiProperty({ enum: ['upheld', 'not_upheld', 'insufficient_evidence'] })
   decision!: string;
+
+  @ApiProperty({
+    minLength: 20,
+    description:
+      'Why. Mandatory: this is the audit record for a public claim about a named person, ' +
+      'and somebody may have to answer for it a year from now.',
+  })
+  reasoning!: string;
+}
+
+export class ThroughputResponse {
+  @ApiProperty({ format: 'date-time' })
+  since!: string;
+
+  @ApiProperty({
+    description:
+      'What each reviewer decided. Named, because "a reviewer" is not an answer to "who decided this".',
+  })
+  decisions!: Array<{ reviewer: string; action: string; count: number }>;
+
+  @ApiProperty({
+    description: 'Reports waiting. This is the constraint on how fast Keys can open a city.',
+  })
+  waiting!: number;
+
+  @ApiProperty({ type: String, nullable: true, format: 'date-time' })
+  oldestWaitingSince!: string | null;
 }
 
 export class DecisionResponse {

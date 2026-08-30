@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
@@ -10,7 +10,9 @@ import {
   hashPhone,
   ReportsStore,
   type AddReport,
+  type Decision,
   type StoredReport,
+  type Throughput,
 } from './reports.store';
 import { randomBytes } from 'node:crypto';
 
@@ -81,14 +83,19 @@ export class PostgresReportsStore
   }
 
   async onModuleInit(): Promise<void> {
-    // Migrations run on boot. One table and no versioning yet; when there is a
-    // second migration this becomes a tracked list rather than growing into a
-    // pile of `IF NOT EXISTS` that nobody can read the order of.
-    const sql = readFileSync(
-      join(__dirname, '../../migrations/001-reports.sql'),
-      'utf8',
-    );
-    await this.pool.query(sql);
+    /*
+      Every migration, in filename order, on boot.
+
+      Reading the directory rather than naming files means adding one cannot be
+      followed by forgetting to run it — which is how the second migration would
+      have been written, applied by hand in psql, and then missing from every
+      fresh clone. Each is idempotent (`IF NOT EXISTS`), so re-running the set
+      is the normal case rather than the recovery case.
+    */
+    const dir = join(__dirname, '../../migrations');
+    for (const file of readdirSync(dir).filter((f) => f.endsWith('.sql')).sort()) {
+      await this.pool.query(readFileSync(join(dir, file), 'utf8'));
+    }
   }
 
   async onModuleDestroy(): Promise<void> {
@@ -187,6 +194,60 @@ export class PostgresReportsStore
         row.reply,
       ],
     );
+  }
+
+  async record(entry: Decision): Promise<void> {
+    await this.pool.query(
+      `INSERT INTO decisions (report_id, reviewer, action, reasoning, decided_at)
+       VALUES ($1,$2,$3,$4,$5)`,
+      [entry.reportId, entry.reviewer, entry.action, entry.reasoning, entry.at],
+    );
+  }
+
+  async decisionsFor(reportId: string): Promise<readonly Decision[]> {
+    if (!/^[0-9a-f-]{36}$/i.test(reportId)) return [];
+    const result = await this.pool.query<{
+      report_id: string;
+      reviewer: string;
+      action: string;
+      reasoning: string;
+      decided_at: Date;
+    }>(
+      `SELECT report_id, reviewer, action, reasoning, decided_at
+         FROM decisions WHERE report_id = $1 ORDER BY decided_at ASC`,
+      [reportId],
+    );
+    return result.rows.map((r) => ({
+      reportId: r.report_id,
+      reviewer: r.reviewer,
+      action: r.action as Decision['action'],
+      reasoning: r.reasoning,
+      at: r.decided_at,
+    }));
+  }
+
+  async throughput(since: Date): Promise<Throughput> {
+    const result = await this.pool.query<{ reviewer: string; action: string; n: string }>(
+      `SELECT reviewer, action, count(*)::text AS n
+         FROM decisions WHERE decided_at >= $1
+        GROUP BY reviewer, action`,
+      [since],
+    );
+    const waiting = await this.pool.query<{ n: string; oldest: Date | null }>(
+      `SELECT count(*)::text AS n, min(submitted_at) AS oldest
+         FROM reports
+        WHERE status IN ('submitted', 'under_review', 'awaiting_reply')`,
+    );
+    return {
+      since,
+      decisions: result.rows.map((r) => ({
+        reviewer: r.reviewer,
+        action: r.action,
+        count: Number(r.n),
+      })),
+      waiting: Number(waiting.rows[0]?.n ?? 0),
+      oldestWaitingSince: waiting.rows[0]?.oldest ?? null,
+    };
   }
 
   async purgeExpired(now: Date): Promise<number> {

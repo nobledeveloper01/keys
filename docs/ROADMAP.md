@@ -88,8 +88,12 @@ reply with the 7-day window, publication gating, expiry and resolution.
    `/reply` on the web surface renders and posts against it. Nothing delivers the token
    yet. **Blocked on the SMS provider in phase 3.**
    See [ADR 0003](adr/0003-the-accused-answers-with-a-texted-capability-not-an-account.md).
-3. ⏳ **Human — review console throughput measured.** Needs a real reviewer and real
-   reports; cannot be measured against fixtures.
+3. ⏳ **Human — review console throughput measured.** The console exists at
+   `/review` on the web surface, every action names a reviewer and states a
+   reason, and `GET /v1/review/metrics` reports decisions by reviewer alongside
+   the queue depth and the age of the oldest waiting report. **The instrument is
+   built; the number still needs a real reviewer working real reports.**
+   See [ADR 0006](adr/0006-a-reviewer-is-not-an-answer-to-who-decided-this.md).
 4. ⏳ **Human — legal review of the report policy by a Nigerian lawyer.**
    **Blocks public launch outright.** No test result substitutes for it.
 
