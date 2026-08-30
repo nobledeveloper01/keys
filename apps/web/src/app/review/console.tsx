@@ -55,6 +55,22 @@ export function Console() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [open, setOpen] = useState<(QueueItem & { history?: HistoryEntry[] }) | null>(null);
+
+  /*
+    Back to the top whenever the view changes.
+
+    Opening a report from halfway down the queue kept the queue's scroll
+    position, so the reviewer landed in the middle of the report with the
+    "Back to the queue" button already hidden behind the sticky masthead. The
+    browser does this for a navigation; this is one component swapping what it
+    renders, so nothing was going to do it for us.
+
+    `auto`, not `smooth`: a reviewer working a queue changes this view all day
+    and does not need it animated each time.
+  */
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [open?.id, signedIn]);
   const [problem, setProblem] = useState<string | null>(null);
 
   /*
@@ -333,7 +349,7 @@ function One({
 
       </div>
 
-      <div className="actions">
+      <div className="decisions">
         {(['upheld', 'not_upheld', 'insufficient_evidence'] as const).map((decision) => (
           <button
             key={decision}

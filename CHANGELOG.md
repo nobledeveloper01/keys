@@ -151,6 +151,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **The review console's most consequential button was its most prominent, by
+  accident.** The three decisions were a wrapping flex row, so on a phone the
+  longest label — *Uphold — publish this* — took a full row above the other two
+  and became the largest thing on screen. Which of three outcomes looks like the
+  default was being decided by the length of its own text. Equal-width grid now,
+  stacked on a phone and three columns on a desktop, with the danger colour on
+  the one that publishes an accusation but no extra weight.
+- Opening a report kept the queue's scroll position, so a reviewer working down
+  a long queue landed in the middle of the report with *Back to the queue*
+  already hidden behind the sticky masthead. A browser does this for a
+  navigation; this is one component swapping what it renders, so nothing was
+  going to do it.
+- A disabled danger button washed to a muddy pink at the shared 0.45 opacity and
+  read as an error rather than as a control waiting for input.
+
 - **The reply link rendered in the browser's default blue** — the one colour on
   the page nobody chose, at about 3:1 against a dark background.
 - **`textarea` was monospace.** Browsers default it that way, so the report form

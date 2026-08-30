@@ -402,9 +402,21 @@ button:disabled {
   color: var(--ink);
 }
 
+/*
+  Danger, and legible when disabled.
+
+  At the shared 0.45 disabled opacity this washed to a muddy pink that read as
+  an error state rather than as a control waiting for a reason to be typed.
+*/
 .button-danger {
   background: var(--alarm);
   color: #fff;
+}
+.button-danger:disabled {
+  opacity: 1;
+  background: transparent;
+  color: var(--alarm);
+  border-color: color-mix(in srgb, var(--alarm) 45%, transparent);
 }
 .button-danger:hover:not(:disabled) {
   background: var(--alarm);
@@ -416,6 +428,31 @@ button:disabled {
   gap: var(--s-3);
   flex-wrap: wrap;
   margin-top: var(--s-4);
+}
+
+/*
+  The three decisions are the same size as each other, always.
+
+  As a wrapping flex row they were content-width, so on a phone the longest
+  label — "Uphold — publish this" — took a full row to itself above the other
+  two. The most consequential and least reversible of the three ended up the
+  largest and most prominent thing on the screen, decided by nothing but the
+  length of its own text.
+
+  A reviewer is choosing between three outcomes, not confirming a suggested
+  one. Equal weight, and the danger colour on the one that publishes an
+  accusation about a named person.
+*/
+.decisions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+  margin-top: var(--s-4);
+}
+@media (min-width: 34rem) {
+  .decisions {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 /* --- verdict ------------------------------------------------------------ */

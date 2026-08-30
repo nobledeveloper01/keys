@@ -6,6 +6,40 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — The riskiest button was the biggest because its label was longest
+
+**Did.** Checked the review console at 375 points wide, which is a width nobody
+had opened it at.
+
+### What surprised us
+
+**Layout was choosing the default action.** The three decisions sat in a
+wrapping flex row at their content widths. On a phone that put *Uphold — publish
+this* — the longest string — alone on the first row, full width, above the other
+two. So the largest, most prominent control on the screen was the irreversible
+one that publishes an accusation about a named person, and it got there because
+of the number of characters in its own label.
+
+Nothing about that was a decision anybody made. It is what `flex-wrap` does, and
+at 1280 pixels wide it never happens, so it never showed up.
+
+That is the second time this week a layout rule has quietly made a claim the
+product would never make in words: the first was `unreachable` rendering as `0`.
+Both are the interface asserting something the code was careful not to.
+
+**And the console kept the queue's scroll position.** Tapping a report from
+halfway down landed the reviewer in the middle of it with *Back to the queue*
+seventeen points up, behind a sixty-seven point masthead. A browser resets
+scroll on a navigation; this is one component swapping what it renders, so
+nothing was going to do it. Worth noting because it only bites at a scroll depth
+you reach when the queue is long — that is, in production and not in a demo.
+
+**A disabled danger button is not just a danger button at 45% opacity.** It
+washed to a muddy pink that reads as an error the reviewer has already caused,
+rather than as a control waiting for them to type a reason.
+
+---
+
 ## 2026-08-31 — Doing the web first made the app's gaps obvious
 
 **Did.** The same design pass on the app's screens, using the web as the
