@@ -32,7 +32,7 @@ export type ThemePreference = 'light' | 'dark' | 'system';
  */
 const DEFAULT: ThemePreference = 'light';
 
-const STORAGE_KEY = 'backhaul.appearance.v1';
+const STORAGE_KEY = 'keys.appearance.v1';
 
 function isPreference(value: unknown): value is ThemePreference {
   return value === 'light' || value === 'dark' || value === 'system';

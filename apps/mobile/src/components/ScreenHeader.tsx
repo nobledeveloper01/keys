@@ -1,5 +1,4 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from './Text';
 import { space, target } from '../design/tokens';
@@ -15,15 +14,21 @@ interface Props {
  * An opaque bar pinned above the scroll.
  *
  * It exists because of what a full-screen ScrollView looks like without one:
- * the content scrolls under the status bar with nothing behind it, so "Agreed
- * fare" ends up printed through the clock. Every iOS app scrolls content under
- * the status bar; the ones that look right have something opaque up there.
+ * the content scrolls under the status bar with nothing behind it, so a title
+ * ends up printed through the clock. Every iOS app scrolls content under the
+ * status bar; the ones that look right have something opaque up there.
  *
- * Found by scrolling the screen, not by a test.
+ * **It does not inset itself.** `App` wraps the whole shell in a
+ * `SafeAreaView`, so the notch is already accounted for by the time this
+ * renders — and when this header added `paddingTop: insets.top` on top of that,
+ * the inset was applied twice and left 94 points of dead white space above the
+ * title on an iPhone 17. Found by looking at it on a simulator, which is the
+ * only way this class of thing is ever found.
+ *
+ * One owner for the safe area, and it is the app root.
  */
 export function ScreenHeader({ title, onBack }: Props) {
   const colours = useColours();
-  const insets = useSafeAreaInsets();
   // Every back button in the app comes through here, which makes it the
   // cheapest place in the product to translate and the most-read.
   const { t } = useLanguage();
@@ -33,7 +38,6 @@ export function ScreenHeader({ title, onBack }: Props) {
       style={[
         styles.bar,
         {
-          paddingTop: insets.top,
           backgroundColor: colours.surface,
           borderBottomColor: colours.outline,
         },

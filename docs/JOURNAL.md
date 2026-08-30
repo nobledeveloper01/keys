@@ -6,6 +6,45 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-30 — The splash said Backhaul
+
+**Did.** A design pass on the running app, which is the pass nobody had done.
+Every check until now had been behavioural.
+
+### What surprised us
+
+**The splash was another company's.** A truck drove in from the left, under the
+word *Backhaul*, on the first frame of the product. It had been there since
+phase 0 and I had launched the app four times without seeing it, because the
+first launch spends its splash bundling and the ones after that are too fast to
+read. The user saw it in about ten seconds.
+
+Nothing could have caught it. `untranslated-check` skips single capitalised
+words, so *Backhaul* read as a proper noun. `wired-check` saw `Splash` mounted
+by `App` and called it wired. Every gate in the repository was green over a
+launch screen with a competitor's name on it — because gates check that things
+are *connected*, and this was connected, correct, and about the wrong company.
+
+**The top inset was applied twice**, by `SafeAreaView` and again by
+`ScreenHeader`, leaving 94 points of dead white above every title. Same class:
+two correct pieces of code, each doing its job, wrong together. A screenshot
+finds it in a second and no type system ever will.
+
+**And the accent was the freight project's blue.** Picking a replacement turned
+out to be a constraint problem rather than a taste one: the product renders four
+status colours, so the accent has to sit clear of all four hues or a button
+starts looking like a verdict. Indigo at 244° is the gap.
+
+### The rule this suggests
+
+Behaviour can be gated. Appearance has to be looked at. I had eighty-five
+passing tests and nine gates over an app whose first screen was branded for
+somebody else, and the fastest way to find every one of these was to open it and
+look — which took four minutes and should have happened on the first day the app
+ran.
+
+---
+
 ## 2026-08-30 — Nothing had ever proved the app builds
 
 **Did.** Generated the native projects, taught Metro where the monorepo is, got

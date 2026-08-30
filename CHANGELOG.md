@@ -83,6 +83,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **The splash was the freight project's.** A truck drove in from the left under
+  the word *Backhaul*. It shipped that way and was found by watching the app
+  start, not by any gate. Keys now has its own mark — a keyhole, drawn as one
+  SVG path rather than assembled from two borrowed glyphs, because a logo made
+  of icon-set pieces is a placeholder that ships. A keyhole rather than a key:
+  a key is a thing you own, a keyhole is the thing you look through before you
+  commit, which is what this product is for.
+- **The accent is deep indigo `#2E2A6E`**, replacing the ported `#1A4FA0`.
+  Chosen against the four status hues — clear 149°, caution 33°, alarm 4°,
+  offline 212° — because an accent near any of them makes a button look like a
+  verdict. 12.6:1 against white, which is what a cheap screen in Nigerian
+  daylight needs.
+- The native launch screen matches the splash field, so a cold start no longer
+  flashes white before the app draws, and it no longer advertises React Native
+  on the first frame of the product.
+
 - The mobile palette says what it means in this product. `moving`, `stopped`,
   `exception` and `stale` described trucks; they are now `clear`, `caution`,
   `alarm` and `offline`. `Card` gained an `alarm` emphasis, which is never used
@@ -105,6 +121,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   roadmap still said phase 0.
 
 ### Fixed
+
+- **The top safe-area inset was applied twice** — once by `SafeAreaView` at the
+  app root and again by `ScreenHeader` — leaving 94 points of dead white space
+  above every title on an iPhone 17. The app root owns the safe area now.
+- `ScreenHeader` was the first child *inside* the scroll container, so it took
+  the container's horizontal padding and its bottom rule stopped twelve points
+  short of each edge, and it scrolled away with the content — the one thing a
+  bar that exists to sit above the scroll must not do.
+- The language picker centred four cards on a tall screen with nothing above
+  them, which reads as a screen that failed to load. Anchored near the top,
+  under the product's name.
+- Two `AsyncStorage` keys still named the previous product: `backhaul.language`
+  and `backhaul.appearance`.
 
 - `wired-check` reported clean while scanning nothing — its rules still named
   Backhaul's C# directories. Reseeded for this stack, and it now fails when a

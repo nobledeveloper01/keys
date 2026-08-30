@@ -26,7 +26,7 @@ import { isLanguage, say, type Language, type Phrase } from '@keys/domain';
  * false until storage has answered, so nothing shows the wrong language for a
  * frame.
  */
-const STORAGE_KEY = 'backhaul.language.v2';
+const STORAGE_KEY = 'keys.language.v1';
 
 /**
  * English until somebody says otherwise.

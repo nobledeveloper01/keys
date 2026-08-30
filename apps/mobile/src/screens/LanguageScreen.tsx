@@ -31,6 +31,22 @@ export function LanguageScreen({ onDone }: { onDone: () => void }) {
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
+      {/*
+        The product's name, and nothing else, above the choice.
+
+        There is no title on this screen because a title would have to be in
+        one of the four languages before the reader has told us which one they
+        read — and picking one to ask the question in is the small rudeness this
+        whole screen exists to avoid. A name is not translated in any of them,
+        so the name is the one thing that can appear here honestly.
+
+        Without it the four cards floated in the middle of an empty screen with
+        nothing above them, which reads as a screen that failed to load rather
+        than as a question.
+      */}
+      <Text variant="display" style={styles.name}>
+        {say('en', 'app_name')}
+      </Text>
       {LANGUAGES.map((language) => (
         <Press
           key={language}
@@ -56,7 +72,15 @@ export function LanguageScreen({ onDone }: { onDone: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: space.md, gap: space.sm, justifyContent: 'center', flexGrow: 1 },
+  /*
+    Anchored near the top rather than centred.
+
+    `justifyContent: 'center'` put roughly four hundred points of white above
+    the first card on a tall phone. Centring works for one or two elements; for
+    a list of four it just moves the whole thing away from the thumb.
+  */
+  page: { padding: space.lg, paddingTop: space.xxl, gap: space.sm, flexGrow: 1 },
+  name: { marginBottom: space.xl },
   card: { marginBottom: space.sm },
   foot: { height: space.lg },
 });

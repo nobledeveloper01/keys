@@ -567,7 +567,23 @@ def unwired_domain_exports() -> list[str]:
 # domain rule nobody applies, and the module-level version of this rule missed
 # three dead exports in `state/server.tsx` because one type in the same file
 # was imported.
-SEAMS = [ROOT / 'apps/mobile/src/state', ROOT / 'apps/mobile/src/native']
+SEAMS = [
+    ROOT / 'apps/mobile/src/state',
+    ROOT / 'apps/mobile/src/native',
+    # Screens, but deliberately not components.
+    #
+    # A screen nothing routes to is dead by definition. A *component* built
+    # ahead of the screen that will hold it is what a design system is for, and
+    # a gate that demanded every component have a caller would force the set to
+    # be deleted and rewritten one screen at a time.
+    #
+    # The cost of that distinction is real and worth writing down: `ThemeToggle`
+    # sat unmounted through the whole of phase 1, which meant the dark half of
+    # the palette had never once been on a screen. It is checked by eye in the
+    # design review instead, and the roadmap carries it as open until the
+    # settings screen mounts the toggle.
+    ROOT / 'apps/mobile/src/screens',
+]
 
 
 def unwired_seam_exports() -> list[str]:

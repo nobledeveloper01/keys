@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
 
-import { Icon } from './Icon';
+import { say } from '@keys/domain';
+
+import { Keyhole } from './Keyhole';
 import { Text } from './Text';
 import { motion, space } from '../design/tokens';
 
@@ -20,7 +22,11 @@ interface Props {
  * splash's own fade-out revealed a white rectangle for a few frames on a dark
  * phone. Only visible on a screenshot taken during the departure.
  */
-export const SPLASH_FIELD = '#1A4FA0';
+// The field, and the native launch screen's background, are the same value in
+// two places that cannot import each other — a storyboard cannot read this
+// file. `scripts/splash-colour-check.py` fails the build when they drift, which
+// is the only thing that stops the hand-over flashing.
+export const SPLASH_FIELD = '#2E2A6E';
 const FIELD = SPLASH_FIELD;
 
 /**
@@ -31,11 +37,17 @@ const FIELD = SPLASH_FIELD;
  * thing rather than as two loads. The native one cannot animate; this one can,
  * and what it animates is the product's own sentence.
  *
- * **The truck drives in from the left and the arrow arrives behind it.** That
- * is the whole business in one gesture: the load coming *back*. It is not
- * decoration — a splash that spins a logo says nothing, and this one is on
- * screen for the second the app takes to start on the handsets it is built
- * for, which is long enough for a person to read one idea.
+ * **The keyhole settles and the name arrives under it.** Nothing slides in
+ * from anywhere. A mark that travels says the product moves things; this one
+ * does not move anything, it tells you what you are about to walk into, so the
+ * mark holds still and only resolves.
+ *
+ * It is on screen for the second the app takes to start on the handsets it is
+ * built for, which is long enough for a person to take in one shape.
+ *
+ * This animation arrived from the freight project with a truck driving in
+ * under the word *Backhaul*, and shipped that way until somebody watched the
+ * app start. The timing was right and every noun in it was wrong.
  *
  * **It never blocks.** The animation runs while the app starts behind it, and
  * it leaves as soon as both are done — whichever finishes last. A splash that
@@ -107,19 +119,26 @@ export function Splash({ onDone, ready }: Props) {
     return () => clearTimeout(timer);
   }, [ready, leave, onDone, shownAt]);
 
-  // The truck comes in from the left and settles. `out(cubic)` on the driver
+  // The mark resolves in place rather than travelling. `out(cubic)` on the driver
   // means it arrives fast and stops gently, which is what a heavy thing does.
-  const truckX = run.interpolate({ inputRange: [0, 1], outputRange: [-140, 0] });
+  const markScale = run.interpolate({ inputRange: [0, 1], outputRange: [0.82, 1] });
 
-  // The arrow lands after the truck has caution, in the second half of the
-  // run — the load arriving *after* the truck is the sentence being told.
-  const arrowIn = run.interpolate({
-    inputRange: [0, 0.55, 1],
-    outputRange: [0, 0, 1],
+  /*
+    The mark is there from the first frame, not held back.
+
+    The previous timing kept it at zero opacity until 55% of the run, which is
+    what the old two-part animation needed — one glyph waiting off-screen for
+    the other to arrive. With a single mark it just meant the field sat empty
+    for over half the time it was on screen, and an empty coloured rectangle is
+    what a broken launch looks like.
+  */
+  const markIn = run.interpolate({
+    inputRange: [0, 0.35, 1],
+    outputRange: [0, 1, 1],
   });
-  const arrowX = arrowIn.interpolate({ inputRange: [0, 1], outputRange: [34, 0] });
 
-  const wordsIn = run.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0, 0, 1] });
+  // The name lands after the shape has settled.
+  const wordsIn = run.interpolate({ inputRange: [0, 0.55, 1], outputRange: [0, 0, 1] });
 
   return (
     <Animated.View
@@ -140,18 +159,21 @@ export function Splash({ onDone, ready }: Props) {
       ]}
     >
       <View style={styles.mark}>
-        <Animated.View style={{ transform: [{ translateX: arrowX }], opacity: arrowIn }}>
-          <Icon name="swap" size="lg" colour="#FFFFFF" />
-        </Animated.View>
-
-        <Animated.View style={{ transform: [{ translateX: truckX }] }}>
-          <Icon name="truck" size="lg" colour="#FFFFFF" />
+        <Animated.View
+          style={{ transform: [{ scale: markScale }], opacity: markIn }}
+        >
+          <Keyhole size={76} colour="#FFFFFF" />
         </Animated.View>
       </View>
 
       <Animated.View style={{ opacity: wordsIn }}>
         <Text variant="headline" style={styles.word}>
-          Backhaul
+          {/*
+            Through the phrase table, not typed here. It is the one phrase every
+            language borrows unchanged, and routing it through `say` means the
+            name on the splash and the name everywhere else cannot drift apart.
+          */}
+          {say('en', 'app_name')}
         </Text>
       </Animated.View>
     </Animated.View>

@@ -37,9 +37,19 @@ export function LookupScreen({ baseUrl }: { baseUrl: string }) {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+    <View style={styles.screen}>
+      {/*
+        The header is outside the scroll, not the first thing inside it.
+
+        Inside, it took the container's horizontal padding, so its bottom rule
+        stopped twelve points short of each edge — a divider that does not reach
+        the screen edge reads as a broken box rather than as a header. It also
+        scrolled away with the content, which is the one thing a bar that exists
+        to sit opaquely above the scroll must not do.
+      */}
       <ScreenHeader title={t('check_a_number')} />
 
+      <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
       <SearchField
         value={typed}
         onChange={setTyped}
@@ -74,7 +84,8 @@ export function LookupScreen({ baseUrl }: { baseUrl: string }) {
           />
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -102,6 +113,7 @@ function Answer({ answer }: { answer: Lookup }) {
 }
 
 const styles = StyleSheet.create({
-  page: { padding: space.md, gap: space.sm },
+  screen: { flex: 1 },
+  page: { padding: space.lg, gap: space.sm },
   card: { marginTop: space.md },
 });

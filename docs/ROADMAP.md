@@ -79,7 +79,9 @@ and Metro resolve modules by different rules and in a monorepo they disagree for
 a living.
 
 Still open from this phase: **an Android build somebody has watched succeed**,
-and **CI building mobile artefacts**.
+**CI building mobile artefacts**, and **a settings screen that mounts
+`ThemeToggle`** — until one exists, dark mode is unreachable in the app and its
+palette is verified by eye rather than by anything that runs.
 
 ---
 

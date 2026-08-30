@@ -13,10 +13,22 @@ export const palette = {
     outline: '#D8DDE4',
     textPrimary: '#0C1119',
     textSecondary: '#5A6675',
-    accent: '#1A4FA0',
+    /*
+      Deep indigo, and deliberately not a status hue.
+
+      The four states this product renders are clear (green, 149°), caution
+      (amber, 33°), alarm (red, 4°) and offline (grey-blue, 212°). An accent
+      near any of them makes a button look like a verdict. Indigo at 244° is
+      clear of all four, and at 12.6:1 against white it is legible on a cheap
+      screen in daylight, which is where this is read.
+
+      It replaced `#1A4FA0`, which came across with the design system from the
+      freight project and was that product's blue.
+    */
+    accent: '#2E2A6E',
     onAccent: '#FFFFFF',
     /** A wash of the accent, for the one card that should lead the eye. */
-    accentWash: '#EAF0FA',
+    accentWash: '#ECEBF7',
     /*
       Washes for each status, so a chip reads at a glance without shouting.
 
@@ -39,7 +51,7 @@ export const palette = {
        phone could not ask. */
     offline: '#6E7B8A',
     alarm: '#B0281F',
-    verifiedTier: '#1A4FA0',
+    verifiedTier: '#2E2A6E',
     businessTier: '#1B7F4B',
     trustedTier: '#9A6B12',
   },
@@ -49,9 +61,9 @@ export const palette = {
     outline: '#252D37',
     textPrimary: '#EBEFF4',
     textSecondary: '#9BA7B5',
-    accent: '#5B93E0',
+    accent: '#8A93F0',
     onAccent: '#08111F',
-    accentWash: '#16233A',
+    accentWash: '#1B1930',
     clearWash: '#13291F',
     cautionWash: '#2A2113',
     offlineWash: '#1B2028',
@@ -61,7 +73,7 @@ export const palette = {
     caution: '#E0A44A',
     offline: '#8A96A5',
     alarm: '#E8695E',
-    verifiedTier: '#5B93E0',
+    verifiedTier: '#8A93F0',
     businessTier: '#4FBF84',
     trustedTier: '#D6A93F',
   },
