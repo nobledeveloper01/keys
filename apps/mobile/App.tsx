@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { Splash } from './src/components/Splash';
@@ -9,16 +9,26 @@ import { LanguageScreen } from './src/screens/LanguageScreen';
 import { LookupScreen } from './src/screens/LookupScreen';
 
 /*
-  Where the server is.
+  Where the server is, in development.
 
-  `10.0.2.2` is the host machine as seen from the Android emulator. It is a
-  development default and it is written here rather than read from the
-  environment, because React Native has no `process.env` at runtime and a
-  build-time inlined URL that silently points at a laptop is exactly the
-  failure the web surface refuses to allow. Phase 6 replaces this with a build
-  configuration per flavour.
+  The two simulators disagree about what "this machine" is called: the Android
+  emulator reaches the host at `10.0.2.2`, and the iOS simulator shares the
+  host's own loopback. Hardcoding either one makes the app silently unreachable
+  on the other platform, which looks like a broken server rather than a wrong
+  address.
+
+  Written here rather than read from the environment because React Native has no
+  `process.env` at runtime, and a build-time inlined URL that quietly points at
+  somebody's laptop is exactly the failure the web surface refuses to allow.
+  Phase 6 replaces this with a build configuration per flavour, and a release
+  build has no business carrying a loopback address at all.
 */
-const API_URL = 'http://10.0.2.2:5211';
+const API_URL = __DEV__
+  ? Platform.select({
+      android: 'http://10.0.2.2:5211',
+      default: 'http://127.0.0.1:5211',
+    })
+  : '';
 
 /**
  * Where the app is, in one place.

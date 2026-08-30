@@ -56,6 +56,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   the build output gitignored. **iOS compiles for the simulator.** Android is
   the unmodified template and has not been compiled here — no JDK on this
   machine.
+- The development API address is chosen per platform. It was hardcoded to
+  `10.0.2.2`, which is the host as seen from the Android emulator and
+  unreachable from the iOS simulator — so the app looked like it had a broken
+  server rather than a wrong address. Found by running it on a simulator.
 - `make bundle-check` — the app bundles, and all four languages are present in
   the artefact a device runs. Nothing else in the repository proved the app
   builds at all: `tsc` and Metro resolve modules by different rules, and in a
