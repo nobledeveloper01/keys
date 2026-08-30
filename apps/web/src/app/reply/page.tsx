@@ -1,16 +1,9 @@
 import { api } from '../../lookup';
 import { ReplyForm } from './form';
 
-export const dynamic = 'force-dynamic';
+import { categoryWords } from '../../categories';
 
-const CATEGORY_WORDS: Record<string, string> = {
-  fake_listing: 'a property that did not exist',
-  inspection_fee_scam: 'an inspection fee for a viewing that never happened',
-  property_already_let: 'a property that had already been let',
-  impersonation: 'pretending to be an agent or landlord they were not',
-  undisclosed_fees: 'fees that were never mentioned until the money was due',
-  no_show: 'taking an appointment and never turning up',
-};
+export const dynamic = 'force-dynamic';
 
 /**
  * The page the reported party lands on, from a link in an SMS.
@@ -82,7 +75,7 @@ export default async function Reply({
 
       <p>
         <strong>What was reported:</strong>{' '}
-        {CATEGORY_WORDS[report.category] ?? report.category}.
+        {categoryWords(report.category)}.
       </p>
       <p className="quiet">{report.description}</p>
 

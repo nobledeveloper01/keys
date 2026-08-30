@@ -1,3 +1,5 @@
+import type { ReportCategory } from './reports.ts';
+
 /**
  * Backhaul in four languages.
  *
@@ -83,6 +85,14 @@ export type Phrase =
   | 'one_upheld_report'
   | 'report_this_number'
   | 'no_reports_yet_detail'
+  | 'lede_registry'
+  | 'claims_note'
+  | 'category_fake_listing'
+  | 'category_inspection_fee_scam'
+  | 'category_property_already_let'
+  | 'category_impersonation'
+  | 'category_undisclosed_fees'
+  | 'category_no_show'
   | 'no_signal_saved_here'
   | 'refused_reply_window_open'
   | 'refused_no_evidence'
@@ -130,6 +140,14 @@ export const EN: Readonly<Record<Phrase, string>> = {
   one_upheld_report: "One upheld report against this number.",
   report_this_number: "Report this number",
   no_reports_yet_detail: "Type a number above to check it. No account needed.",
+  lede_registry: "Reports of rental scams in Nigeria. A person reviews each one before it appears here.",
+  claims_note: "Keys checks authority to let, not ownership, and handles no money.",
+  category_fake_listing: "The property did not exist",
+  category_inspection_fee_scam: "An inspection fee for a viewing that never happened",
+  category_property_already_let: "The property had already been let",
+  category_impersonation: "Pretended to be an agent or landlord they were not",
+  category_undisclosed_fees: "Fees that were never mentioned",
+  category_no_show: "Took the appointment and never turned up",
 };
 
 export const HA: Readonly<Record<Phrase, string>> = {
@@ -174,6 +192,14 @@ export const HA: Readonly<Record<Phrase, string>> = {
   one_upheld_report: "Rahoto ɗaya da aka tabbatar a kan wannan lambar.",
   report_this_number: "Ba da rahoton wannan lambar",
   no_reports_yet_detail: "Rubuta lamba a sama don dubawa. Ba a buƙatar asusu.",
+  lede_registry: "Rahotannin zamban haya a Najeriya. Mutum yana duba kowanne kafin ya bayyana a nan.",
+  claims_note: "Keys yana duba izinin haya, ba mallakar gida ba, kuma ba ya riƙe kuɗi.",
+  category_fake_listing: "Gidan bai wanzu ba",
+  category_inspection_fee_scam: "Kuɗin dubawa don kallon da bai taɓa faruwa ba",
+  category_property_already_let: "An riga an ba da gidan haya",
+  category_impersonation: "Sun yi kamar wakili ko mai gida da ba su ba ne",
+  category_undisclosed_fees: "Kuɗaɗen da ba a taɓa ambata ba",
+  category_no_show: "Sun karɓi alƙawari amma ba su zo ba",
 };
 
 export const YO: Readonly<Record<Phrase, string>> = {
@@ -218,6 +244,14 @@ export const YO: Readonly<Record<Phrase, string>> = {
   one_upheld_report: "Ìròyìn kan tí a fọwọ́sí lórí nọ́mbà yìí.",
   report_this_number: "Ròyìn nọ́mbà yìí",
   no_reports_yet_detail: "Tẹ nọ́mbà sí òkè láti ṣàyẹ̀wò. Kò sí àkọọ́lẹ̀ tí a nílò.",
+  lede_registry: "Ìròyìn jìbìtì ìyáléta ní Nàìjíríà. Ènìyàn ni ó ń ṣàyẹ̀wò ọ̀kọ̀ọ̀kan kí ó tó farahàn níbí.",
+  claims_note: "Keys ń ṣàyẹ̀wò àṣẹ láti yá ilé, kì í ṣe níní ilé, kò sì ń mú owó.",
+  category_fake_listing: "Ilé náà kò sí",
+  category_inspection_fee_scam: "Owó àyẹ̀wò fún ìwò tí kò ṣẹlẹ̀ rí",
+  category_property_already_let: "A ti yá ilé náà tẹ́lẹ̀",
+  category_impersonation: "Wọ́n ṣe bí aṣojú tàbí onílé tí wọn kì í ṣe",
+  category_undisclosed_fees: "Owó tí a kò dárúkọ rí",
+  category_no_show: "Wọ́n gba ìpàdé, wọn kò sì dé",
 };
 
 export const IG: Readonly<Record<Phrase, string>> = {
@@ -262,6 +296,14 @@ export const IG: Readonly<Record<Phrase, string>> = {
   one_upheld_report: "Otu akụkọ akwadoro megide nọmba a.",
   report_this_number: "Kọọ nọmba a",
   no_reports_yet_detail: "Pịnye nọmba n’elu ka ị lelee ya. Ọ dịghị akaụntụ achọrọ.",
+  lede_registry: "Akụkọ aghụghọ mgbazinye ụlọ na Naịjirịa. Mmadụ na-enyocha nke ọ bụla tupu o gosi ebe a.",
+  claims_note: "Keys na-elele ikike ịgbazinye ụlọ, ọ bụghị inwe ụlọ, ọ naghịkwa ejide ego.",
+  category_fake_listing: "Ụlọ ahụ adịghị",
+  category_inspection_fee_scam: "Ego nyocha maka nleta na-emeghị eme",
+  category_property_already_let: "E gbazinyelarị ụlọ ahụ",
+  category_impersonation: "Ha mere ka onye nnọchiteanya ma ọ bụ onye nwe ụlọ ha na-abụghị",
+  category_undisclosed_fees: "Ụgwọ a na-akpọtụghị aha ya",
+  category_no_show: "Ha nabatara oge ma ha abịaghị",
 };
 
 const TABLES: Readonly<Record<Language, Readonly<Record<Phrase, string>>>> = {
@@ -283,6 +325,17 @@ export function say(language: Language, phrase: Phrase): string {
  * top makes the other three look like an afterthought bolted on for them.
  */
 export const LANGUAGES: readonly Language[] = ['ha', 'yo', 'ig', 'en'];
+
+/**
+ * The phrase that describes a report category.
+ *
+ * Derived rather than looked up in a map each caller writes out, because the
+ * app, the web and the console all need the same six sentences and the fourth
+ * copy is the one missing an entry.
+ */
+export function categoryPhrase(category: ReportCategory): Phrase {
+  return `category_${category}` as Phrase;
+}
 
 export function isLanguage(value: unknown): value is Language {
   return value === 'en' || value === 'ha' || value === 'yo' || value === 'ig';

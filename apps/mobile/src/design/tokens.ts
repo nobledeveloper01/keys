@@ -118,7 +118,7 @@ export const type = {
   headline: { fontSize: 28, lineHeight: 34, fontFamily: family.bold, letterSpacing: -0.6 },
   title: { fontSize: 19, lineHeight: 25, fontFamily: family.semibold, letterSpacing: -0.2 },
   body: { fontSize: 16, lineHeight: 24, fontFamily: family.regular, letterSpacing: -0.1 },
-  /** The driver face default: read in a cab, in motion. */
+  /** The renter face default: read outdoors, at arm's length, on a cheap screen. */
   bodyOutdoor: { fontSize: 19, lineHeight: 28, fontFamily: family.regular, letterSpacing: -0.1 },
   label: { fontSize: 14, lineHeight: 20, fontFamily: family.medium, letterSpacing: 0 },
   /**

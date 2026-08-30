@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { categoryWords } from '../../categories';
+
 interface QueueItem {
   id: string;
   status: string;
@@ -27,15 +29,6 @@ interface Metrics {
   oldestWaitingSince: string | null;
   decisions: Array<{ reviewer: string; action: string; count: number }>;
 }
-
-const CATEGORY_WORDS: Record<string, string> = {
-  fake_listing: 'The property did not exist',
-  inspection_fee_scam: 'Inspection fee for a viewing that never happened',
-  property_already_let: 'The property had already been let',
-  impersonation: 'Pretended to be an agent or landlord they were not',
-  undisclosed_fees: 'Fees that were never mentioned',
-  no_show: 'Took the appointment and never turned up',
-};
 
 async function call<T>(
   token: string,
@@ -205,7 +198,7 @@ export function Console() {
             margin, so the break added a second empty line between the title
             and its meta — a gap that looked like a missing element.
           */}
-          <strong>{CATEGORY_WORDS[report.category] ?? report.category}</strong>
+          <strong>{categoryWords(report.category)}</strong>
           <span className="small quiet">
             {report.evidenceCount === 0 ? 'No evidence attached · ' : `${report.evidenceCount} attached · `}
             {report.hasReply ? 'answered' : 'no answer yet'} · reply window closes{' '}
@@ -262,7 +255,7 @@ function One({
         ← Back to the queue
       </button>
 
-      <h1>{CATEGORY_WORDS[report.category] ?? report.category}</h1>
+      <h1>{categoryWords(report.category)}</h1>
       <p className="quiet small">
         Submitted{' '}
         {new Date(report.submittedAt).toLocaleDateString('en-NG', {

@@ -6,6 +6,48 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — Doing the web first made the app's gaps obvious
+
+**Did.** The same design pass on the app's screens, using the web as the
+reference — which is the opposite of the order I would have guessed was useful.
+
+### What surprised us
+
+**The web pass turned into a specification for the app.** Having just decided
+what a page of this product needs — the mark so you know whose answer it is, a
+lede saying what the number is checked against, a note saying what Keys does not
+claim — I opened the app and it had none of the three. They were not subtle
+omissions. They were invisible until something else had made the list.
+
+**The app said the same words twice on one screen.** A header bar reading
+*Check a number*, and an empty state below it reading *Check a number* under a
+large icon, with nothing between them. It had been that way since the screen was
+written and I had screenshotted it four times without registering it, because
+each element is individually reasonable.
+
+**And it was withholding the answer.** The web listed what a number had been
+reported for; the app rendered the count and stopped. So it told somebody a
+number had one upheld report against it and left them to guess whether that was
+a fake listing or a no-show — on the screen whose entire job is helping them
+decide whether to hand over money.
+
+**Fixing that found the duplication I had predicted an hour earlier.** The web
+had the six category sentences hardcoded in four separate files, and two had
+already drifted: *A property that did not exist* on the home page, *The property
+did not exist* on the report form. Harmless right up until one of the four is
+missing an entry and renders a raw `no_show` at a reader. The comment I wrote in
+the domain that morning — "the fourth copy is the one missing an entry" — was
+describing code that already existed three files away.
+
+### The order that worked
+
+Doing one surface properly, then holding the other against it. Neither pass
+would have found these on its own; the second one found them in minutes because
+the first had produced a list of what *good* looked like for this product
+specifically, rather than in general.
+
+---
+
 ## 2026-08-30 — The web had no masthead, and nobody had noticed
 
 **Did.** The same pass on the web surface that the app got: looked at every

@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { attempt, client, type Lookup } from '@keys/api';
+import { categoryPhrase, type ReportCategory } from '@keys/domain';
 
+import { Brand } from '../components/Brand';
 import { Card } from '../components/Card';
-import { Empty } from '../components/Empty';
-import { ScreenHeader } from '../components/ScreenHeader';
 import { SearchField } from '../components/SearchField';
 import { Text } from '../components/Text';
 import { Unready } from '../components/Unready';
@@ -38,18 +38,25 @@ export function LookupScreen({ baseUrl }: { baseUrl: string }) {
 
   return (
     <View style={styles.screen}>
-      {/*
-        The header is outside the scroll, not the first thing inside it.
-
-        Inside, it took the container's horizontal padding, so its bottom rule
-        stopped twelve points short of each edge — a divider that does not reach
-        the screen edge reads as a broken box rather than as a header. It also
-        scrolled away with the content, which is the one thing a bar that exists
-        to sit opaquely above the scroll must not do.
-      */}
-      <ScreenHeader title={t('check_a_number')} />
-
       <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+      {/*
+        Brand, then the question, then the lede — the same order as the web.
+
+        This screen used to open with a header bar carrying the same words as
+        the empty state below it, so `Check a number` appeared twice on one
+        screen with nothing between them explaining what it would be checked
+        against. Somebody who arrived here from a link a friend sent had no way
+        to tell whose answer they were about to read.
+      */}
+      <Brand />
+
+      <Text variant="headline" style={styles.title}>
+        {t('check_a_number')}
+      </Text>
+      <Text variant="body" tone="secondary" style={styles.lede}>
+        {t('lede_registry')}
+      </Text>
+
       <SearchField
         value={typed}
         onChange={setTyped}
@@ -75,15 +82,20 @@ export function LookupScreen({ baseUrl }: { baseUrl: string }) {
         <Answer answer={query.value} />
       )}
 
-      {typed.trim() === '' && (
-        <View style={styles.card}>
-          <Empty
-            icon="search"
-            title={t('check_a_number')}
-            detail={t('no_reports_yet_detail')}
-          />
-        </View>
-      )}
+      {/*
+        No empty state before the first search.
+
+        There was one, and it repeated the screen's own title back at the
+        reader under a large icon — a placeholder occupying the space the
+        answer will use. The lede above already says what to do; saying it
+        again in the middle of the screen is furniture.
+      */}
+
+      <View style={styles.claims}>
+        <Text variant="label" tone="secondary">
+          {t('claims_note')}
+        </Text>
+      </View>
       </ScrollView>
     </View>
   );
@@ -108,12 +120,32 @@ function Answer({ answer }: { answer: Lookup }) {
       <Text variant="body" tone="secondary">
         {clean ? t('not_a_clean_bill') : t('reviewed_by_a_person')}
       </Text>
+
+      {/*
+        What it was for, not just how many.
+
+        The web surface listed the categories and this screen did not, so the
+        app told somebody a number had one upheld report against it and left
+        them to guess whether that was a fake listing or a no-show. Same
+        registry, same answer, both places.
+      */}
+      {!clean &&
+        answer.categories.map((category: string) => (
+          <Text key={category} variant="body" style={styles.category}>
+            {`·  ${t(categoryPhrase(category as ReportCategory))}`}
+          </Text>
+        ))}
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  page: { padding: space.lg, gap: space.sm },
+  page: { padding: space.lg, paddingTop: space.xl, gap: space.sm, flexGrow: 1 },
+  title: { marginTop: space.lg },
+  lede: { marginBottom: space.md },
   card: { marginTop: space.md },
+  category: { marginTop: space.xs },
+  /* Pushed to the bottom of the scroll, the way the web's footer is. */
+  claims: { marginTop: 'auto', paddingTop: space.xl },
 });

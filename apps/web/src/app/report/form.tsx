@@ -4,14 +4,7 @@ import { useState } from 'react';
 
 import { REPORT_CATEGORIES } from '@keys/domain';
 
-const CATEGORY_WORDS: Record<string, string> = {
-  fake_listing: 'The property did not exist',
-  inspection_fee_scam: 'They took an inspection fee for a viewing that never happened',
-  property_already_let: 'The property had already been let',
-  impersonation: 'They pretended to be an agent or landlord they were not',
-  undisclosed_fees: 'Fees appeared that were never mentioned',
-  no_show: 'They took the appointment and never turned up',
-};
+import { categoryWords } from '../../categories';
 
 export function ReportForm() {
   const [phone, setPhone] = useState('');
@@ -96,7 +89,7 @@ export function ReportForm() {
         <option value="">Choose one…</option>
         {REPORT_CATEGORIES.map((c) => (
           <option key={c} value={c}>
-            {CATEGORY_WORDS[c] ?? c}
+            {categoryWords(c)}
           </option>
         ))}
       </select>

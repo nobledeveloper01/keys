@@ -1,13 +1,6 @@
 import { api } from '../lookup';
 
-const CATEGORY_WORDS: Record<string, string> = {
-  fake_listing: 'A property that did not exist',
-  inspection_fee_scam: 'An inspection fee taken for a viewing that never happened',
-  property_already_let: 'A property that had already been let',
-  impersonation: 'Pretending to be an agent or a landlord they were not',
-  undisclosed_fees: 'Fees that were never mentioned until the money was due',
-  no_show: 'Took the appointment and never turned up',
-};
+import { categoryWords } from '../categories';
 
 /**
  * The answer, and what it does not mean.
@@ -64,7 +57,7 @@ export async function Verdict({ phone }: { phone: string }) {
           </p>
           <ul className="categories">
             {result.categories.map((c: string) => (
-              <li key={c}>{CATEGORY_WORDS[c] ?? c}</li>
+              <li key={c}>{categoryWords(c)}</li>
             ))}
           </ul>
           {!result.everyReportHadRightOfReply && (

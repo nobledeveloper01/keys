@@ -83,6 +83,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **The app's screens got the pass the web got.** The lookup screen opened with
+  a header bar carrying the same words as the empty state below it, so
+  *Check a number* appeared twice on one screen with nothing between them saying
+  what the number would be checked against. It now opens the way the web does:
+  the mark, the question, a lede, the field — and a note at the bottom saying
+  what Keys does and does not claim.
+- The placeholder empty state is gone. It repeated the screen's own title under
+  a large icon, occupying the space the answer uses.
+- **The answer card names the categories.** The web listed what a number was
+  reported for and the app did not, so it told somebody a number had one upheld
+  report and left them to guess whether that was a fake listing or a no-show.
+  Six categories, four languages, derived from `categoryPhrase` rather than
+  typed out per call site.
+- Four files on the web each carried their own English map of the same six
+  categories, and two of them had already drifted apart. One helper now, backed
+  by the domain.
+
 - **The web surface has a design layer.** It had a masthead on no page, so
   nothing said what the site was — somebody arriving on `/reply` from an SMS had
   no way to tell whose service had just accused them of something. There is now
