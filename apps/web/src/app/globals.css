@@ -315,9 +315,21 @@ label {
   margin-bottom: var(--s-2);
 }
 
-input[type='tel'],
-input[type='text'],
-input[type='password'],
+/*
+  Every text-like input, including the ones written without a `type`.
+
+  This was a list of three attribute selectors, and `<input id="code">` — no
+  type, because `text` is the default behaviour — matched none of them. It
+  rendered as a raw browser control: white box, inset grey bevel, black text,
+  on a dark page. The markup was correct and the stylesheet simply did not
+  believe in it.
+
+  Second time this exact shape has bitten: a bare `form` tag missed a `display`
+  rule for the same reason. Style by what a thing *is*, and exclude the ones
+  that are something else, rather than enumerating the ones somebody remembered
+  to write an attribute for.
+*/
+input:not([type='checkbox'], [type='radio'], [type='submit'], [type='button'], [type='file'], [type='range'], [type='color']),
 select,
 textarea {
   width: 100%;

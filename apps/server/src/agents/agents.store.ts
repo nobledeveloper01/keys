@@ -147,13 +147,17 @@ export abstract class AgentsStore {
   /**
    * Answer a challenge. Grants or withdraws depending on its purpose, and on
    * a withdrawal unpublishes everything that stood on it in one transaction.
-   * Returns the listing ids that went dark, or null if the answer was wrong.
+   *
+   * Returns what it did as well as what went dark, because the page the
+   * landlord is looking at cannot tell the two apart otherwise — it was
+   * telling somebody who had just withdrawn an authority that they could
+   * withdraw it at any time. Null when the answer was wrong.
    */
   abstract answerChallenge(input: {
     challengeId: string;
     code: string;
     now: Date;
-  }): Await<readonly string[] | null>;
+  }): Await<{ purpose: ChallengePurpose; unpublished: readonly string[] } | null>;
 
   /** Withdraw an identity — Keys' own finding, not a landlord's. Atomic. */
   abstract revokeIdentity(input: {
@@ -342,10 +346,10 @@ export class InMemoryAgentsStore extends AgentsStore {
         revokedAt: null,
         propertyId: challenge.propertyId,
       });
-      return [];
+      return { purpose: 'grant' as const, unpublished: [] };
     }
 
-    return this.withdraw(
+    const unpublished = this.withdraw(
       (e) =>
         e.kind === 'authority' &&
         e.agentId === challenge.agentId &&
@@ -354,6 +358,7 @@ export class InMemoryAgentsStore extends AgentsStore {
         e.attestor.phoneHash === challenge.landlordPhoneHash,
       input.now,
     );
+    return { purpose: 'revoke' as const, unpublished };
   }
 
   revokeIdentity(input: { agentId: string; now: Date }) {

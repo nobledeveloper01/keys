@@ -15,6 +15,7 @@ export function CodeForm({ challengeId }: { challengeId: string }) {
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'failed'>('idle');
   const [problem, setProblem] = useState<string | null>(null);
   const [unpublished, setUnpublished] = useState(0);
+  const [withdrawn, setWithdrawn] = useState(false);
 
   const alert = useRef<HTMLParagraphElement>(null);
   const confirmation = useRef<HTMLDivElement>(null);
@@ -34,24 +35,37 @@ export function CodeForm({ challengeId }: { challengeId: string }) {
   }, [state]);
 
   if (state === 'done') {
+    /*
+      Two different things happened here and they need two different sentences.
+
+      One code answers both a grant and a withdrawal, which is the right design
+      — the same six digits, the same one screen — and it meant this page
+      thanked somebody for confirming an agent they had just withdrawn. The
+      server says which it was; nothing here guesses from the listing count,
+      because a withdrawal that unpublished nothing is still a withdrawal.
+    */
     return (
       <div className="verdict clear" ref={confirmation}>
         <p>
-          <strong>Done. Thank you for confirming.</strong>
+          <strong>
+            {withdrawn
+              ? 'Done. That agent no longer has your authority.'
+              : 'Done. Thank you for confirming.'}
+          </strong>
         </p>
-        {unpublished > 0 ? (
+        {unpublished > 0 && (
           <p className="small">
             {unpublished === 1
               ? 'One listing is no longer public.'
               : `${unpublished} listings are no longer public.`}{' '}
             That took effect immediately.
           </p>
-        ) : (
-          <p className="small">
-            You can withdraw this at any time. Keep this message — the link in it
-            still works.
-          </p>
         )}
+        <p className="small">
+          {withdrawn
+            ? 'If this was a mistake, the agent can ask you again and you will get a new code.'
+            : 'You can withdraw this at any time. Keep this message — the link in it still works.'}
+        </p>
       </div>
     );
   }
@@ -73,8 +87,11 @@ export function CodeForm({ challengeId }: { challengeId: string }) {
         setState('failed');
         return;
       }
-      const answered = body as { unpublishedListings?: string[] } | null;
+      const answered = body as
+        | { unpublishedListings?: string[]; withdrawn?: boolean }
+        | null;
       setUnpublished(answered?.unpublishedListings?.length ?? 0);
+      setWithdrawn(answered?.withdrawn === true);
       setState('done');
     } catch {
       setProblem('We could not reach Keys just now. Nothing was changed.');

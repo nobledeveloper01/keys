@@ -1327,6 +1327,10 @@
           "confirmed": {
             "type": "boolean"
           },
+          "withdrawn": {
+            "type": "boolean",
+            "description": "True when the code withdrew an authority rather than granting one."
+          },
           "unpublishedListings": {
             "description": "Listings that went dark as a result. Empty on a grant.",
             "type": "array",
@@ -1340,6 +1344,7 @@
         },
         "required": [
           "confirmed",
+          "withdrawn",
           "unpublishedListings",
           "meaning"
         ]

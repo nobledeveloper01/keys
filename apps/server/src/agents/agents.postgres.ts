@@ -338,7 +338,7 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
           ],
         );
         await client.query('COMMIT');
-        return [];
+        return { purpose: 'grant' as const, unpublished: [] };
       }
 
       const going = await this.withdraw(
@@ -350,7 +350,7 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
         input.now,
       );
       await client.query('COMMIT');
-      return going;
+      return { purpose: 'revoke' as const, unpublished: going };
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

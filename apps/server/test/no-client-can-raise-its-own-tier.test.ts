@@ -386,10 +386,11 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
       (await request(app.getHttpServer()).get(`/v1/agents/${agentId}`)).body.tier,
     ).toBe('identity');
 
-    await request(app.getHttpServer())
+    const granted = await request(app.getHttpServer())
       .post('/v1/authority/confirm')
       .send({ challengeId: challenge.id, code })
       .expect(201);
+    expect(granted.body.withdrawn).toBe(false);
 
     const profile = await request(app.getHttpServer()).get(`/v1/agents/${agentId}`).expect(200);
     expect(profile.body.tier).toBe('authority');
@@ -460,6 +461,11 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
       .post('/v1/authority/confirm')
       .send({ challengeId: challenge.id, code })
       .expect(201);
+
+    // Which of the two things it did, said out loud. The landlord's page shows
+    // a different sentence for each, and it was showing the wrong one because
+    // the response did not distinguish them.
+    expect(answered.body.withdrawn).toBe(true);
 
     /*
       The listing is named in the response to the withdrawal itself.

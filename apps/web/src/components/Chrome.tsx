@@ -17,18 +17,25 @@ export function Masthead() {
   const path = usePathname();
 
   /*
-    Not on the reply page.
+    Not on the pages somebody reaches from a text we sent them.
 
-    The masthead's only offer is "Report a number", and the person reading
-    `/reply` arrived from an SMS telling them they have been reported. Offering
-    them a one-tap way to report somebody else, on that page, at that moment,
-    is an invitation to retaliate — and a registry full of revenge reports is
-    the failure this product spends its whole review process avoiding.
+    The masthead's only offer is "Report a number". The person reading `/reply`
+    arrived from an SMS telling them they have been reported; the person
+    reading `/authority` arrived from one asking them to confirm or withdraw an
+    agent. Both are already unhappy, both are looking at a claim about somebody
+    they know, and offering either of them a one-tap way to report that person
+    at that moment is an invitation to retaliate. A registry full of revenge
+    reports is the failure this product spends its whole review process
+    avoiding.
 
-    They can still reach it from the home page. It is just not put in front of
-    them here.
+    Written as a list with the reason attached, rather than one `!==`, because
+    the `/authority` page inherited this defect the day it was written — the
+    fix was made for `/reply` alone and the next capability page walked
+    straight into it. Every future page reached from a text belongs here, and
+    the name says which those are.
   */
-  const offerReporting = path !== '/reply';
+  const ARRIVED_FROM_A_TEXT_WE_SENT = ['/reply', '/authority'];
+  const offerReporting = !ARRIVED_FROM_A_TEXT_WE_SENT.includes(path);
 
   return (
     <header className="masthead">

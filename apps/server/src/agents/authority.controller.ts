@@ -111,7 +111,7 @@ export class AuthorityController {
     const code = (body?.code ?? '').trim();
     if (!challengeId || !code) throw new BadRequestException('Give the code from the text.');
 
-    const unpublished = await this.store.answerChallenge({
+    const answered = await this.store.answerChallenge({
       challengeId,
       code,
       now: new Date(),
@@ -120,17 +120,23 @@ export class AuthorityController {
     // One answer for a wrong code, an expired code, a spent code and a
     // challenge that never existed. Distinguishing them tells whoever is
     // guessing which part of the guess was right.
-    if (unpublished === null) {
+    if (answered === null) {
       throw new BadRequestException('That code is wrong or no longer valid.');
     }
 
+    const withdrawn = answered.purpose === 'revoke';
     return {
       confirmed: true,
-      unpublishedListings: [...unpublished],
-      meaning:
-        unpublished.length > 0
-          ? `Done. ${unpublished.length} listing(s) are no longer public.`
-          : 'Done. Thank you for confirming.',
+      // Said, because the page cannot tell otherwise — and a page that cannot
+      // tell was thanking people for confirming an agent they had just
+      // withdrawn.
+      withdrawn,
+      unpublishedListings: [...answered.unpublished],
+      meaning: withdrawn
+        ? answered.unpublished.length > 0
+          ? `Done. ${answered.unpublished.length} listing(s) are no longer public.`
+          : 'Done. That agent no longer has your authority for this property.'
+        : 'Done. Thank you for confirming.',
     };
   }
 

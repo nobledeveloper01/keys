@@ -518,6 +518,8 @@ export interface components {
         };
         ChallengeAnsweredResponse: {
             confirmed: boolean;
+            /** @description True when the code withdrew an authority rather than granting one. */
+            withdrawn: boolean;
             /** @description Listings that went dark as a result. Empty on a grant. */
             unpublishedListings: string[];
             meaning: string;

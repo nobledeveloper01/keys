@@ -96,6 +96,9 @@ export class ChallengeAnsweredResponse {
   @ApiProperty()
   confirmed!: boolean;
 
+  @ApiProperty({ description: 'True when the code withdrew an authority rather than granting one.' })
+  withdrawn!: boolean;
+
   @ApiProperty({ description: 'Listings that went dark as a result. Empty on a grant.' })
   unpublishedListings!: string[];
 
