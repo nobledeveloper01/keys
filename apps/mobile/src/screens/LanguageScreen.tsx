@@ -63,7 +63,16 @@ export function LanguageScreen({ onDone }: { onDone: () => void }) {
         without its mark on it — and the reader met the brand twice, differently,
         in the first two seconds.
       */}
-      <View style={styles.brand}>
+      {/*
+        The lockup stacks when the name no longer fits beside the mark.
+
+        `flexShrink` was not enough: a shrunk row wraps the word itself, so at
+        the largest accessibility size the product's own name rendered as
+        “Key / s” on the first screen a reader sees. Above about 1.6× there is
+        no width for both, so the mark goes above the name instead — which is
+        what a lockup is supposed to do rather than break a word in half.
+      */}
+      <View style={[styles.brand, fontScale > 1.6 ? styles.brandStacked : null]}>
         <Gradient
           style={{
             ...styles.mark,
@@ -82,7 +91,7 @@ export function LanguageScreen({ onDone }: { onDone: () => void }) {
           the product's own name was cut off mid-word on the first screen a
           reader sees.
         */}
-        <Text variant="display" style={styles.word}>
+        <Text variant="display" style={styles.word} numberOfLines={1}>
           {say('en', 'app_name')}
         </Text>
       </View>
@@ -129,6 +138,7 @@ const styles = StyleSheet.create({
     marginBottom: space.xl,
   },
   word: { flexShrink: 1 },
+  brandStacked: { flexDirection: 'column', alignItems: 'flex-start' },
   mark: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   card: { marginBottom: space.sm },
   foot: { height: space.lg },

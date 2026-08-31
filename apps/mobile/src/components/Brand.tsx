@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { say } from '@keys/domain';
 
@@ -19,20 +19,27 @@ import { radius, space } from '../design/tokens';
  * there to answer *whose* answer this is, not to be looked at.
  */
 export function Brand() {
+  // Same reasoning as the language screen: below the width for both, the mark
+  // goes above the name rather than the name breaking in half.
+  const { fontScale } = useWindowDimensions();
+
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, fontScale > 1.6 ? styles.stacked : null]}>
       <Gradient style={styles.mark}>
         <Mark size={18} colour="#FFFFFF" />
       </Gradient>
       {/* The one phrase every language borrows unchanged. */}
-      <Text variant="title">{say('en', 'app_name')}</Text>
+      <Text variant="title" numberOfLines={1}>
+        {say('en', 'app_name')}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  stacked: { flexDirection: 'column', alignItems: 'flex-start' },
   mark: {
     width: 30,
     height: 30,
