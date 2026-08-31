@@ -4,6 +4,7 @@ import { CapturesStoreModule } from '../captures/captures-store.module';
 import { ReportsModule } from '../reports/reports.module';
 import { AgentReviewController } from './agent-review.controller';
 import { AgentsController } from './agents.controller';
+import { SearchController } from './search.controller';
 import { AgentsStore, InMemoryAgentsStore } from './agents.store';
 import { AuthorityController } from './authority.controller';
 import { OutboxModule } from '../outbox/outbox.module';
@@ -30,7 +31,7 @@ import { PostgresAgentsStore } from './agents.postgres';
  */
 @Module({
   imports: [ReportsModule, CapturesStoreModule, OutboxModule],
-  controllers: [AgentsController, AuthorityController, AgentReviewController],
+  controllers: [AgentsController, AuthorityController, AgentReviewController, SearchController],
   providers: [
     {
       provide: AgentsStore,

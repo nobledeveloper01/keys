@@ -23,13 +23,10 @@ import {
   isLive,
   isPlausiblePoint,
   mayList,
-  metresBetween,
   tierOf,
   tierSentence,
-  unmetConditions,
   whatToDo,
   type Evidence,
-  type ListingEvidence,
 } from '@keys/domain';
 
 import { ReportsStore, hashPhone } from '../reports/reports.store';
@@ -49,7 +46,8 @@ import {
   LandlordVouchesForTooMany,
   type StoredAgent,
 } from './agents.store';
-import { CapturesStore, type StoredCapture } from '../captures/captures.store';
+import { CapturesStore } from '../captures/captures.store';
+import { assessListing } from './assess';
 import { authorityLink } from '../outbox/links';
 import { Outbox } from '../outbox/outbox';
 
@@ -402,82 +400,27 @@ export class AgentsController {
     const agent = request.agent!;
     const now = new Date();
     const listings = await this.store.listingsOf(agent.id);
-    const evidence = await this.store.evidenceFor(agent.id);
+    /*
+      The same assessment a tenant's search runs.
 
-    // Asked per listing rather than assumed false, which is what it was. A
-    // reviewer blocking an image had no effect on anything an agent could see.
-    const blocked = new Set<string>();
-    const captured = new Map<string, readonly StoredCapture[]>();
+      This built the inputs itself and the two drifted: search copied
+      `distanceM` off the stored capture, where it is always null, so an agent
+      saw a ticked "photographed at the property" for a listing no tenant could
+      find. One function computes it now, and nothing else may.
+    */
+    const assessed = new Map<string, Awaited<ReturnType<typeof assessListing>>>();
     for (const listing of listings) {
-      if (await this.captures.isBlocked(listing.id)) blocked.add(listing.id);
-      captured.set(listing.id, await this.captures.capturesFor(listing.id));
+      assessed.set(
+        listing.id,
+        await assessListing(
+          listing,
+          { agents: this.store, reports: this.reports, captures: this.captures },
+          now,
+        ),
+      );
     }
-    const upheld = await this.reports.publishedForHash(agent.phoneHash, now);
-    const tier = tierOf(
-      evidence,
-      { joinedAt: agent.joinedAt, upheldReports: upheld.length },
-      now,
-    );
 
     return listings.map((l) => {
-      /*
-        What is missing, computed rather than stored.
-
-        Three of the seven conditions are answerable today; the media and
-        confirmation ones are not, because in-app capture does not exist yet.
-        They are reported as unmet rather than omitted — an agent told their
-        listing needs two things when it needs five would go and do the two and
-        find the badge still missing, and that is how a mechanism stops being
-        legible.
-      */
-      const inputs: ListingEvidence = {
-        agentTier: tier,
-        authorityLive: mayList(evidence, l.propertyId, now),
-        /*
-          The captures this listing actually has.
-
-          `[]` was here, which meant an agent who had done everything right saw
-          "take at least one photo in the Keys app" for ever. Verified is
-          computed from evidence; passing an empty list is not computing it, it
-          is asserting the answer.
-
-          `provesPresence` still needs a distance, and nothing yet knows where
-          a property *is* — so a capture arrives with `distanceM: null` and the
-          condition stays unmet. That is the honest state: an accepted capture
-          proves the Keys camera took it, and proving it was taken at the
-          property needs a property with coordinates, which phase 4 brings.
-        */
-        captures: (captured.get(l.id) ?? []).map((c) => ({
-          kind: c.kind,
-          // Anything the store holds passed signature verification to get
-          // there — that is the only door — so these are true by construction
-          // rather than by a flag somebody set.
-          capturedInApp: true,
-          signatureValid: true,
-          /*
-            Measured now, from the listing's own coordinates.
-
-            Not stored on the capture: a listing whose location is corrected —
-            an agent fixed a typo, or added coordinates after drafting —
-            should re-answer this rather than carry a distance computed
-            against the wrong place for ever.
-          */
-          distanceM:
-            l.latitude !== null && l.longitude !== null
-              ? metresBetween(
-                  { latitude: l.latitude, longitude: l.longitude },
-                  { latitude: c.latitude, longitude: c.longitude },
-                )
-              : null,
-          durationSeconds: c.durationSeconds,
-        })),
-        blockedDuplicate: blocked.has(l.id),
-        // The listing's own record, not null. This was the fourth hardcoded
-        // input to a computation whose whole value is that it is computed.
-        lastConfirmedAt: l.lastConfirmedAt,
-        upheldReports: upheld.length,
-      };
-
       return {
         id: l.id,
         propertyId: l.propertyId,
@@ -485,7 +428,7 @@ export class AgentsController {
         publishedAt: l.publishedAt?.toISOString() ?? null,
         confirmedAt: l.lastConfirmedAt?.toISOString() ?? null,
         placed: l.latitude !== null && l.longitude !== null,
-        stillNeeded: unmetConditions(inputs, now).map((condition) => ({
+        stillNeeded: [...(assessed.get(l.id)?.unmet ?? [])].map((condition) => ({
           condition,
           whatToDo: whatToDo(condition),
         })),

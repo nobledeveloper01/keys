@@ -568,6 +568,26 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     return (result.rowCount ?? 0) > 0;
   }
 
+  async agentsByIds(ids: readonly string[]) {
+    const usable = ids.filter((id) => /^[0-9a-f-]{36}$/i.test(id));
+    if (usable.length === 0) return [];
+    const result = await this.pool.query<{
+      id: string;
+      display_name: string;
+      phone_hash: string;
+      joined_at: Date;
+    }>(
+      'SELECT id, display_name, phone_hash, joined_at FROM agents WHERE id = ANY($1::uuid[])',
+      [usable],
+    );
+    return result.rows.map((row) => ({
+      id: row.id,
+      displayName: row.display_name,
+      phoneHash: row.phone_hash,
+      joinedAt: row.joined_at,
+    }));
+  }
+
   async publishedListings() {
     const result = await this.pool.query<ListingRow>(
       `SELECT ${LISTING_COLUMNS} FROM listings WHERE published_at IS NOT NULL`,

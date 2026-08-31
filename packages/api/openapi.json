@@ -830,6 +830,103 @@
         ]
       }
     },
+    "/v1/listings": {
+      "get": {
+        "operationId": "SearchController_search",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "latitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "longitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "verifiedOnly",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchResult"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Published listings, Verified first. No account required.",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/v1/listings/{id}": {
+      "get": {
+        "operationId": "SearchController_one",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "language",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "One listing, with what was actually checked about it.",
+        "tags": [
+          "search"
+        ]
+      }
+    },
     "/v1/captures/devices": {
       "post": {
         "operationId": "CapturesController_registerDevice",
@@ -1783,6 +1880,111 @@
           "upheldReports",
           "publishedListings",
           "evidence"
+        ]
+      },
+      "SearchResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Computed on every search from evidence. Never a stored column."
+          },
+          "agentName": {
+            "type": "string"
+          },
+          "because": {
+            "description": "Why this is ranked where it is. Said out loud, because a ranking nobody can interrogate is one somebody will assume was bought.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "address",
+          "verified",
+          "agentName",
+          "because"
+        ]
+      },
+      "ListingCheck": {
+        "type": "object",
+        "properties": {
+          "condition": {
+            "type": "string",
+            "enum": [
+              "agent_identity",
+              "landlord_authority",
+              "capture_on_site",
+              "walkthrough_video",
+              "not_a_known_duplicate",
+              "recently_confirmed",
+              "nothing_upheld"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "description": "The condition as a checklist row, in the reader's language."
+          },
+          "met": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "condition",
+          "label",
+          "met"
+        ]
+      },
+      "ListingView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "agentName": {
+            "type": "string"
+          },
+          "agentMeaning": {
+            "type": "string",
+            "description": "What was checked about the agent, in words a tenant could verify."
+          },
+          "checks": {
+            "description": "Every condition, met or not. Not a badge and not a score: the list of things that were checked, which a tenant can read and disagree with.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListingCheck"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "address",
+          "verified",
+          "agentName",
+          "agentMeaning",
+          "checks"
         ]
       },
       "RegisterDeviceBody": {

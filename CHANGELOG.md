@@ -41,6 +41,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Search.** Published listings, Verified first — and Verified is computed on
+  every search rather than stored, so a listing whose landlord withdrew a
+  minute ago is gone from the next results with nothing having to re-index.
+  The ranking says *why* each result sits where it does, because a ranking
+  nobody can interrogate is one somebody will assume was bought. No paid
+  placement anywhere in it.
+- **A listing page publishes its evidence, not a badge**: all seven conditions,
+  met or not, in the reader's language.
 - **The agent's account is a list of properties, not a wall of forms.** It was
   one endless scroll: standing, a landlord form, every listing, a draft form,
   and sign-out, with every form permanently open. Now it is your standing, your

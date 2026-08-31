@@ -18,4 +18,5 @@ export * from './language.ts';
 export * from './listings.ts';
 export * from './phone.ts';
 export * from './places.ts';
+export * from './search.ts';
 export * from './reports.ts';

@@ -194,3 +194,50 @@ export class ListingResponse {
   })
   stillNeeded!: StillNeeded[];
 }
+
+export class SearchResult {
+  @ApiProperty() id!: string;
+  @ApiProperty() title!: string;
+  @ApiProperty() address!: string;
+
+  @ApiProperty({ description: 'Computed on every search from evidence. Never a stored column.' })
+  verified!: boolean;
+
+  @ApiProperty() agentName!: string;
+
+  @ApiProperty({
+    type: [String],
+    description:
+      'Why this is ranked where it is. Said out loud, because a ranking nobody can interrogate is one somebody will assume was bought.',
+  })
+  because!: string[];
+}
+
+export class ListingCheck {
+  @ApiProperty({ enum: VERIFIED_CONDITIONS })
+  condition!: string;
+
+  @ApiProperty({ description: "The condition as a checklist row, in the reader's language." })
+  label!: string;
+
+  @ApiProperty()
+  met!: boolean;
+}
+
+export class ListingView {
+  @ApiProperty() id!: string;
+  @ApiProperty() title!: string;
+  @ApiProperty() address!: string;
+  @ApiProperty() verified!: boolean;
+  @ApiProperty() agentName!: string;
+
+  @ApiProperty({ description: 'What was checked about the agent, in words a tenant could verify.' })
+  agentMeaning!: string;
+
+  @ApiProperty({
+    type: [ListingCheck],
+    description:
+      'Every condition, met or not. Not a badge and not a score: the list of things that were checked, which a tenant can read and disagree with.',
+  })
+  checks!: ListingCheck[];
+}

@@ -233,6 +233,9 @@ export abstract class AgentsStore {
     longitude: number;
   }): Await<boolean>;
   abstract publishedListings(): Await<readonly Listing[]>;
+
+  /** Every agent named by a set of listings, in one go. */
+  abstract agentsByIds(ids: readonly string[]): Await<readonly StoredAgent[]>;
 }
 
 /** Hashed the same way everywhere, so a token at rest is not a token. */
@@ -525,5 +528,10 @@ export class InMemoryAgentsStore extends AgentsStore {
 
   publishedListings() {
     return [...this.listings.values()].filter((l) => l.publishedAt !== null);
+  }
+
+  agentsByIds(ids: readonly string[]) {
+    const wanted = new Set(ids);
+    return [...this.agents.values()].filter((a) => wanted.has(a.id));
   }
 }

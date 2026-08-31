@@ -259,9 +259,12 @@ Postgres FTS + PostGIS search, filters with Verified defaulting on, map search, 
 domain package, total-cost calculation, listing pages with the evidence panel, **SSR and
 structured data on web**.
 
-**Phase gate:** a search never returns a listing the searcher could not have seen — the
-Verified filter is computed, not stored, and a listing that lost its badge this morning is
-gone from this afternoon's results without anything having to re-index it.
+**Phase gate — ✅ green.** A search never returns a listing the searcher could not have
+seen. Verified is computed on every search from the same evidence the agent's own screen
+reads — `assessListing`, one implementation, nothing else may compute it. Every way of
+losing the badge is exercised separately: the landlord withdraws, a reviewer withdraws the
+ID, a reviewer blocks an image, the fortnight lapses. Each takes the listing out of the
+*very next* request. Adding a cache fails it; filtering before assessing fails it.
 
 **Release gates:** sub-1.5 s results, rendered HTML asserted to contain listing content, and
 structured data validating. All three are about a deployment nobody has stood up.

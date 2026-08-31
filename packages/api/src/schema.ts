@@ -398,6 +398,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/listings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Published listings, Verified first. No account required. */
+        get: operations["SearchController_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/listings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One listing, with what was actually checked about it. */
+        get: operations["SearchController_one"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captures/devices": {
         parameters: {
             query?: never;
@@ -708,6 +742,34 @@ export interface components {
             upheldReports: number;
             publishedListings: number;
             evidence: components["schemas"]["AttestationView"][];
+        };
+        SearchResult: {
+            id: string;
+            title: string;
+            address: string;
+            /** @description Computed on every search from evidence. Never a stored column. */
+            verified: boolean;
+            agentName: string;
+            /** @description Why this is ranked where it is. Said out loud, because a ranking nobody can interrogate is one somebody will assume was bought. */
+            because: string[];
+        };
+        ListingCheck: {
+            /** @enum {string} */
+            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld";
+            /** @description The condition as a checklist row, in the reader's language. */
+            label: string;
+            met: boolean;
+        };
+        ListingView: {
+            id: string;
+            title: string;
+            address: string;
+            verified: boolean;
+            agentName: string;
+            /** @description What was checked about the agent, in words a tenant could verify. */
+            agentMeaning: string;
+            /** @description Every condition, met or not. Not a badge and not a score: the list of things that were checked, which a tenant can read and disagree with. */
+            checks: components["schemas"]["ListingCheck"][];
         };
         RegisterDeviceBody: {
             /** @description The device's P-256 public key, SPKI DER, base64. P-256 because that is what the Secure Enclave holds. */
@@ -1322,6 +1384,53 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    SearchController_search: {
+        parameters: {
+            query: {
+                q: string;
+                latitude: string;
+                longitude: string;
+                verifiedOnly: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResult"][];
+                };
+            };
+        };
+    };
+    SearchController_one: {
+        parameters: {
+            query: {
+                language: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListingView"];
+                };
             };
         };
     };
