@@ -9,6 +9,7 @@
 @interface RCT_EXTERN_MODULE (KeysCapture, NSObject)
 
 RCT_EXTERN_METHOD(capture
+                  : (NSString *)kind resolver
                   : (RCTPromiseResolveBlock)resolve rejecter
                   : (RCTPromiseRejectBlock)reject)
 

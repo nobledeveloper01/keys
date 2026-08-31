@@ -30,6 +30,7 @@ import { sha256 } from './sha256';
 export async function probeCapture(
   baseUrl: string,
   token: string | null,
+  kind: 'photo' | 'video' = 'photo',
 ): Promise<string> {
   if (!token) return 'Open an agent account first.';
 
@@ -63,7 +64,7 @@ export async function probeCapture(
   */
   let taken: Awaited<ReturnType<typeof KeysCapture.capture>>;
   try {
-    taken = await KeysCapture.capture();
+    taken = await KeysCapture.capture(kind);
   } catch (error) {
     return error instanceof Error ? error.message : 'The camera did not open.';
   }
@@ -80,6 +81,9 @@ export async function probeCapture(
     longitude: taken.longitude,
     nonce: `probe-${Date.now()}`,
     mockLocation: taken.mockLocation,
+    // The camera's own measurement, inside the signature. A duration the app
+    // could choose is a two-second clip claiming thirty.
+    durationSeconds: taken.durationSeconds ?? null,
   };
 
   // `claimMessage` from the domain, which is the same function the server uses
@@ -97,8 +101,8 @@ export async function probeCapture(
       longitude: claim.longitude,
       nonce: claim.nonce,
       mockLocation: claim.mockLocation,
-      kind: 'photo',
-      durationSeconds: null,
+      kind,
+      durationSeconds: claim.durationSeconds,
       signature,
       pixels: taken.pixels,
     }),

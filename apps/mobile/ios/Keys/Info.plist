@@ -24,6 +24,8 @@
 	<string>????</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Keys photographs a property from inside the app so a tenant can tell your photos apart from somebody else’s. Photos from your gallery cannot be used.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>A walkthrough records sound as well as picture. Keys does not use the microphone for anything else.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Keys records where a photo was taken, so a tenant can see it was taken at the property rather than anywhere else. It is used for that and nothing else.</string>
 	<key>CFBundleURLTypes</key>

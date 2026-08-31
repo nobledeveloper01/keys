@@ -37,11 +37,13 @@ final class KeysCapture: NSObject {
   private var pending: (resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock)?
   private var controller: CaptureController?
 
-  @objc(capture:rejecter:)
+  @objc(capture:resolver:rejecter:)
   func capture(
-    _ resolve: @escaping RCTPromiseResolveBlock,
+    _ kind: String,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
+    let wantsVideo = kind == "video"
     DispatchQueue.main.async {
       guard self.pending == nil else {
         reject("keys_capture_busy", "A capture is already open.", nil)
@@ -78,7 +80,7 @@ final class KeysCapture: NSObject {
       }
 
       self.pending = (resolve, reject)
-      let controller = CaptureController { [weak self] result in
+      let controller = CaptureController(video: wantsVideo) { [weak self] result in
         guard let self, let pending = self.pending else { return }
         self.pending = nil
         self.controller = nil
@@ -102,17 +104,23 @@ struct CaptureFailure: Error {
 }
 
 private final class CaptureController: UIViewController,
-  AVCapturePhotoCaptureDelegate, CLLocationManagerDelegate
+  AVCapturePhotoCaptureDelegate, AVCaptureFileOutputRecordingDelegate,
+  CLLocationManagerDelegate
 {
   private let session = AVCaptureSession()
   private let output = AVCapturePhotoOutput()
+  private let movie = AVCaptureMovieFileOutput()
   private let locations = CLLocationManager()
   private let finished: (Result<[String: Any], CaptureFailure>) -> Void
+  private let video: Bool
 
   private var located: CLLocation?
   private var shutter: UIButton?
+  private var timer: Timer?
+  private var startedAt: Date?
 
-  init(finished: @escaping (Result<[String: Any], CaptureFailure>) -> Void) {
+  init(video: Bool, finished: @escaping (Result<[String: Any], CaptureFailure>) -> Void) {
+    self.video = video
     self.finished = finished
     super.init(nibName: nil, bundle: nil)
   }
@@ -128,11 +136,12 @@ private final class CaptureController: UIViewController,
     locations.requestWhenInUseAuthorization()
     locations.startUpdatingLocation()
 
+    let wanted: AVCaptureOutput = video ? movie : output
     guard
       let camera = AVCaptureDevice.default(for: .video),
       let input = try? AVCaptureDeviceInput(device: camera),
       session.canAddInput(input),
-      session.canAddOutput(output)
+      session.canAddOutput(wanted)
     else {
       /*
         The camera existed a moment ago and does not now — another app took it,
@@ -152,7 +161,21 @@ private final class CaptureController: UIViewController,
     }
 
     session.addInput(input)
-    session.addOutput(output)
+    session.addOutput(wanted)
+
+    /*
+      Sound, for a walkthrough only.
+
+      A photograph does not need a microphone and asking for one would be a
+      permission dialogue an agent has no reason to grant. A walkthrough
+      without sound is a walkthrough somebody can film off a screen with the
+      volume down, and the narration is part of what makes it one.
+    */
+    if video, let microphone = AVCaptureDevice.default(for: .audio),
+       let audio = try? AVCaptureDeviceInput(device: microphone),
+       session.canAddInput(audio) {
+      session.addInput(audio)
+    }
 
     let preview = AVCaptureVideoPreviewLayer(session: session)
     preview.videoGravity = .resizeAspectFill
@@ -160,7 +183,7 @@ private final class CaptureController: UIViewController,
     view.layer.addSublayer(preview)
 
     let button = UIButton(type: .system)
-    button.setTitle("Take the photo", for: .normal)
+    button.setTitle(video ? "Start the walkthrough" : "Take the photo", for: .normal)
     button.setTitleColor(.black, for: .normal)
     button.backgroundColor = .white
     button.layer.cornerRadius = 28
@@ -204,6 +227,11 @@ private final class CaptureController: UIViewController,
   }
 
   @objc private func take() {
+    if video {
+      startOrStopRecording()
+      return
+    }
+
     /*
       Refused without a location rather than captured with none.
 
@@ -220,6 +248,105 @@ private final class CaptureController: UIViewController,
     }
     shutter?.isEnabled = false
     output.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+  }
+
+  private func startOrStopRecording() {
+    guard located != nil else {
+      finished(.failure(CaptureFailure(
+        what: "Keys needs your location to prove where this was taken. Allow it and try again."
+      )))
+      return
+    }
+
+    if movie.isRecording {
+      /*
+        Stopping short is refused here rather than at the server.
+
+        `MIN_VIDEO_SECONDS` is thirty and the server enforces it, but an agent
+        who films twenty-eight seconds and only finds out after uploading on a
+        Nigerian network has paid for the round trip and has to walk the flat
+        again. The button says how long is left.
+      */
+      let elapsed = Date().timeIntervalSince(startedAt ?? Date())
+      if elapsed < 30 {
+        shutter?.setTitle("Keep going — \(Int(30 - elapsed))s more", for: .normal)
+        return
+      }
+      movie.stopRecording()
+      timer?.invalidate()
+      shutter?.isEnabled = false
+      shutter?.setTitle("Saving…", for: .normal)
+      return
+    }
+
+    let url = FileManager.default.temporaryDirectory
+      .appendingPathComponent("keys-walkthrough-\(UUID().uuidString).mov")
+    startedAt = Date()
+    movie.startRecording(to: url, recordingDelegate: self)
+
+    timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+      guard let self, let started = self.startedAt else { return }
+      let elapsed = Int(Date().timeIntervalSince(started))
+      self.shutter?.setTitle(
+        elapsed >= 30 ? "Stop (\(elapsed)s)" : "Keep going — \(30 - elapsed)s more",
+        for: .normal
+      )
+    }
+  }
+
+  func fileOutput(
+    _ output: AVCaptureFileOutput,
+    didFinishRecordingTo outputFileURL: URL,
+    from connections: [AVCaptureConnection],
+    error: Error?
+  ) {
+    defer { try? FileManager.default.removeItem(at: outputFileURL) }
+
+    guard error == nil, let location = located else {
+      finished(.failure(CaptureFailure(what: "That walkthrough did not save. Try again.")))
+      return
+    }
+
+    let asset = AVURLAsset(url: outputFileURL)
+    let seconds = CMTimeGetSeconds(asset.duration)
+
+    /*
+      One frame, a second in, as the thing that gets hashed.
+
+      A walkthrough's *bytes* are megabytes and change completely on every
+      re-encode, so hashing the file would tell nobody whether two agents are
+      using the same footage. A frame goes through the same perceptual hash as
+      a photograph, which is what makes a stolen walkthrough findable — and it
+      is one second in rather than at zero, because the first frame of a
+      hand-held video is usually a blur of somebody's thumb.
+    */
+    let generator = AVAssetImageGenerator(asset: asset)
+    generator.appliesPreferredTrackTransform = true
+    guard
+      let frame = try? generator.copyCGImage(
+        at: CMTime(seconds: min(1, seconds / 2), preferredTimescale: 600),
+        actualTime: nil
+      )
+    else {
+      finished(.failure(CaptureFailure(what: "Keys could not read that walkthrough.")))
+      return
+    }
+
+    let mocked: Bool
+    if #available(iOS 15.0, *) {
+      mocked = location.sourceInformation?.isSimulatedBySoftware ?? false
+    } else {
+      mocked = false
+    }
+
+    finished(.success([
+      "pixels": KeysCapture.grid(from: frame).base64EncodedString(),
+      "latitude": location.coordinate.latitude,
+      "longitude": location.coordinate.longitude,
+      "mockLocation": mocked,
+      "capturedAt": ISO8601DateFormatter.keys.string(from: startedAt ?? Date()),
+      "durationSeconds": seconds,
+    ]))
   }
 
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {

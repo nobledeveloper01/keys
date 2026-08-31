@@ -232,6 +232,16 @@ none of them can wait for launch.*
    confirmation, because that would hand every listing a free fortnight and make the first
    confirmation the one nobody ever does.
 
+   **Walkthrough video too.** The same controller records a walkthrough with sound, refuses
+   to stop before thirty seconds and says how long is left, and returns **one frame from a
+   second in** as what gets hashed — a video's bytes are megabytes and change completely on
+   every re-encode, so hashing the file would say nothing about whether two agents are using
+   the same footage. A frame goes through the same perceptual hash a photograph does.
+
+   The duration is **inside the signature** (`keys.capture.v2`). It was beside it, which
+   meant a two-second clip could claim thirty and satisfy the condition that exists to make
+   an agent walk the flat.
+
    **The camera is built.** `KeysCapture` presents AVFoundation, takes one photograph,
    attaches CoreLocation's position and whether the OS thinks it was faked, and returns the
    greyscale grid the hash reads. There is deliberately **no gallery picker** — the

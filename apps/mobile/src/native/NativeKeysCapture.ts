@@ -15,13 +15,18 @@ import { TurboModuleRegistry, type TurboModule } from 'react-native';
  */
 export interface Spec extends TurboModule {
   /**
-   * Present the camera, take one photograph, and return it with where it was
-   * taken. Rejects if the device has no camera, if the agent cancels, or if
+   * Present the camera and return what it captured, with where it was taken.
+   *
+   * A walkthrough returns one frame from a second in as its `pixels` — the
+   * file's own bytes are megabytes and change completely on every re-encode,
+   * so hashing them would say nothing about whether two agents are using the
+   * same footage. A frame goes through the same perceptual hash a photograph
+   * does, which is what makes a stolen walkthrough findable. Rejects if the device has no camera, if the agent cancels, or if
    * there is no location — a capture with no location can never satisfy
    * `provesPresence`, so taking it would produce a photograph that silently
    * counts for nothing.
    */
-  capture(): Promise<{
+  capture(kind: 'photo' | 'video'): Promise<{
     /** `KEYSGREY`, width, height, one byte a pixel — base64. */
     pixels: string;
     latitude: number;
@@ -29,6 +34,11 @@ export interface Spec extends TurboModule {
     /** What the OS said. Signed, so a modified client cannot flip it. */
     mockLocation: boolean;
     capturedAt: string;
+    /**
+     * Only for a walkthrough. A photograph has no duration, and the server
+     * reads this to decide whether thirty seconds of it exist.
+     */
+    durationSeconds?: number;
   }>;
 }
 

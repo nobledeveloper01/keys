@@ -69,10 +69,17 @@ export function SettingsScreen({ baseUrl }: { baseUrl: string }) {
             Device key
           </Text>
           <Button
-            label="Sign a capture with this phone"
+            label="Sign a photo with this phone"
             disabled={token === null}
             onPress={() => {
-              void probeCapture(baseUrl, token).then(setKey);
+              void probeCapture(baseUrl, token, 'photo').then(setKey);
+            }}
+          />
+          <Button
+            label="Sign a walkthrough with this phone"
+            disabled={token === null}
+            onPress={() => {
+              void probeCapture(baseUrl, token, 'video').then(setKey);
             }}
           />
           {key !== null && (

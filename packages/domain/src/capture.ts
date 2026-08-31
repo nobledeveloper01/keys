@@ -39,6 +39,16 @@ export interface CaptureClaim {
   readonly nonce: string;
   /** Whether the operating system reported the location as mocked. */
   readonly mockLocation: boolean;
+  /**
+   * How long a walkthrough runs. Null for a photograph.
+   *
+   * Inside the signature, for the same reason `mockLocation` is: the
+   * `walkthrough_video` condition asks for thirty seconds, and a duration sent
+   * beside the signature is a number the client chooses. A two-second clip
+   * claiming thirty would satisfy the condition that exists to make somebody
+   * walk the flat.
+   */
+  readonly durationSeconds: number | null;
 }
 
 /**
@@ -64,7 +74,16 @@ export interface CaptureClaim {
  */
 export function claimMessage(claim: CaptureClaim): string {
   return [
-    'keys.capture.v1',
+    /*
+      v2, because the shape changed.
+
+      `durationSeconds` moved inside the signature when it turned out a client
+      could claim thirty seconds for a two-second clip. The version prefix
+      exists so that is a new scheme rather than a silent break — an old client
+      signs a v1 string, the server rebuilds a v2 one, and the mismatch is a
+      refusal rather than a capture verified against the wrong statement.
+    */
+    'keys.capture.v2',
     claim.sha256,
     claim.listingId,
     claim.capturedAt.toISOString(),
@@ -72,6 +91,9 @@ export function claimMessage(claim: CaptureClaim): string {
     claim.longitude.toFixed(6),
     claim.nonce,
     claim.mockLocation ? 'mock' : 'real',
+    // Whole seconds. A float's decimal representation differs between two
+    // runtimes, and a signature is over bytes.
+    claim.durationSeconds === null ? 'still' : String(Math.floor(claim.durationSeconds)),
   ].join('\n');
 }
 

@@ -70,6 +70,7 @@ function claimFor(overrides: Partial<CaptureClaim> = {}): CaptureClaim {
     longitude: 3.3792,
     nonce: randomUUID(),
     mockLocation: false,
+    durationSeconds: null,
     ...overrides,
   };
 }
@@ -90,8 +91,8 @@ function wire(
     longitude: claim.longitude,
     nonce: claim.nonce,
     mockLocation: claim.mockLocation,
-    kind: 'photo',
-    durationSeconds: null,
+    kind: claim.durationSeconds === null ? 'photo' : 'video',
+    durationSeconds: claim.durationSeconds,
     signature,
   };
 }
@@ -232,6 +233,35 @@ describe('no injected upload is accepted', () => {
     const claim = claimFor({ sha256: createHash('sha256').update(lying).digest('hex') });
     const response = await submit(wire(claim, deviceId, signWith(claim), lying)).expect(403);
     expect(response.body.refusals).toContain('bytes_do_not_match');
+  });
+
+  it('will not let a client inflate how long a walkthrough ran', async () => {
+    /*
+      `walkthrough_video` asks for thirty seconds, and thirty seconds is the
+      whole point — it is what makes an agent walk the flat rather than film a
+      doorway. The duration was outside the signature at first, which meant a
+      two-second clip could claim thirty and satisfy the condition designed to
+      prevent exactly that.
+    */
+    const short = claimFor({ durationSeconds: 2 });
+    const signature = signWith(short);
+
+    const inflated = await submit({
+      ...wire(short, deviceId, signature),
+      durationSeconds: 45,
+    });
+    expect(inflated.status).toBe(403);
+    expect(inflated.body.refusals).toContain('bad_signature');
+  });
+
+  it('records the duration the signature covers, not the one beside it', async () => {
+    const walkthrough = claimFor({ durationSeconds: 42 });
+    await submit(wire(walkthrough, deviceId, signWith(walkthrough))).expect(201);
+
+    const store = app.get(CapturesStore);
+    const recorded = (await store.capturesFor(walkthrough.listingId)).at(-1);
+    expect(recorded?.kind).toBe('video');
+    expect(recorded?.durationSeconds).toBe(42);
   });
 
   it('refuses a capture that says its own location was mocked', async () => {

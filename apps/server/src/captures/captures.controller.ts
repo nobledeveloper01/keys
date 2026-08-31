@@ -114,6 +114,8 @@ export class CapturesController {
       longitude: Number(body?.longitude),
       nonce: body?.nonce ?? '',
       mockLocation: body?.mockLocation === true,
+      durationSeconds:
+        typeof body?.durationSeconds === 'number' ? body.durationSeconds : null,
     };
     if (!/^[0-9a-f]{64}$/.test(claim.sha256) || !claim.listingId || !claim.nonce) {
       throw new BadRequestException('Give the hash, the listing and a nonce.');
@@ -209,8 +211,9 @@ export class CapturesController {
       longitude: claim.longitude,
       distanceM: null,
       kind: body?.kind === 'video' ? 'video' : 'photo',
-      durationSeconds:
-        typeof body?.durationSeconds === 'number' ? body.durationSeconds : null,
+      // From the claim, which the signature covers — not from the body beside
+      // it, which the client chooses.
+      durationSeconds: claim.durationSeconds,
       looksLike,
     });
 
