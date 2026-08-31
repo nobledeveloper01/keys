@@ -18,6 +18,8 @@
   --alarm: #81152b;
   --alarm-wash: #fbe9ec;
   --brand-gradient: linear-gradient(140deg, #7762EC 0%, #573EE7 50%, #221186 100%);
+  /* Darker, because sixteen-point text sits on it. */
+  --control-gradient: linear-gradient(140deg, #573EE7 0%, #381BDC 50%, #221186 100%);
   /* A stronger line for controls, so a field edge is visible on white. */
   --line-strong: #e7e7ec;
 }
@@ -399,7 +401,8 @@ button {
   min-height: 48px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  background: var(--brand-gradient);
+  /* The control gradient, not the brand one: this has a label on it. */
+  background: var(--control-gradient);
   color: #fff;
   cursor: pointer;
   transition: filter 120ms ease, transform 80ms ease;

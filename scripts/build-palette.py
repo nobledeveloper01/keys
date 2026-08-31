@@ -40,6 +40,16 @@ STEPS = {
 }
 
 
+def BRAND_GRADIENT(r: dict) -> list:
+    """Decorative: the splash field, the mark's tile. White shapes only."""
+    return [r['brand']['400'], r['brand']['500'], r['brand']['800']]
+
+
+def CONTROL_GRADIENT(r: dict) -> list:
+    """Anything with a text label on it. One step darker, and checked at 4.5:1."""
+    return [r['brand']['500'], r['brand']['600'], r['brand']['800']]
+
+
 def build_ramps() -> dict:
     ramps = {}
     for name, (hue, sat) in HUES.items():
@@ -158,6 +168,34 @@ def check(theme: dict, name: str) -> list:
     return problems
 
 
+def gradients_carry_their_labels(ramps: dict) -> list:
+    """
+    A gradient with text on it is checked at its lightest stop.
+
+    The brand gradient is decorative — it fills the splash, the mark's tile and
+    the masthead badge, where the only thing over it is a white shape at large
+    size. White on its lightest stop is 4.43:1, which clears the 3:1 floor for
+    large graphics and fails the 4.5:1 one for text.
+
+    Buttons put sixteen-point text on it, so they get their own, darker
+    gradient. This is why there are two: not taste, arithmetic. Nothing else
+    caught it, because the palette's own check compares `onAccent` against
+    `accent` and a button's background is neither.
+    """
+    problems = []
+    for name, stops, need in (
+        ('control gradient', CONTROL_GRADIENT(ramps), 4.5),
+        ('brand gradient', BRAND_GRADIENT(ramps), 3.0),
+    ):
+        lightest = max(stops, key=luminance)
+        got = contrast(lightest, '#FFFFFF')
+        if got < need:
+            problems.append(
+                f'white on the {name}\'s lightest stop {lightest} is {got:.2f}:1, needs {need}'
+            )
+    return problems
+
+
 def hues_are_separated() -> list:
     """
     The brand must not sit on a status hue.
@@ -188,7 +226,12 @@ def main() -> int:
     ramps = build_ramps()
     built = themes(ramps)
 
-    problems = hues_are_separated() + check(built['light'], 'light') + check(built['dark'], 'dark')
+    problems = (
+        hues_are_separated()
+        + gradients_carry_their_labels(ramps)
+        + check(built['light'], 'light')
+        + check(built['dark'], 'dark')
+    )
     if problems:
         print('✗ the palette does not meet its own contrast floors:')
         for line in problems:
@@ -202,7 +245,8 @@ def main() -> int:
         'themes': built,
         # The brand gradient, and the flat colour a native launch screen uses in
         # its place. The midpoint, so the hand-over does not flash.
-        'gradient': [ramps['brand']['400'], ramps['brand']['500'], ramps['brand']['800']],
+        'gradient': BRAND_GRADIENT(ramps),
+        'controlGradient': CONTROL_GRADIENT(ramps),
         'gradientFlat': ramps['brand']['500'],
     }
     (ROOT / 'design/palette.json').write_text(json.dumps(out, indent=2) + '\n')

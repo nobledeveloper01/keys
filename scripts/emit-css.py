@@ -50,6 +50,12 @@ def block(palette: dict) -> str:
     lines = [START, ':root {']
     lines += [f'  --{name}: {light[key].lower()};' for name, key in ORDER]
     lines.append(f'  --brand-gradient: linear-gradient(140deg, {stops});')
+    control = ', '.join(
+        f'{c} {round(i / (len(palette["controlGradient"]) - 1) * 100)}%'
+        for i, c in enumerate(palette['controlGradient'])
+    )
+    lines.append('  /* Darker, because sixteen-point text sits on it. */')
+    lines.append(f'  --control-gradient: linear-gradient(140deg, {control});')
     lines.append('  /* A stronger line for controls, so a field edge is visible on white. */')
     lines.append(f"  --line-strong: {light['outline'].lower()};")
     lines.append('}')

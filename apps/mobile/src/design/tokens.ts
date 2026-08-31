@@ -69,7 +69,14 @@ export const palette = {
   },
 } as const;
 
-/** The brand gradient's stops, from the same source. */
+/**
+ * The brand gradient — decorative surfaces only.
+ *
+ * The splash field, the mark's tile, the masthead badge: places where the only
+ * thing over it is a white shape at large size. White on its lightest stop is
+ * 4.43:1, which clears the 3:1 floor for large graphics and fails the 4.5:1 one
+ * for text.
+ */
 export const brandGradient = ["#7762EC", "#573EE7", "#221186"] as const;
 
 /**
@@ -78,6 +85,16 @@ export const brandGradient = ["#7762EC", "#573EE7", "#221186"] as const;
  * The gradient's midpoint, so the hand-over from the storyboard to the
  * JavaScript splash does not flash.
  */
+/**
+ * The same gradient, one step darker, for anything carrying a label.
+ *
+ * There are two because of arithmetic, not taste. A button puts sixteen-point
+ * text on its background, and the brand gradient's lightest stop cannot carry
+ * it — `scripts/build-palette.py` refuses to emit a control gradient that
+ * cannot.
+ */
+export const controlGradient = ["#573EE7", "#381BDC", "#221186"] as const;
+
 export const SPLASH_FIELD = '#573EE7';
 
 

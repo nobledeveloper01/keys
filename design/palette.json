@@ -111,5 +111,10 @@
     "#573EE7",
     "#221186"
   ],
+  "controlGradient": [
+    "#573EE7",
+    "#381BDC",
+    "#221186"
+  ],
   "gradientFlat": "#573EE7"
 }
