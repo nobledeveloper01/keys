@@ -6,6 +6,66 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — The corpus was testing the fixture
+
+**Did.** Phase 3's first two gates: the seven-condition Verified rule, exhaustive rather
+than sampled, and an adversarial hashing corpus.
+
+### What surprised us
+
+**Twelve synthetic rooms all matched each other.** The first generator varied a window
+and a door slightly over a shared gradient. Eleven of the twelve pairs were inside the
+match threshold — and the instinct, for a good few minutes, was that the threshold was
+too loose. It was not. A difference hash reads a nine-by-eight thumbnail, so what
+distinguishes two images *to it* is their brightness pattern at roughly one-eighth scale,
+and rooms built from a gradient and three big rectangles have almost none. The fixture
+could not have tested what it was written to test. Rebuilt around a coarse block pattern
+at exactly the scale the hash reads, the closest two rooms sit 21 bits apart.
+
+**A 6% crop defeated the hash, and the fix was not a looser threshold.** Twelve of
+sixty-four bits, on a third of the images. Loosening buys crop tolerance with false
+matches on honest listings, which is the expensive mistake — a false match takes somebody's
+income off the market. Each image is now indexed under two hashes, the whole frame and its
+middle, so a cropped copy's frame resembles the original's middle. Deleting the second
+hash fails the gate.
+
+**A comment claimed something that was false.** `resize` averages over a box, and the note
+above it said that is what makes the hash survive a shift. Replacing the average with a
+sampler broke nothing, which prompted a shift test — and the shift test failed with the
+average still in place. Nothing can make a difference hash shift-invariant; content moving
+across the frame moves between columns whatever the filter does. What averaging actually
+buys is stability under compression noise, and that only shows at an amplitude worth
+having: at ±8 the two filters are indistinguishable, at ±70 — a photo that has been through
+WhatsApp twice — the sampler fails and the average holds. The claim is proven now instead
+of asserted, and the source says what a shift really costs: three bits at one pixel, nine
+at four, sixteen at eight.
+
+### Decisions worth recording
+
+**`isVerified` is defined as "nothing unmet".** Not a chain of `&&` beside a separately
+built reasons list — those two drift the first time somebody adds a condition to one of
+them, and the result is a listing that is Verified while the page explains why it is not.
+The gate asserts, over all 128 combinations, that the named reasons are exactly what was
+broken.
+
+**A hash match never blocks anything on its own.** `verdictFor` returns `pending`, never
+`blocked`. The same photograph legitimately appears on two listings when an agency changes
+hands or a flat is re-let a year later, and auto-blocking on distance takes an honest
+agent's listing down with no person involved and nobody to appeal to.
+
+**The agent is told all seven, including the ones we cannot check yet.** In-app capture does
+not exist, so those conditions can never be met today — and reporting only the answerable
+ones would send an agent to do two things and find the badge still missing. Five unmet, all
+five named, each with a next action.
+
+### Still open
+
+A horizontal flip is not caught, and there is a test asserting that it is not, so the hole
+cannot quietly become a surprise. Gate 3 — rejecting an upload that did not come through
+in-app capture — has its domain rule written and tested and nothing signing anything yet.
+
+---
+
 ## 2026-08-31 — A route that answered as a different controller
 
 **Did.** The agent list in the review console, with the one decision a reviewer

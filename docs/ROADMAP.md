@@ -156,13 +156,40 @@ Geotagged in-app capture with device signing, mock-location detection, video cap
 transcoding, perceptual hashing with BK-tree indexing, the duplicate-match pipeline, the
 `is_verified` computation, forced expiry with per-listing confirmation.
 
-*Exit gates — all release blockers:*
-1. **Property-based tests prove no input combination yields Verified unless all seven conditions
-   hold.**
-2. **Adversarial hashing corpus** (resize, recompress, crop, watermark, flip, colour-shift) meets
-   the detection threshold.
-3. **An injected upload that did not pass through in-app capture is rejected** by signature
-   verification.
+**Built so far:** the seven-condition rule in `packages/domain/src/listings.ts`, computed and
+never stored; perceptual hashing with a BK-tree in `packages/domain/src/hashing.ts`, including
+a second hash of each image's middle because the corpus proved a 6% crop defeats a single
+difference hash; and the agent's own listings now name which conditions are unmet and what to
+do about each, including the ones Keys cannot yet check.
+
+**A match never blocks on arithmetic.** `verdictFor` returns `pending`, never `blocked` — the
+same photograph legitimately appears on two listings when an agency changes hands or a flat is
+re-let, and auto-blocking would take an honest agent's listing down with no person involved.
+
+*Exit gates. All three are **phase gates** under
+[ADR 0007](adr/0007-a-gate-blocks-the-next-phase-or-it-blocks-the-release.md) — they were
+written as release blockers before that split existed, and each is testable in software
+today. A listing wrongly marked Verified is the failure everything above it rests on, so
+none of them can wait for launch.*
+
+1. ✅ **Property-based: no input combination yields Verified unless all seven conditions
+   hold.** Exhaustive rather than sampled — 128 combinations, every one enumerated, with the
+   named reasons asserted to be exactly what was broken. `isVerified` is *defined* as
+   "nothing unmet", so the badge and the explanation cannot drift apart.
+2. ✅ **Adversarial hashing corpus.** Nine attacks — rescaling both ways, hard recompression,
+   6% and 10% crops, a watermark bar, brightening, darkening, contrast, and all of them
+   together — over twelve synthetic rooms. The worst attack moves 8 of 64 bits against a
+   threshold of 10; the two most similar different rooms are 21 apart. Both margins are
+   asserted, not just the pass.
+
+   **What it does not catch, written down rather than excused:** a horizontal flip, which
+   inverts every column comparison. There is a test asserting it is missed, so the hole
+   cannot be forgotten. Indexing both orientations doubles the index and is a decision to
+   take deliberately.
+3. ⏳ **An injected upload that did not pass through in-app capture is rejected** by
+   signature verification. The domain rule is written and tested — `provesPresence` refuses
+   anything not captured in-app, with an invalid signature, or with no location at all — but
+   nothing signs anything yet. Needs the capture TurboModule.
 
 ## Phase 4 — Search & Discovery (Weeks 20–23)
 Postgres FTS + PostGIS search, filters with Verified defaulting on, map search, ranking in the
