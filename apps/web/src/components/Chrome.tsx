@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { Keyhole } from './Keyhole';
+import { Mark } from './Mark';
 
 /**
  * The masthead, on every page.
@@ -34,7 +34,7 @@ export function Masthead() {
     <header className="masthead">
       <Link href="/" className="brand" aria-label="Keys — home">
         <span className="brand-mark">
-          <Keyhole size={20} />
+          <Mark size={20} />
         </span>
         <span className="brand-word">Keys</span>
       </Link>

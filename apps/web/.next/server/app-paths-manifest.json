@@ -1,7 +1,3 @@
 {
-  "/api/reply/route": "app/api/reply/route.js",
-  "/page": "app/page.js",
-  "/reply/page": "app/reply/page.js",
-  "/review/page": "app/review/page.js",
-  "/report/page": "app/report/page.js"
+  "/page": "app/page.js"
 }

@@ -3,9 +3,11 @@ import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-nat
 
 import { say } from '@keys/domain';
 
-import { Keyhole } from './Keyhole';
+import { Glow } from './Glow';
+import { Gradient } from './Gradient';
+import { Key, Shield } from './MarkParts';
 import { Text } from './Text';
-import { motion, space } from '../design/tokens';
+import { SPLASH_FIELD, motion, space } from '../design/tokens';
 
 interface Props {
   /** Called once the splash has finished leaving. */
@@ -26,7 +28,8 @@ interface Props {
 // two places that cannot import each other — a storyboard cannot read this
 // file. `scripts/splash-colour-check.py` fails the build when they drift, which
 // is the only thing that stops the hand-over flashing.
-export const SPLASH_FIELD = '#2E2A6E';
+// Re-exported: `splash-colour-check` reads it from here, where the field is.
+export { SPLASH_FIELD };
 const FIELD = SPLASH_FIELD;
 
 /**
@@ -37,10 +40,18 @@ const FIELD = SPLASH_FIELD;
  * thing rather than as two loads. The native one cannot animate; this one can,
  * and what it animates is the product's own sentence.
  *
- * **The keyhole settles and the name arrives under it.** Nothing slides in
- * from anywhere. A mark that travels says the product moves things; this one
- * does not move anything, it tells you what you are about to walk into, so the
- * mark holds still and only resolves.
+ * **The key turns in the lock.** The shield arrives first and settles; the key
+ * drops into it and rotates a quarter turn, the way a key does; the shield
+ * answers with one pulse of light, and the name comes up.
+ *
+ * That is the only motion the mark can perform that means anything. A logo
+ * that spins, slides or bounces is decoration — this one does the thing the
+ * product does, once, in the second the app takes to start.
+ *
+ * Behind it, two soft lights drift across the gradient at different speeds.
+ * They are the only decorative motion in the product and they earn their place
+ * by making a flat field look like it has depth in the second before the app
+ * appears — on a handset where that second is real.
  *
  * It is on screen for the second the app takes to start on the handsets it is
  * built for, which is long enough for a person to take in one shape.
@@ -121,24 +132,88 @@ export function Splash({ onDone, ready }: Props) {
 
   // The mark resolves in place rather than travelling. `out(cubic)` on the driver
   // means it arrives fast and stops gently, which is what a heavy thing does.
-  const markScale = run.interpolate({ inputRange: [0, 1], outputRange: [0.82, 1] });
+  /*
+    The two ambient lights, on their own clock.
+
+    Separate from `run`, because the key's sequence finishes and these keep
+    breathing for as long as the splash is up. Held at zero under reduced
+    motion rather than started and cancelled, so nothing moves at all.
+  */
+  const drift = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    let cancelled = false;
+    void AccessibilityInfo.isReduceMotionEnabled().then((reduced) => {
+      if (cancelled || reduced) return;
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(drift, {
+            toValue: 1,
+            duration: 5200,
+            easing: Easing.bezier(0.42, 0, 0.58, 1),
+            useNativeDriver: true,
+          }),
+          Animated.timing(drift, {
+            toValue: 0,
+            duration: 5200,
+            easing: Easing.bezier(0.42, 0, 0.58, 1),
+            useNativeDriver: true,
+          }),
+        ]),
+      ).start();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [drift]);
+
+  const driftOne = drift.interpolate({ inputRange: [0, 1], outputRange: [-26, 26] });
+  const driftTwo = drift.interpolate({ inputRange: [0, 1], outputRange: [30, -30] });
 
   /*
-    The mark is there from the first frame, not held back.
+    One driver, five slices.
 
-    The previous timing kept it at zero opacity until 55% of the run, which is
-    what the old two-part animation needed — one glyph waiting off-screen for
-    the other to arrive. With a single mark it just meant the field sat empty
-    for over half the time it was on screen, and an empty coloured rectangle is
-    what a broken launch looks like.
+    Every piece below reads a window of the same 0→1 value, so nothing can drift
+    out of step with anything else and the whole sequence can be scrubbed by
+    changing one duration.
+
+      0.00–0.42  the shield arrives and settles
+      0.30–0.62  the key drops in
+      0.34–0.70  the key turns a quarter
+      0.62–0.88  the lock answers with one pulse
+      0.70–1.00  the name comes up
   */
-  const markIn = run.interpolate({
-    inputRange: [0, 0.35, 1],
-    outputRange: [0, 1, 1],
+  const shieldScale = run.interpolate({
+    inputRange: [0, 0.42, 1],
+    outputRange: [0.72, 1, 1],
+  });
+  const shieldIn = run.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0, 1, 1] });
+
+  const keyDrop = run.interpolate({
+    inputRange: [0, 0.3, 0.62, 1],
+    outputRange: [-34, -34, 0, 0],
+  });
+  const keyIn = run.interpolate({
+    inputRange: [0, 0.3, 0.46, 1],
+    outputRange: [0, 0, 1, 1],
+  });
+  const keyTurn = run.interpolate({
+    inputRange: [0, 0.34, 0.7, 1],
+    outputRange: ['-88deg', '-88deg', '0deg', '0deg'],
   });
 
-  // The name lands after the shape has settled.
-  const wordsIn = run.interpolate({ inputRange: [0, 0.55, 1], outputRange: [0, 0, 1] });
+  // One pulse outward as the key lands, then gone. Not a loop — a loop would be
+  // a spinner, and a spinner says "waiting" when this is saying "open".
+  const pulseScale = run.interpolate({
+    inputRange: [0, 0.62, 0.88, 1],
+    outputRange: [0.6, 0.6, 1.85, 1.85],
+  });
+  const pulseIn = run.interpolate({
+    inputRange: [0, 0.62, 0.74, 0.88, 1],
+    outputRange: [0, 0, 0.42, 0, 0],
+  });
+
+  const wordsIn = run.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0, 0, 1] });
+  const wordsUp = run.interpolate({ inputRange: [0, 0.7, 1], outputRange: [14, 14, 0] });
 
   return (
     <Animated.View
@@ -158,15 +233,71 @@ export function Splash({ onDone, ready }: Props) {
         },
       ]}
     >
+      {/* The brand gradient, over the flat field the launch screen shares. */}
+      <Gradient style={StyleSheet.absoluteFill} />
+
+      {/*
+        Ambient light, behind everything.
+
+        Two blurred circles on slow, out-of-phase drifts. `translate` only, so
+        it stays on the compositor, and both are frozen when the reader has
+        asked for less motion.
+      */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.glowOne,
+          { transform: [{ translateX: driftOne }, { translateY: driftOne }] },
+        ]}
+      >
+        <Glow size={460} colour="#D9D3FF" intensity={0.5} />
+      </Animated.View>
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.glowTwo,
+          { transform: [{ translateX: driftTwo }, { translateY: driftOne }] },
+        ]}
+      >
+        <Glow size={400} colour="#2A1E7E" intensity={0.55} />
+      </Animated.View>
+
       <View style={styles.mark}>
+        {/* The pulse sits behind the shield and is gone by the end. */}
         <Animated.View
-          style={{ transform: [{ scale: markScale }], opacity: markIn }}
+          pointerEvents="none"
+          style={[
+            styles.pulse,
+            { opacity: pulseIn, transform: [{ scale: pulseScale }] },
+          ]}
+        />
+
+        <Animated.View style={{ opacity: shieldIn, transform: [{ scale: shieldScale }] }}>
+          <Shield size={104} colour="#FFFFFF" />
+        </Animated.View>
+
+        {/*
+          The key, over the shield and rotating about the same centre.
+
+          Absolutely positioned rather than nested, because the two SVGs share a
+          48×48 viewBox — laying one exactly over the other is what keeps the
+          key turning inside the bore instead of beside it.
+        */}
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.key,
+            {
+              opacity: keyIn,
+              transform: [{ translateY: keyDrop }, { rotate: keyTurn }],
+            },
+          ]}
         >
-          <Keyhole size={76} colour="#FFFFFF" />
+          <Key size={104} colour="#FFFFFF" />
         </Animated.View>
       </View>
 
-      <Animated.View style={{ opacity: wordsIn }}>
+      <Animated.View style={{ opacity: wordsIn, transform: [{ translateY: wordsUp }] }}>
         <Text variant="headline" style={styles.word}>
           {/*
             Through the phrase table, not typed here. It is the one phrase every
@@ -219,6 +350,8 @@ const ARRIVE_MS = 900;
 const DWELL_MS = 1_150;
 
 const styles = StyleSheet.create({
+  glowOne: { position: 'absolute', top: '6%', left: '-38%' },
+  glowTwo: { position: 'absolute', bottom: '6%', right: '-34%' },
   field: {
     backgroundColor: FIELD,
     alignItems: 'center',
@@ -227,6 +360,15 @@ const styles = StyleSheet.create({
     // Above everything, including the offline banner and the tab bar.
     zIndex: 100,
   },
-  mark: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  mark: { alignItems: 'center', justifyContent: 'center' },
+  key: { position: 'absolute' },
+  pulse: {
+    position: 'absolute',
+    width: 104,
+    height: 104,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
   word: { color: '#FFFFFF' },
 });

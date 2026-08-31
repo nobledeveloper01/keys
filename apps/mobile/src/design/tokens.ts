@@ -6,78 +6,80 @@
  * is looking.
  */
 
+/*
+  Not chosen here. Generated.
+
+  Every value below comes out of `design/palette.json`, which
+  `scripts/build-palette.py` derives from five hue ramps and refuses to emit
+  unless every pairing the product renders clears its WCAG floor — and unless
+  the brand hue stays at least forty degrees clear of every status hue, so a
+  primary button never reads as a verdict.
+
+  This file used to hold hand-picked hexes, and the app, the web and the splash
+  drifted into three different purples because nothing connected them. `make
+  palette` regenerates both surfaces from the one source; `scripts/palette-check.py`
+  fails the build when either has drifted from it.
+
+  **Do not edit these values.** Change the ramps and rebuild.
+*/
 export const palette = {
   light: {
     surface: '#FFFFFF',
-    surfaceDim: '#F2F4F7',
-    outline: '#D8DDE4',
-    textPrimary: '#0C1119',
-    textSecondary: '#5A6675',
-    /*
-      Deep indigo, and deliberately not a status hue.
-
-      The four states this product renders are clear (green, 149°), caution
-      (amber, 33°), alarm (red, 4°) and offline (grey-blue, 212°). An accent
-      near any of them makes a button look like a verdict. Indigo at 244° is
-      clear of all four, and at 12.6:1 against white it is legible on a cheap
-      screen in daylight, which is where this is read.
-
-      It replaced `#1A4FA0`, which came across with the design system from the
-      freight project and was that product's blue.
-    */
-    accent: '#2E2A6E',
-    onAccent: '#FFFFFF',
-    /** A wash of the accent, for the one card that should lead the eye. */
-    accentWash: '#ECEBF7',
-    /*
-      Washes for each status, so a chip reads at a glance without shouting.
-
-      The names say what they mean in this product: `clear` is a number with
-      nothing upheld against it, `alarm` is one with something, `caution` is
-      under review, and `offline` is the app not knowing. They were `moving`,
-      `stopped`, `exception` and `stale` when this palette arrived from the
-      previous project, which described trucks.
-    */
-    clearWash: '#E6F4EC',
-    cautionWash: '#FAF0E1',
-    offlineWash: '#EDEFF2',
-    alarmWash: '#FBEAE8',
-    /** One step above `surface`, for a card that must sit on top of another. */
+    surfaceDim: '#F6F6F8',
     surfaceRaised: '#FFFFFF',
-    clear: '#1B7F4B',
-    caution: '#B4690E',
-    /* Grey, never red. Not knowing is not the same as bad news, and colouring
-       it red tells somebody a number is dangerous when the truth is that the
-       phone could not ask. */
-    offline: '#6E7B8A',
-    alarm: '#B0281F',
-    verifiedTier: '#2E2A6E',
-    businessTier: '#1B7F4B',
-    trustedTier: '#9A6B12',
+    outline: '#E7E7EC',
+    textPrimary: '#0A0A0D',
+    textSecondary: '#585872',
+    accent: '#2E16B3',
+    onAccent: '#FFFFFF',
+    accentWash: '#EEECFD',
+    clear: '#158156',
+    clearWash: '#E7FBF3',
+    caution: '#8C5F0B',
+    cautionWash: '#FDF2DF',
+    offline: '#585872',
+    offlineWash: '#F2F2F5',
+    alarm: '#81152B',
+    alarmWash: '#FBE9EC',
+    verifiedTier: '#2E16B3',
+    businessTier: '#158156',
+    trustedTier: '#8C5F0B',
   },
   dark: {
-    surface: '#0C0F14',
-    surfaceDim: '#151A21',
-    outline: '#252D37',
-    textPrimary: '#EBEFF4',
-    textSecondary: '#9BA7B5',
-    accent: '#8A93F0',
-    onAccent: '#08111F',
-    accentWash: '#1B1930',
-    clearWash: '#13291F',
+    surface: '#0A0A0D',
+    surfaceDim: '#17171A',
+    surfaceRaised: '#1F1F22',
+    outline: '#2C2C2F',
+    textPrimary: '#F5F5F7',
+    textSecondary: '#9C9CB2',
+    accent: '#9E90F1',
+    onAccent: '#0A0A0D',
+    accentWash: '#161230',
+    clear: '#68E6B4',
+    clearWash: '#122620',
+    caution: '#F3BE5B',
     cautionWash: '#2A2113',
-    offlineWash: '#1B2028',
-    alarmWash: '#2E1917',
-    surfaceRaised: '#1A212B',
-    clear: '#4FBF84',
-    caution: '#E0A44A',
-    offline: '#8A96A5',
-    alarm: '#E8695E',
-    verifiedTier: '#8A93F0',
-    businessTier: '#4FBF84',
-    trustedTier: '#D6A93F',
+    offline: '#9C9CB2',
+    offlineWash: '#19191F',
+    alarm: '#E66881',
+    alarmWash: '#281219',
+    verifiedTier: '#9E90F1',
+    businessTier: '#68E6B4',
+    trustedTier: '#F3BE5B',
   },
 } as const;
+
+/** The brand gradient's stops, from the same source. */
+export const brandGradient = ["#7762EC", "#573EE7", "#221186"] as const;
+
+/**
+ * The one flat colour a native launch screen can use.
+ *
+ * The gradient's midpoint, so the hand-over from the storyboard to the
+ * JavaScript splash does not flash.
+ */
+export const SPLASH_FIELD = '#573EE7';
+
 
 /**
  * The shape of a palette, not one particular palette.
@@ -150,14 +152,37 @@ export type Variant = keyof typeof type;
  * of the scale: an icon deciding where to sit beside a line has to know how
  * tall that line actually got, and there is one answer to that.
  */
+/*
+  Nothing is capped. The reader's text size is the reader's decision.
+
+  This started as `display: 1.5, headline: 1.6, title: 1.8` with `body`
+  uncapped, to stop a 36pt hero becoming 112pt at the largest accessibility
+  setting and filling a screen with one word.
+
+  It does not work, and the test that now guards this found why: caps have to
+  be monotonic with the sizes they cap, or the order inverts. Uncapped 19pt
+  `title` passes capped 28pt `headline` at 2.5×. Uncapped 16pt `body` passes
+  it too. Every fix inside the scheme just moves which pair inverts, because
+  the two goals — bound the heroes, do not bound the body — are the same
+  statement with opposite signs.
+
+  So the goal that loses is bounding the heroes. Somebody who has set their
+  phone to 310% has told us what they need, an unread headline is worth
+  nothing however neatly it fits, and every screen here scrolls. What we keep
+  is the ordering, which is what a type scale is actually for.
+
+  The record stays, and every entry is `undefined`, so that adding a cap is a
+  deliberate act with a failing test in front of it rather than a plausible
+  one-line edit.
+*/
 export const MAX_SCALE: Record<Variant, number | undefined> = {
-  display: 1.5,
-  headline: 1.6,
-  title: 1.8,
+  display: undefined,
+  headline: undefined,
+  title: undefined,
   body: undefined,
   bodyOutdoor: undefined,
   label: undefined,
-  overline: 1.6,
+  overline: undefined,
 };
 
 /** How tall one line of a variant actually is, at the reader's own setting. */

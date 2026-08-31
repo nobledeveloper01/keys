@@ -25,10 +25,18 @@ export type ThemePreference = 'light' | 'dark' | 'system';
 /**
  * Light, deliberately.
  *
- * Not `system`. This is read outdoors in Nigerian daylight far more often than
- * it is read in the dark, and a phone that happens to be in dark mode should
- * not decide that for somebody standing outside a compound at noon. Anyone who wants dark
- * can say so, and the choice sticks for the session.
+ * Not `system`, and not dark. This is read outdoors in Nigerian daylight far
+ * more often than it is read in the dark, and a phone that happens to be in
+ * dark mode should not decide that for somebody standing outside a compound at
+ * noon.
+ *
+ * It was briefly switched to dark while the gradient and glass surfaces were
+ * being built, because that is the ground they were authored against. That was
+ * the tail wagging the dog: the aesthetic has to work on the theme the product
+ * needs, not the other way round. Both themes carry the gradient, the glass and
+ * the ambient wash; the light one is not a fallback.
+ *
+ * Anyone who wants dark can say so, and the choice sticks.
  */
 const DEFAULT: ThemePreference = 'light';
 

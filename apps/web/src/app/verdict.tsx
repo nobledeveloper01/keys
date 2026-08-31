@@ -32,6 +32,16 @@ export async function Verdict({ phone }: { phone: string }) {
 
   return (
     <div className={`verdict ${clean ? 'clear' : 'alarm'}`}>
+      {/*
+        The page's own light takes the verdict's colour.
+
+        A style element rather than a class on `<body>`, because this is a
+        server component inside a streamed page — there is no client to reach up
+        and set an attribute, and inlining the custom property is one rule the
+        browser applies as the markup arrives, with no flash of the wrong
+        colour in between.
+      */}
+      <style>{`body{--wash:var(${clean ? '--clear' : '--alarm'})}`}</style>
       <p className="count">{result.upheldReports}</p>
       <p>
         <strong>

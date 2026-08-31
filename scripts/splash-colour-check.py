@@ -16,7 +16,9 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SPLASH = ROOT / 'apps/mobile/src/components/Splash.tsx'
+# The constant moved into the generated tokens when the palette became the
+# single source; the splash re-exports it, but this reads the definition.
+SPLASH = ROOT / 'apps/mobile/src/design/tokens.ts'
 STORYBOARD = ROOT / 'apps/mobile/ios/Keys/LaunchScreen.storyboard'
 
 

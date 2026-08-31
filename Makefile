@@ -67,7 +67,7 @@ untranslated:
 	python3 scripts/untranslated-check.py
 
 ## gates: every blocking check, without the tests
-gates: typecheck lint boundary doc-check wired-check untranslated api-fresh bundle-check splash-check mark-check
+gates: typecheck lint boundary doc-check wired-check untranslated api-fresh bundle-check splash-check mark-check palette-check
 
 ## ci: the gate
 ci: gates test
@@ -94,10 +94,19 @@ splash-check:
 mark-check:
 	@python3 scripts/mark-check.py
 
+## palette: rebuild the colours from design/palette.json into both surfaces
+palette:
+	@python3 scripts/build-palette.py
+	@python3 scripts/emit-css.py
+
+## palette-check: neither surface has drifted from the palette
+palette-check:
+	@python3 scripts/palette-check.py
+
 ## clean: build output and caches; node_modules is left alone
 clean:
 	find . -name '*.tsbuildinfo' -not -path './node_modules/*' -delete
 	rm -rf apps/server/dist packages/*/dist
 	@echo "cleaned — node_modules left alone"
 
-.PHONY: help setup db test typecheck lint boundary doc-check wired-check untranslated api api-fresh bundle-check splash-check mark-check gates ci clean
+.PHONY: help setup db test typecheck lint boundary doc-check wired-check untranslated api api-fresh bundle-check splash-check mark-check palette-check gates ci clean

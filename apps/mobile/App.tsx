@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
+import { Ambient } from './src/components/Ambient';
 import { Splash } from './src/components/Splash';
 import { useColours, useTheme, ThemeProvider } from './src/design/theme';
 import { LanguageProvider, useLanguage } from './src/state/language';
@@ -42,6 +43,15 @@ function Shell() {
   const { chosen, ready } = useLanguage();
   const [splashDone, setSplashDone] = useState(false);
   const [picked, setPicked] = useState(false);
+
+  /*
+    What the screen has just found out, lifted to the shell.
+
+    The ambient light is behind everything, so it cannot live inside the screen
+    that knows the answer. The screen reports the verdict up; the shell colours
+    the room.
+  */
+  const [verdict, setVerdict] = useState<string | undefined>(undefined);
   const { isDark } = useTheme();
   const colours = useColours();
 
@@ -54,8 +64,9 @@ function Shell() {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colours.surface }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      <Ambient tone={verdict} />
       {chosen || picked ? (
-        <LookupScreen baseUrl={API_URL} />
+        <LookupScreen baseUrl={API_URL} onVerdict={setVerdict} />
       ) : (
         <LanguageScreen onDone={() => setPicked(true)} />
       )}

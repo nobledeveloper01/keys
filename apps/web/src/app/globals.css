@@ -1,3 +1,51 @@
+/* == generated from design/palette.json — do not edit == */
+:root {
+  --bg: #ffffff;
+  --surface: #f6f6f8;
+  --surface-raised: #ffffff;
+  --line: #e7e7ec;
+  --ink: #0a0a0d;
+  --ink-quiet: #585872;
+  --accent: #2e16b3;
+  --accent-ink: #ffffff;
+  --accent-wash: #eeecfd;
+  --clear: #158156;
+  --clear-wash: #e7fbf3;
+  --caution: #8c5f0b;
+  --caution-wash: #fdf2df;
+  --offline: #585872;
+  --offline-wash: #f2f2f5;
+  --alarm: #81152b;
+  --alarm-wash: #fbe9ec;
+  --brand-gradient: linear-gradient(140deg, #7762EC 0%, #573EE7 50%, #221186 100%);
+  /* A stronger line for controls, so a field edge is visible on white. */
+  --line-strong: #e7e7ec;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0a0d;
+    --surface: #17171a;
+    --surface-raised: #1f1f22;
+    --line: #2c2c2f;
+    --ink: #f5f5f7;
+    --ink-quiet: #9c9cb2;
+    --accent: #9e90f1;
+    --accent-ink: #0a0a0d;
+    --accent-wash: #161230;
+    --clear: #68e6b4;
+    --clear-wash: #122620;
+    --caution: #f3be5b;
+    --caution-wash: #2a2113;
+    --offline: #9c9cb2;
+    --offline-wash: #19191f;
+    --alarm: #e66881;
+    --alarm-wash: #281219;
+    --line-strong: #2c2c2f;
+  }
+}
+/* == end generated == */
+
 /*
   The web surface's design layer.
 
@@ -12,53 +60,14 @@
   are different colours is two products as far as the reader is concerned.
 */
 :root {
-  /* Surfaces */
-  --bg: #ffffff;
-  --surface: #f7f8fa;
-  --surface-raised: #ffffff;
-  --line: #e2e6ec;
-  --line-strong: #cbd2dc;
-
-  /* Ink */
-  --ink: #10141b;
-  --ink-quiet: #545e6b;
-
-  /* Identity — deep indigo, clear of every status hue. See tokens.ts. */
-  --accent: #2e2a6e;
-  --accent-ink: #ffffff;
-  --accent-wash: #ecebf7;
-  --accent-hover: #241f5c;
-
-  /*
-    The four states, matching the app.
-
-    `alarm` means one thing only: a report a person reviewed and upheld. It is
-    never used for a request that failed — telling somebody a number is
-    dangerous when the truth is that we could not ask is an accusation.
-  */
-  --clear: #14683f;
-  --clear-wash: #e7f3ec;
-  --caution: #8a5109;
-  --caution-wash: #fbf1e2;
-  --alarm: #9e2119;
-  --alarm-wash: #fbecea;
-
-  /* Type scale, 1.25 from a 16px base, rounded to whole pixels. */
+  /* Type scale, 1.25 from a 16px base. */
   --t-xs: 0.8125rem;
   --t-sm: 0.9375rem;
   --t-base: 1rem;
   --t-lg: 1.1875rem;
   --t-xl: 1.5rem;
-  /*
-    Fluid between the small phone and the desktop.
-
-    A fixed 2.5rem hero filled two-thirds of a 375px screen and pushed the
-    search field — the only thing on the page anybody came to use — below the
-    fold. `clamp` scales it with the viewport instead of stepping at a
-    breakpoint.
-  */
-  --t-3xl: clamp(1.875rem, 1.35rem + 2.4vw, 2.5rem);
   --t-2xl: clamp(1.5rem, 1.25rem + 1.1vw, 1.875rem);
+  --t-3xl: clamp(1.875rem, 1.35rem + 2.4vw, 2.5rem);
 
   /* Spacing, 4px scale. */
   --s-1: 0.25rem;
@@ -74,32 +83,26 @@
   --radius-sm: 10px;
   --measure: 40rem;
 
-  --shadow: 0 1px 2px rgb(16 20 27 / 0.04), 0 8px 24px -12px rgb(16 20 27 / 0.12);
+  --shadow: 0 1px 2px rgb(10 10 20 / 0.05), 0 8px 24px -12px rgb(10 10 20 / 0.14);
+
+  /*
+    The light behind the page, and the verdict changes it.
+
+    `--wash` is set by the page that has just found something out: green when a
+    number has nothing upheld against it, red when it has. The room the answer
+    is read in changes colour, which on a phone at arm's length is legible from
+    further away than any text on it.
+
+    Never the only carrier — the card says it in words and a number too.
+  */
+  --wash: var(--accent);
+  --wash-strength: 0.1;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0b0e13;
-    --surface: #12161d;
-    --surface-raised: #171d26;
-    --line: #232b36;
-    --line-strong: #333d4b;
-
-    --ink: #eef1f5;
-    --ink-quiet: #9aa5b2;
-
-    --accent: #8a93f0;
-    --accent-ink: #0a0d18;
-    --accent-wash: #1b1930;
-    --accent-hover: #a3aaf5;
-
-    --clear: #58cf94;
-    --clear-wash: #10251b;
-    --caution: #e0a44a;
-    --caution-wash: #2a2113;
-    --alarm: #ff8d84;
-    --alarm-wash: #2b1512;
-
+    /* The same wash reads as a printing fault on white at dark's strength. */
+    --wash-strength: 0.22;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
   }
 }
@@ -117,6 +120,23 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
+  /*
+    Two soft lights, painted by the background rather than by an element, so
+    nothing sits in the layout and nothing has to be positioned around them.
+  */
+  background-image:
+    radial-gradient(
+      54rem 40rem at 88% -8%,
+      color-mix(in srgb, var(--wash) calc(var(--wash-strength) * 100%), transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      44rem 34rem at -10% 108%,
+      color-mix(in srgb, var(--accent) 6%, transparent),
+      transparent 70%
+    );
+  background-attachment: fixed;
+  transition: --wash 420ms ease;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -137,7 +157,9 @@ body {
   gap: var(--s-4);
   padding: var(--s-4) var(--s-5);
   border-bottom: 1px solid var(--line);
-  background: var(--bg);
+  /* Translucent, so the wash behind the page shows through the bar. */
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: saturate(140%) blur(14px);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -155,11 +177,12 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-sm);
-  background: var(--accent);
-  color: var(--accent-ink);
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: var(--brand-gradient);
+  color: #fff;
+  box-shadow: 0 6px 18px -8px rgb(109 91 255 / 0.7);
 }
 
 .brand-word {
@@ -376,13 +399,14 @@ button {
   min-height: 48px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--brand-gradient);
+  color: #fff;
   cursor: pointer;
-  transition: background 120ms ease, transform 80ms ease;
+  transition: filter 120ms ease, transform 80ms ease;
+  box-shadow: 0 8px 22px -12px rgb(109 91 255 / 0.9);
 }
 button:hover:not(:disabled) {
-  background: var(--accent-hover);
+  filter: brightness(1.08);
 }
 button:active:not(:disabled) {
   transform: translateY(1px);
@@ -394,6 +418,7 @@ button:disabled {
 
 .button-quiet {
   background: transparent;
+  box-shadow: none;
   color: var(--ink-quiet);
   border-color: var(--line-strong);
 }
@@ -411,6 +436,7 @@ button:disabled {
 .button-danger {
   background: var(--alarm);
   color: #fff;
+  box-shadow: none;
 }
 .button-danger:disabled {
   opacity: 1;
@@ -462,7 +488,9 @@ button:disabled {
   border-radius: var(--radius);
   padding: var(--s-5);
   margin: var(--s-5) 0;
-  background: var(--surface-raised);
+  /* Translucent over the wash rather than an opaque panel cut into it. */
+  background: color-mix(in srgb, var(--surface-raised) 82%, transparent);
+  backdrop-filter: blur(10px);
   box-shadow: var(--shadow);
 }
 .verdict.clear {

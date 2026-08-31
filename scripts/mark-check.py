@@ -17,18 +17,22 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 COPIES = [
-    ROOT / 'apps/mobile/src/components/Keyhole.tsx',
-    ROOT / 'apps/web/src/components/Keyhole.tsx',
+    ROOT / 'apps/mobile/src/components/Mark.tsx',
+    ROOT / 'apps/web/src/components/Mark.tsx',
+    # The splash draws the two halves separately so it can turn the key inside
+    # the shield. Same geometry, three files.
+    ROOT / 'apps/mobile/src/components/MarkParts.tsx',
 ]
 
 
 def path_of(file: pathlib.Path) -> str:
-    match = re.search(r'd="([^"]+)"', file.read_text())
-    if not match:
+    """Every path in the file, joined. The mark is two of them now."""
+    found = re.findall(r'd="([^"]+)"', file.read_text())
+    if not found:
         print(f'✗ {file.relative_to(ROOT)} has no path — this gate has nothing to compare')
         sys.exit(1)
     # Whitespace differs between formatters; the geometry is what must match.
-    return re.sub(r'\s+', ' ', match.group(1)).strip()
+    return ' | '.join(re.sub(r'\s+', ' ', d).strip() for d in found)
 
 
 def main() -> int:

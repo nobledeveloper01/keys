@@ -1,15 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { attempt, client, type Lookup } from '@keys/api';
 import { categoryPhrase, type ReportCategory } from '@keys/domain';
 
 import { Brand } from '../components/Brand';
-import { Card } from '../components/Card';
+import { Counter } from '../components/Counter';
+import { Glass } from '../components/Glass';
 import { SearchField } from '../components/SearchField';
 import { Text } from '../components/Text';
 import { Unready } from '../components/Unready';
 import { space } from '../design/tokens';
+import { useColours } from '../design/theme';
 import { useLanguage } from '../state/language';
 import { normalise } from '../state/phone';
 import { useQuery } from '../state/server';
@@ -22,11 +24,20 @@ import { useQuery } from '../state/server';
  * screen, because a product whose useful thing is three taps behind a sign-up
  * is a product nobody reaches the useful thing in.
  */
-export function LookupScreen({ baseUrl }: { baseUrl: string }) {
+export function LookupScreen({
+  baseUrl,
+  onVerdict,
+}: {
+  baseUrl: string;
+  /** Reported up so the shell can colour the light behind the whole screen. */
+  onVerdict?: (tone: string | undefined) => void;
+}) {
   const { t } = useLanguage();
   const [typed, setTyped] = useState('');
 
   const phone = useMemo(() => (typed.trim() ? normalise(typed) : null), [typed]);
+
+  const colours = useColours();
 
   const { query, refresh } = useQuery<Lookup | null>(
     () =>
@@ -35,6 +46,22 @@ export function LookupScreen({ baseUrl }: { baseUrl: string }) {
         : Promise.resolve({ ok: true as const, value: null }),
     [phone, baseUrl],
   );
+
+  /*
+    Told once, when the answer changes.
+
+    Deliberately not on every render: `onVerdict` sets state in the shell, and
+    calling it during render would loop. An effect keyed on the outcome runs
+    after commit, once per real change.
+  */
+  const answer = query.state === 'ready' ? query.value : null;
+  useEffect(() => {
+    if (phone === null || answer === null) {
+      onVerdict?.(undefined);
+      return;
+    }
+    onVerdict?.(answer.upheldReports === 0 ? colours.clear : colours.alarm);
+  }, [phone, answer, colours.clear, colours.alarm, onVerdict]);
 
   return (
     <View style={styles.screen}>
@@ -68,9 +95,9 @@ export function LookupScreen({ baseUrl }: { baseUrl: string }) {
       </Text>
 
       {typed.trim() !== '' && phone === null && (
-        <Card emphasis="plain" style={styles.card}>
+        <Glass style={styles.card}>
           <Text variant="body">{t('not_a_nigerian_number')}</Text>
-        </Card>
+        </Glass>
       )}
 
       {/* Loading, unreachable and refused, before any content is rendered.
@@ -78,9 +105,7 @@ export function LookupScreen({ baseUrl }: { baseUrl: string }) {
           this screen must never make. */}
       {phone !== null && <Unready query={query} onRetry={refresh} />}
 
-      {phone !== null && query.state === 'ready' && query.value !== null && (
-        <Answer answer={query.value} />
-      )}
+      {phone !== null && answer !== null && <Answer answer={answer} />}
 
       {/*
         No empty state before the first search.
@@ -103,13 +128,23 @@ export function LookupScreen({ baseUrl }: { baseUrl: string }) {
 
 function Answer({ answer }: { answer: Lookup }) {
   const { t } = useLanguage();
+  const colours = useColours();
   const clean = answer.upheldReports === 0;
 
   return (
-    <Card emphasis={clean ? 'raised' : 'alarm'} style={styles.card}>
-      <Text variant="display" tabular>
-        {String(answer.upheldReports)}
-      </Text>
+    <Glass
+      elevated
+      tone={
+        clean
+          ? { line: colours.clear, wash: colours.clearWash }
+          : { line: colours.alarm, wash: colours.alarmWash }
+      }
+      style={styles.card}
+    >
+      <Counter
+        to={answer.upheldReports}
+        style={{ color: clean ? colours.clear : colours.alarm }}
+      />
       <Text variant="title">
         {clean
           ? t('nothing_upheld')
@@ -135,7 +170,7 @@ function Answer({ answer }: { answer: Lookup }) {
             {`·  ${t(categoryPhrase(category as ReportCategory))}`}
           </Text>
         ))}
-    </Card>
+    </Glass>
   );
 }
 
