@@ -117,6 +117,16 @@ describe('writing naira', () => {
     assert.equal(naira(0), '₦0');
   });
 
+  test('renders nothing for a figure that is not one', () => {
+    /*
+      An older server omits the field and the client hands over `undefined`.
+      "₦NaN" beside a real address looks like a price, which is worse than
+      showing no price at all.
+    */
+    assert.equal(naira(Number.NaN), '');
+    assert.equal(naira(undefined as unknown as number), '');
+  });
+
   test('rounds down, so a total is never more than what will be asked', () => {
     assert.equal(naira(99), '₦0');
     assert.equal(naira(1_000_99), '₦1,000');

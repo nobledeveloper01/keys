@@ -120,6 +120,16 @@ export function costsAreStated(costs: Costs): boolean {
  * actually be asked for.
  */
 export function naira(kobo: number): string {
+  /*
+    A guard, not a cast.
+
+    `naira(undefined)` renders "₦NaN" beside a real address, which is worse
+    than rendering nothing: it looks like a price. This is the last line of
+    defence — callers still have to decide what to show when they have no
+    figure — but a money formatter should not be the thing that puts a
+    nonsense number in front of somebody deciding where to live.
+  */
+  if (!Number.isFinite(kobo)) return '';
   const whole = Math.floor(kobo / 100);
   return `₦${whole.toLocaleString('en-NG')}`;
 }

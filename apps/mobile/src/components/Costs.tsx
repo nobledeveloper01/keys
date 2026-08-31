@@ -94,6 +94,12 @@ export function Costs({ costs }: { costs: CostFigures | null }) {
       <View style={[styles.total, { borderTopColor: colours.outline }]}>
         <View style={styles.labels}>
           <Text variant="title">{say('costs_move_in_total')}</Text>
+          {/*
+            Lowercase in every language, because this phrase is only ever the
+            back half of a sentence that starts with a figure. "₦1,305,000 On
+            top of the rent" reads as two fragments; the capital was a phrase
+            written as a standalone label and then used as something else.
+          */}
           <Text variant="label" tone="secondary">
             {`${naira(costs.extrasKobo)} ${say('costs_extras_note')}`}
           </Text>

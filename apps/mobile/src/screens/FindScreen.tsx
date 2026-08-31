@@ -95,9 +95,18 @@ export function FindScreen({
                   the app to compare.
                 */
                 status={
-                  result.moveInKobo === null
-                    ? result.agentName
-                    : `${naira(result.moveInKobo)} · ${result.agentName}`
+                  /*
+                    `typeof`, not `=== null`.
+
+                    The type says `number | null`, and a response from an older
+                    server omits the field entirely — which is neither, and
+                    which `=== null` waves through into `naira(undefined)` and
+                    renders "₦NaN" beside a real address. A price is the one
+                    field on this row that must never be guessed at.
+                  */
+                  typeof result.moveInKobo === 'number'
+                    ? `${naira(result.moveInKobo)} · ${result.agentName}`
+                    : result.agentName
                 }
                 tone={result.verified ? 'clear' : 'quiet'}
                 onPress={() => onOpen(result.id)}

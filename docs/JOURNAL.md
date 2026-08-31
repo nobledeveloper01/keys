@@ -6,6 +6,73 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — ₦800,000 is not the price
+
+**Did.** An eighth Verified condition: a listing says what it actually costs to move
+into, or it is not Verified. Rent, agency fee, agreement fee, caution deposit, service
+charge — totalled on the server, published on the listing page, and carried on every
+search row.
+
+### Why this is a verification problem and not a form field
+
+The advert says ₦800,000. The tenant is asked for ₦1,100,000 on the day. None of the
+difference is secret — it is the customary ten per cent each way, plus a deposit, plus a
+service charge — it is simply never added up anywhere before somebody is standing in front
+of an agent with a bank app open.
+
+`undisclosed_fees` was already a report category here, which means this product already
+treated it as a harm. This answers it before it happens rather than after.
+
+### The odd one out, and why it still earns its place
+
+The other seven conditions are evidence that a property and an agent are real. This one an
+agent can satisfy with numbers they invented; stating a fee does not make it true.
+
+What it buys is that a stated fee is a **claim on the record**. An agent who wrote ₦80,000
+and asks for ₦200,000 at the door can be reported for it. Silence cannot be reported
+against, which is exactly why silence is the norm. It is also the cheapest of the eight for
+an honest agent — four numbers — and the only one a dishonest one gains by skipping.
+
+### Silence and zero are different answers
+
+`null` costs and all-zero costs mean opposite things: one is "we have not said", the other
+is "there is nothing else to pay". The API refuses a missing field rather than defaulting
+it to zero, because defaulting would invent a claim on an agent's behalf that a tenant may
+later rely on. The database has a CHECK saying all five or none. And a `NO_COSTS` constant
+was deleted from the domain the moment `wired-check` noticed nothing called it — it read as
+"not stated" and meant "everything is free", which is precisely the confusion the whole
+condition exists to prevent.
+
+### What surprised us
+
+**A gate we did not write caught the eighth condition.** `wired-check` flagged the unused
+constant. A test asserted `toHaveLength(7)` and went stale the same day — now it asserts
+against `VERIFIED_CONDITIONS` itself, because a literal in a test is a second place to
+remember something the domain already knows.
+
+**A second Postgres suite deadlocked the first.** Both clear the schema before they run, and
+in parallel workers that is two `TRUNCATE ... CASCADE` racing over the same tables. It
+surfaced the day a second suite existed, not the day the first was written. Serial when
+there is a real database; a schema per worker is the faster answer if it ever hurts.
+
+**`=== null` let `undefined` through and rendered ₦NaN beside a real address.** The type says
+`number | null`; a response from an older server omits the field, which is neither. A price
+is the one field on a row that must never be guessed at, so the check is `typeof` now and
+`naira` refuses a figure that is not one.
+
+**A phrase written as a label was used as half a sentence.** "₦1,305,000 On top of the rent"
+— the capital was correct where the phrase was written and wrong where it was used. It is
+lowercase in all four languages now, because it is only ever the back half.
+
+### Proved it fires
+
+Three deliberate breaks, each caught by exactly the assertion meant to catch it: the
+condition never pushed (the badge survives an unpriced listing), a missing field defaulting
+to zero (a "nothing to pay" claim invented for the agent), and search sending rent where the
+move-in total belongs.
+
+---
+
 ## 2026-08-31 — One sentence, two answers
 
 **Did.** Search and the listing page, and the redesign that prompted them — the agent's

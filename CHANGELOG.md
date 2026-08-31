@@ -41,6 +41,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **What it actually costs.** A listing states rent, agency fee, agreement fee,
+  caution deposit and service charge, and Keys totals them: ₦800,000 advertised
+  is ₦1,100,000 to move in, and that figure is on the search row as well as the
+  listing. A fee above the customary ten per cent is named as such. A listing
+  that has not said what it costs is not Verified — an explicit zero is an
+  answer an agent can be held to, and silence is not.
 - **A Find tab.** Search for a place, checked places only by default, and a
   listing page that publishes its evidence — all seven conditions, ticked or
   not, in your language — with the agent's name and what was checked about
