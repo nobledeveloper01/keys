@@ -573,7 +573,7 @@
             "agent-token": []
           }
         ],
-        "summary": "Your listings, drafts included.",
+        "summary": "Your listings, with what each still needs to be Verified.",
         "tags": [
           "agents"
         ]
@@ -1336,6 +1336,31 @@
           "title"
         ]
       },
+      "StillNeeded": {
+        "type": "object",
+        "properties": {
+          "condition": {
+            "type": "string",
+            "enum": [
+              "agent_identity",
+              "landlord_authority",
+              "capture_on_site",
+              "walkthrough_video",
+              "not_a_known_duplicate",
+              "recently_confirmed",
+              "nothing_upheld"
+            ]
+          },
+          "whatToDo": {
+            "type": "string",
+            "description": "A sentence with a next action in it, not a failure notice."
+          }
+        },
+        "required": [
+          "condition",
+          "whatToDo"
+        ]
+      },
       "ListingResponse": {
         "type": "object",
         "properties": {
@@ -1352,13 +1377,21 @@
             "type": "string",
             "nullable": true,
             "format": "date-time"
+          },
+          "stillNeeded": {
+            "description": "Which of the seven Verified conditions are unmet, and what to do. Empty means Verified.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StillNeeded"
+            }
           }
         },
         "required": [
           "id",
           "propertyId",
           "title",
-          "publishedAt"
+          "publishedAt",
+          "stillNeeded"
         ]
       },
       "AnswerChallengeBody": {

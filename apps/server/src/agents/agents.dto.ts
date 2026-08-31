@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { TIERS } from '@keys/domain';
+import { TIERS, VERIFIED_CONDITIONS } from '@keys/domain';
 
 /**
  * What the wire carries. For the OpenAPI document, not for validation — the
@@ -144,6 +144,14 @@ export class CreateListingBody {
   title!: string;
 }
 
+export class StillNeeded {
+  @ApiProperty({ enum: VERIFIED_CONDITIONS })
+  condition!: string;
+
+  @ApiProperty({ description: 'A sentence with a next action in it, not a failure notice.' })
+  whatToDo!: string;
+}
+
 export class ListingResponse {
   @ApiProperty()
   id!: string;
@@ -156,4 +164,10 @@ export class ListingResponse {
 
   @ApiProperty({ type: String, nullable: true, format: 'date-time' })
   publishedAt!: string | null;
+
+  @ApiProperty({
+    type: [StillNeeded],
+    description: 'Which of the seven Verified conditions are unmet, and what to do. Empty means Verified.',
+  })
+  stillNeeded!: StillNeeded[];
 }

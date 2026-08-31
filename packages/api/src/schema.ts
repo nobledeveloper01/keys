@@ -251,7 +251,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Your listings, drafts included. */
+        /** Your listings, with what each still needs to be Verified. */
         get: operations["AgentsController_mine"];
         put?: never;
         /** Draft a listing. Drafts are private. */
@@ -535,12 +535,20 @@ export interface components {
             /** @example 2 bedroom flat, Yaba */
             title: string;
         };
+        StillNeeded: {
+            /** @enum {string} */
+            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld";
+            /** @description A sentence with a next action in it, not a failure notice. */
+            whatToDo: string;
+        };
         ListingResponse: {
             id: string;
             propertyId: string;
             title: string;
             /** Format: date-time */
             publishedAt: string | null;
+            /** @description Which of the seven Verified conditions are unmet, and what to do. Empty means Verified. */
+            stillNeeded: components["schemas"]["StillNeeded"][];
         };
         AnswerChallengeBody: {
             challengeId: string;

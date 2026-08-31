@@ -261,14 +261,56 @@ export function AgentDesk({
                 <strong>{listing.title}</strong>
               </p>
               <p className="small quiet">{listing.propertyId}</p>
+              {/*
+                Why it is not Verified, in full, with what to do about each.
+
+                Not a count and not a badge that is simply absent. An agent
+                looking at a listing that is public but not Verified needs the
+                list — and needs it to be the *whole* list, including the
+                conditions Keys cannot yet check, or they will do the two things
+                shown and find nothing changed.
+              */}
+              {listing.stillNeeded.length === 0 ? (
+                <p className="small">Verified.</p>
+              ) : (
+                <>
+                  <p className="small quiet">
+                    Not Verified yet. {listing.stillNeeded.length} of seven conditions
+                    are unmet:
+                  </p>
+                  <ul className="categories small">
+                    {listing.stillNeeded.map((needed) => (
+                      <li key={needed.condition}>{needed.whatToDo}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+
               {listing.publishedAt ? (
                 <p className="small">Public since {new Date(listing.publishedAt).toDateString()}</p>
               ) : (
                 <>
                   <p className="small quiet">Draft — nobody can see this.</p>
+                  {/*
+                    Disabled when the server would refuse it.
+
+                    Two of the seven conditions gate publication itself: a live
+                    ID check and a landlord confirmation on this property. The
+                    other five gate the Verified badge, and a listing can be
+                    public without it. Offering a button that returns 403 makes
+                    the product look broken when it is working exactly as
+                    described three lines above.
+                  */}
                   <button
                     type="button"
-                    disabled={busy === listing.id}
+                    disabled={
+                      busy === listing.id ||
+                      listing.stillNeeded.some(
+                        (n) =>
+                          n.condition === 'agent_identity' ||
+                          n.condition === 'landlord_authority',
+                      )
+                    }
                     onClick={() =>
                       void run(
                         listing.id,

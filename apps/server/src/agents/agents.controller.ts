@@ -19,7 +19,16 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { isLive, mayList, tierOf, tierSentence, type Evidence } from '@keys/domain';
+import {
+  isLive,
+  mayList,
+  tierOf,
+  tierSentence,
+  unmetConditions,
+  whatToDo,
+  type Evidence,
+  type ListingEvidence,
+} from '@keys/domain';
 
 import { ReportsStore, hashPhone } from '../reports/reports.store';
 import { AgentGuard, type RequestWithAgent } from './agent.guard';
@@ -306,15 +315,50 @@ export class AgentsController {
   @Get('me/listings')
   @UseGuards(AgentGuard)
   @ApiSecurity('agent-token')
-  @ApiOperation({ summary: 'Your listings, drafts included.' })
+  @ApiOperation({ summary: 'Your listings, with what each still needs to be Verified.' })
   @ApiOkResponse({ type: ListingResponse, isArray: true })
   async mine(@Req() request: RequestWithAgent) {
-    const listings = await this.store.listingsOf(request.agent!.id);
-    return listings.map((l) => ({
-      id: l.id,
-      propertyId: l.propertyId,
-      title: l.title,
-      publishedAt: l.publishedAt?.toISOString() ?? null,
-    }));
+    const agent = request.agent!;
+    const now = new Date();
+    const listings = await this.store.listingsOf(agent.id);
+    const evidence = await this.store.evidenceFor(agent.id);
+    const upheld = await this.reports.publishedForHash(agent.phoneHash, now);
+    const tier = tierOf(
+      evidence,
+      { joinedAt: agent.joinedAt, upheldReports: upheld.length },
+      now,
+    );
+
+    return listings.map((l) => {
+      /*
+        What is missing, computed rather than stored.
+
+        Three of the seven conditions are answerable today; the media and
+        confirmation ones are not, because in-app capture does not exist yet.
+        They are reported as unmet rather than omitted — an agent told their
+        listing needs two things when it needs five would go and do the two and
+        find the badge still missing, and that is how a mechanism stops being
+        legible.
+      */
+      const inputs: ListingEvidence = {
+        agentTier: tier,
+        authorityLive: mayList(evidence, l.propertyId, now),
+        captures: [],
+        blockedDuplicate: false,
+        lastConfirmedAt: null,
+        upheldReports: upheld.length,
+      };
+
+      return {
+        id: l.id,
+        propertyId: l.propertyId,
+        title: l.title,
+        publishedAt: l.publishedAt?.toISOString() ?? null,
+        stillNeeded: unmetConditions(inputs, now).map((condition) => ({
+          condition,
+          whatToDo: whatToDo(condition),
+        })),
+      };
+    });
   }
 }
