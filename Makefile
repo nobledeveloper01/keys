@@ -67,7 +67,7 @@ untranslated:
 	python3 scripts/untranslated-check.py
 
 ## gates: every blocking check, without the tests
-gates: typecheck lint boundary doc-check wired-check untranslated api-fresh bundle-check splash-check mark-check palette-check
+gates: typecheck lint boundary doc-check wired-check untranslated repo-check api-fresh bundle-check splash-check mark-check palette-check
 
 ## ci: the gate
 ci: gates test
@@ -77,6 +77,18 @@ api:
 	pnpm --filter @keys/server run build
 	node apps/server/dist/emit-openapi.js
 	pnpm --filter @keys/api exec openapi-typescript openapi.json -o src/schema.ts
+
+## repo-check: no build output is tracked
+repo-check:
+	@bad=$$(git ls-files | grep -E '(^|/)(\.next|build|dist|node_modules|Pods|DerivedData|\.gradle|\.transforms)/' \
+		| grep -vE '^apps/mobile/android/(gradlew|gradle/)' || true); \
+	if [ -n "$$bad" ]; then \
+		echo "generated output is committed:"; echo "$$bad" | head -12 | sed 's/^/  /'; \
+		echo "  …$$(echo "$$bad" | wc -l | tr -d ' ') files"; \
+		echo "add it to .gitignore and 'git rm -r --cached' it"; \
+		exit 1; \
+	fi; \
+	echo "no build output is tracked"
 
 ## api-fresh: fail when the generated client no longer matches the controllers
 api-fresh:
@@ -109,4 +121,4 @@ clean:
 	rm -rf apps/server/dist packages/*/dist
 	@echo "cleaned — node_modules left alone"
 
-.PHONY: help setup db test typecheck lint boundary doc-check wired-check untranslated api api-fresh bundle-check splash-check mark-check palette-check gates ci clean
+.PHONY: help setup db test typecheck lint boundary doc-check wired-check untranslated repo-check api api-fresh bundle-check splash-check mark-check palette-check gates ci clean

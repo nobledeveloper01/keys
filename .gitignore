@@ -17,6 +17,25 @@
 # only the required ones. That is the half that catches the next one.
 docs/**/*.tmp
 docs/.DS_Store
+docs/screens/.sheet.html
+
+# The screens PDF is ten megabytes of the same captures that sit beside it in
+# `docs/screens/`, rebuilt by `scripts/build-screens-pdf.py` in a few seconds.
+# Committing it would put a new ten-megabyte blob in history every time a colour
+# changed.
+docs/Keys-screens.pdf
+
+# Build output.
+#
+# Seventy-five files of Next.js build cache — webpack packs, manifests, chunk
+# maps — were committed by a `git add -A` because nothing ignored them and
+# nothing checked. `make repo-check` now fails on any of these being tracked,
+# which is the half that catches it next time.
+.next/
+**/.next/
+dist/
+build/
+DerivedData/
 
 # OS / editors
 .DS_Store
