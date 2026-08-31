@@ -35,6 +35,10 @@ export type SubmitReply =
   paths['/v1/registry/reply']['post']['requestBody']['content']['application/json'];
 export type AgentProfile =
   paths['/v1/agents']['get']['responses'][200]['content']['application/json'];
+export type SearchResult =
+  paths['/v1/listings']['get']['responses'][200]['content']['application/json'][number];
+export type ListingView =
+  paths['/v1/listings/{id}']['get']['responses'][200]['content']['application/json'];
 export type SignedUp =
   paths['/v1/agents']['post']['responses'][201]['content']['application/json'];
 export type Listing =
@@ -266,6 +270,25 @@ export function client(options: ClientOptions) {
 
       listings: () => send<Listing[]>(options, 'GET', '/v1/agents/me/listings'),
     },
+
+    /**
+     * What a tenant can find. No account, like the registry lookup.
+     *
+     * `verifiedOnly` defaults on at the server, so an app that forgets to send
+     * it shows only listings Keys can stand behind — the safe direction for a
+     * missing parameter to fail in.
+     */
+    search: (query: { q?: string; latitude?: number; longitude?: number; verifiedOnly?: boolean }) =>
+      send<SearchResult[]>(options, 'GET', '/v1/listings', {
+        query: Object.fromEntries(
+          Object.entries(query)
+            .filter(([, value]) => value !== undefined && value !== '')
+            .map(([key, value]) => [key, String(value)]),
+        ),
+      }),
+
+    listing: (id: string, language: string) =>
+      send<ListingView>(options, 'GET', `/v1/listings/${id}`, { query: { language } }),
 
     /** The landlord's two calls. No account, by design — see the controller. */
     confirmAuthority: (challengeId: string, code: string) =>

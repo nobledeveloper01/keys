@@ -6,6 +6,62 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — One sentence, two answers
+
+**Did.** Search and the listing page, and the redesign that prompted them — the agent's
+account is a list of properties now rather than every feature on one scroll.
+
+### What surprised us
+
+**The Verified answer was computed in two places and they disagreed.** The agent's own
+screen measured the capture distance with `metresBetween`; the search controller copied
+`distanceM` straight off the stored capture, where it is always null. So an agent saw
+"photographed at the property — ticked" for a listing no tenant could find. Same listing,
+two answers, and the wrong one was the one a tenant saw.
+
+It is one function now — `assessListing` — and nothing else in the codebase may compute it.
+This is the sentence the whole product sells; a second opinion about it is a bug with a
+badge on.
+
+**The redesign found the modelling error, not the other way round.** "Ask a landlord to
+confirm you" always took a `propertyId`. Floating at account level it had to *ask* which
+property — a form field that existed only because the screen was in the wrong place. On a
+property's own screen the question is already answered and the agent types one number.
+
+**A checklist that ticks its own instructions reads as absurd.** The first version showed
+the unmet conditions as paragraphs; ticking them gave "✓ One of these images is already on
+a listing we blocked", a solved problem stated as a live one. The obvious fix — a past-tense
+set — is also wrong: "Your ID is checked" is a lie on an *unticked* row, so it would need a
+third set. A noun phrase is true in both states, which is why checklists are written that
+way.
+
+**And then the same seven labels had two audiences.** The agent sees them on their property;
+a tenant sees them on the listing page. "Your own images" is second-person to the agent and
+nonsense to a tenant reading about somebody else's flat. Every label has to be true from
+either side, which rules out "your" as firmly as it rules out an instruction.
+
+### What the ranking will not do
+
+No paid placement, no boost, no sponsored weight. Phase 5 adds featured placement and the
+roadmap caps it to Verified listings — but that is a *slot*, marked as such, not a thumb on
+this scale. The moment a rank can be bought, "Verified first" stops meaning what it says.
+
+Nor recency of posting, which rewards churn: an agent who deletes and re-posts a stale
+listing would beat one who kept theirs honest. What is rewarded is *confirming* a listing is
+still there, which costs the same effort and means something.
+
+The ranking says why each result sits where it does, in words. A ranking nobody can
+interrogate is one somebody will assume was bought.
+
+### The gate
+
+Every way of losing the badge is exercised separately — the landlord withdraws, a reviewer
+withdraws the ID, a reviewer blocks an image, the fortnight lapses — and each takes the
+listing out of the *very next* request. Adding a cache fails it. Filtering before assessing
+fails it. That is the whole claim: nothing has to re-index, so nothing can be behind.
+
+---
+
 ## 2026-08-31 — A condition nothing could ever satisfy
 
 **Did.** Walkthrough recording, and coordinates on listings — which closed a condition that

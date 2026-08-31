@@ -10,6 +10,8 @@ import { useDeepLink } from './src/state/deepLink';
 import { LanguageProvider, useLanguage } from './src/state/language';
 import { SessionProvider } from './src/state/session';
 import { AgentScreen } from './src/screens/AgentScreen';
+import { FindScreen } from './src/screens/FindScreen';
+import { ListingScreen } from './src/screens/ListingScreen';
 import { LanguageScreen } from './src/screens/LanguageScreen';
 import { LookupScreen } from './src/screens/LookupScreen';
 import { ReplyScreen } from './src/screens/ReplyScreen';
@@ -70,7 +72,7 @@ function Shell() {
   const { chosen, ready, t } = useLanguage();
   const [splashDone, setSplashDone] = useState(false);
   const [picked, setPicked] = useState(false);
-  const [tab, setTab] = useState('check');
+  const [tab, setTab] = useState('find');
 
   /*
     One level of depth inside the Check tab, and no more.
@@ -86,6 +88,17 @@ function Shell() {
     that is when a router earns its dependency, not before.
   */
   const [reporting, setReporting] = useState<string | null>(null);
+
+  /*
+    Which listing is open inside the Find tab.
+
+    The second thing to go *back* to, which is the moment I said a router would
+    start earning its dependency — and it nearly does. It is still two `useState`
+    values because there are two destinations and no third level; when a listing
+    page can push to an agent's profile, that is the third, and this becomes a
+    stack that can be popped rather than two booleans that cannot.
+  */
+  const [openListing, setOpenListing] = useState<string | null>(null);
 
   /*
     A link from a text message, which is not a destination anybody navigates to.
@@ -115,6 +128,14 @@ function Shell() {
   }
 
   const tabs: readonly Tab[] = [
+    /*
+      Find first, then Check.
+
+      Checking a number is the wedge — it is what somebody does when an agent
+      has already found *them*, usually on WhatsApp. Finding a place is the
+      product, and putting it second would say the opposite.
+    */
+    { id: 'find', label: t('tab_find'), icon: 'pin' },
     { id: 'check', label: t('tab_check'), icon: 'search' },
     { id: 'account', label: t('tab_account'), icon: 'shield' },
     { id: 'settings', label: t('tab_settings'), icon: 'auto' },
@@ -161,6 +182,26 @@ function Shell() {
       <Ambient tone={tab === 'check' ? verdict : undefined} />
 
       <View style={styles.body}>
+        {tab === 'find' &&
+          (openListing === null ? (
+            <FindScreen baseUrl={API_URL} onOpen={setOpenListing} />
+          ) : (
+            <ListingScreen
+              baseUrl={API_URL}
+              id={openListing}
+              onBack={() => setOpenListing(null)}
+              /*
+                Straight to the registry lookup, which is the one thing a
+                tenant looking at a listing most wants next: the agent's name
+                is on the page, and their number is what tells you whether
+                anybody has been scammed by them.
+              */
+              onCheckAgent={() => {
+                setOpenListing(null);
+                setTab('check');
+              }}
+            />
+          ))}
         {tab === 'check' &&
           (reporting === null ? (
             <LookupScreen
@@ -194,6 +235,7 @@ function Shell() {
         onChange={(next) => {
           setTab(next);
           setReporting(null);
+          setOpenListing(null);
         }}
       />
     </SafeAreaView>

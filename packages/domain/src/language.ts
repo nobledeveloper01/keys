@@ -190,6 +190,17 @@ export type Phrase =
   | 'what_this_property_needs'
   | 'this_property'
   | 'add_property_help'
+  | 'tab_find'
+  | 'find_a_place'
+  | 'find_a_place_lede'
+  | 'search_places_hint'
+  | 'verified_only'
+  | 'nothing_found'
+  | 'nothing_found_detail'
+  | 'what_was_checked_here'
+  | 'listed_by'
+  | 'not_verified_listing'
+  | 'check_this_agent'
   | 'step_agent_identity'
   | 'step_landlord_authority'
   | 'step_capture_on_site'
@@ -309,11 +320,22 @@ export const EN: Readonly<Record<Phrase, string>> = {
   what_this_property_needs: "What this property needs",
   this_property: "This property",
   add_property_help: "One property at a time. You can draft it anywhere; the rest has to be done standing at it.",
+  tab_find: "Find",
+  find_a_place: "Find a place",
+  find_a_place_lede: "Only places Keys has checked, unless you ask for the rest.",
+  search_places_hint: "Yaba, two bedroom, Herbert Macaulay",
+  verified_only: "Checked places only",
+  nothing_found: "Nothing here yet",
+  nothing_found_detail: "Keys is new. Try fewer words, or turn off the filter to see everything that has been posted.",
+  what_was_checked_here: "What was checked",
+  listed_by: "Listed by",
+  not_verified_listing: "Keys has not checked this place. Pay nothing before you have seen it and met the person.",
+  check_this_agent: "Check this agent's number",
   step_agent_identity: "ID check",
   step_landlord_authority: "Landlord confirmation",
   step_capture_on_site: "Photo at the property",
   step_walkthrough_video: "Walkthrough video",
-  step_not_a_known_duplicate: "Your own images",
+  step_not_a_known_duplicate: "Images not used elsewhere",
   step_recently_confirmed: "Confirmed available",
   step_nothing_upheld: "No upheld reports",
   which_number_reported: "The number you are reporting",
@@ -461,11 +483,22 @@ export const HA: Readonly<Record<Phrase, string>> = {
   what_this_property_needs: "Abin da wannan wurin ke buƙata",
   this_property: "Wannan wurin",
   add_property_help: "Wuri ɗaya a lokaci ɗaya. Za ka iya shirya shi ko'ina; sauran dole ka yi shi kana tsaye a wurin.",
+  tab_find: "Nemo",
+  find_a_place: "Nemo wuri",
+  find_a_place_lede: "Wuraren da Keys ya duba kawai, sai dai ka nemi sauran.",
+  search_places_hint: "Yaba, ɗaki biyu, Herbert Macaulay",
+  verified_only: "Wuraren da aka duba kawai",
+  nothing_found: "Babu kome a nan tukuna",
+  nothing_found_detail: "Keys sabo ne. Gwada kalmomi kaɗan, ko kashe tacewa don ganin duk abin da aka sanya.",
+  what_was_checked_here: "Abin da aka duba",
+  listed_by: "Wanda ya sanya",
+  not_verified_listing: "Keys bai duba wannan wurin ba. Kada ka biya kafin ka gani ka kuma sadu da mutumin.",
+  check_this_agent: "Duba lambar wannan wakilin",
   step_agent_identity: "Duba katin shaida",
   step_landlord_authority: "Tabbatarwar mai gida",
   step_capture_on_site: "Hoto a wurin",
   step_walkthrough_video: "Bidiyon zagayawa",
-  step_not_a_known_duplicate: "Hotunanka na kanka",
+  step_not_a_known_duplicate: "Hotunan ba a wani wuri ba",
   step_recently_confirmed: "An tabbatar yana nan",
   step_nothing_upheld: "Babu rahoton da aka tabbatar",
   which_number_reported: "Lambar da kake ba da rahoton ta",
@@ -613,11 +646,22 @@ export const YO: Readonly<Record<Phrase, string>> = {
   what_this_property_needs: "Ohun tí ilé yìí nílò",
   this_property: "Ilé yìí",
   add_property_help: "Ilé kan lẹ́ẹ̀kan. O lè kọ ọ́ sílẹ̀ níbikíbi; ìyókù gbọ́dọ̀ ṣe nígbà tí o dúró níbẹ̀.",
+  tab_find: "Wá",
+  find_a_place: "Wá ibùgbé",
+  find_a_place_lede: "Àwọn ibi tí Keys ti ṣàyẹ̀wò nìkan, àyàfi tí o bá béèrè fún àwọn yòókù.",
+  search_places_hint: "Yaba, yàrá méjì, Herbert Macaulay",
+  verified_only: "Àwọn ibi tí a ṣàyẹ̀wò nìkan",
+  nothing_found: "Kò sí nǹkan níbí síbẹ̀",
+  nothing_found_detail: "Keys ṣì jẹ́ tuntun. Gbìyànjú ọ̀rọ̀ díẹ̀, tàbí pa àyẹ̀wò náà kí o rí gbogbo ohun tí a ti fi sí.",
+  what_was_checked_here: "Ohun tí a ṣàyẹ̀wò",
+  listed_by: "Ẹni tí ó fi sí",
+  not_verified_listing: "Keys kò ṣàyẹ̀wò ibí yìí. Má sanwó kí o tó rí i kí o sì bá ẹni náà pàdé.",
+  check_this_agent: "Ṣàyẹ̀wò nọ́mbà aṣojú yìí",
   step_agent_identity: "Ìṣàyẹ̀wò káàdì ìdánimọ̀",
   step_landlord_authority: "Ìfọwọ́sí onílé",
   step_capture_on_site: "Fọ́tò ní ibẹ̀",
   step_walkthrough_video: "Fídíò ìrìn àyíká",
-  step_not_a_known_duplicate: "Àwọn àwòrán tìrẹ",
+  step_not_a_known_duplicate: "Àwọn àwòrán tí kò sí níbòmíràn",
   step_recently_confirmed: "A fọwọ́ sí i pé ó ṣì wà",
   step_nothing_upheld: "Kò sí ẹ̀sùn tí a gbà",
   which_number_reported: "Nọ́mbà tí ò ń ròyìn",
@@ -765,11 +809,22 @@ export const IG: Readonly<Record<Phrase, string>> = {
   what_this_property_needs: "Ihe ụlọ a chọrọ",
   this_property: "Ụlọ a",
   add_property_help: "Otu ụlọ n'otu oge. Ị nwere ike ide ya ebe ọ bụla; ihe fọdụrụ ka a ga-eme ka ị guzo na ya.",
+  tab_find: "Chọọ",
+  find_a_place: "Chọọ ebe obibi",
+  find_a_place_lede: "Naanị ebe Keys nyochara, ma ọ bụrụ na ị rịọ maka ndị ọzọ.",
+  search_places_hint: "Yaba, ime ụlọ abụọ, Herbert Macaulay",
+  verified_only: "Naanị ebe e nyochara",
+  nothing_found: "Ọ dịghị ihe ebe a ugbu a",
+  nothing_found_detail: "Keys bụ ihe ọhụrụ. Nwaa okwu ole na ole, ma ọ bụ gbanyụọ nzacha ka ị hụ ihe niile etinyere.",
+  what_was_checked_here: "Ihe e nyochara",
+  listed_by: "Onye tinyere ya",
+  not_verified_listing: "Keys enyochabeghị ebe a. Akwụla ụgwọ tupu ị hụ ya ma zute onye ahụ.",
+  check_this_agent: "Nyochaa nọmba onye nnọchiteanya a",
   step_agent_identity: "Nyocha kaadị njirimara",
   step_landlord_authority: "Nkwado onye nwe ụlọ",
   step_capture_on_site: "Foto n'ebe ahụ",
   step_walkthrough_video: "Vidiyo njegharị",
-  step_not_a_known_duplicate: "Foto nke gị",
+  step_not_a_known_duplicate: "Foto na-adịghị ebe ọzọ",
   step_recently_confirmed: "Akwadoro na ọ ka dị",
   step_nothing_upheld: "Ọ dịghị mkpesa akwadoro",
   which_number_reported: "Nọmba ị na-akọ",
@@ -880,6 +935,12 @@ export function conditionPhrase(condition: string): Phrase {
  *
  * Short on purpose. Six paragraphs is not a checklist; the instruction earns
  * its length only on the one step that is next.
+ *
+ * **And written for two readers.** The agent sees these on their own property;
+ * a tenant sees the same seven on the listing page. "Your own images" was
+ * second-person to the agent and nonsense to the tenant reading about somebody
+ * else's flat — so every label here has to be true from either side, which
+ * rules out "your" as much as it rules out an instruction.
  */
 export function conditionStepPhrase(condition: string): Phrase {
   return `step_${condition}` as Phrase;
