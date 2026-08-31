@@ -98,6 +98,16 @@ export interface Throughput {
 export abstract class ReportsStore {
   abstract add(input: AddReport): Promise<StoredReport> | StoredReport;
   abstract publishedFor(phone: string, now?: Date): Promise<readonly StoredReport[]> | readonly StoredReport[];
+  /**
+   * The same read, for a caller that only ever held the hash.
+   *
+   * Agents are stored with a hashed phone and no way back to the number, which
+   * is the point — but their tier depends on whether anything has been upheld
+   * against them, so there has to be a door for a caller who legitimately
+   * cannot produce the plaintext. It answers strictly less than `publishedFor`
+   * could be made to: a hash, and only published rows.
+   */
+  abstract publishedForHash(hash: string, now?: Date): Promise<readonly StoredReport[]> | readonly StoredReport[];
   abstract allFor(phone: string): Promise<readonly StoredReport[]> | readonly StoredReport[];
   abstract byId(id: string): Promise<StoredReport | undefined> | StoredReport | undefined;
   abstract byReplyToken(token: string): Promise<StoredReport | undefined> | StoredReport | undefined;
@@ -180,8 +190,11 @@ export class InMemoryReportsStore extends ReportsStore {
   }
 
   publishedFor(phone: string, now: Date = new Date()): readonly StoredReport[] {
+    return this.publishedForHash(hashPhone(phone), now);
+  }
+
+  publishedForHash(hash: string, now: Date = new Date()): readonly StoredReport[] {
     this.purgeExpired(now);
-    const hash = hashPhone(phone);
     return [...this.rows.values()].filter(
       (r) => r.reportedPhoneHash === hash && r.publishedAt !== null,
     );

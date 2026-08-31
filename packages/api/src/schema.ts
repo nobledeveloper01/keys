@@ -175,6 +175,160 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open an agent account. Verifies nothing on its own. */
+        post: operations["AgentsController_signUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What is publicly known about an agent. No account required. */
+        get: operations["AgentsController_publicProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/me/authority": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask a landlord to confirm you may let a property. */
+        post: operations["AgentsController_requestAuthority"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/me/listings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your listings, drafts included. */
+        get: operations["AgentsController_mine"];
+        put?: never;
+        /** Draft a listing. Drafts are private. */
+        post: operations["AgentsController_draft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agents/me/listings/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish a listing. Needs a landlord confirmation on that property. */
+        post: operations["AgentsController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/authority/withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask for a code to withdraw an authority. Texted to the landlord. */
+        post: operations["AuthorityController_askToWithdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/authority/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer a code from a text. Grants or withdraws, as the text said. */
+        post: operations["AuthorityController_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/authority/identity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record a completed identity check. Vendor only. */
+        post: operations["AuthorityController_identity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/review/agents/{id}/withdraw-identity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw an identity check. Unpublishes every listing that agent has. */
+        post: operations["AgentReviewController_withdrawIdentity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -288,6 +442,86 @@ export interface components {
             publishedAt: string | null;
             /** @description Said out loud so a reviewer knows what they just did in public. */
             nowVisiblePublicly: boolean;
+        };
+        SignUpBody: {
+            /** @example Chinedu Okafor */
+            displayName: string;
+            /** @example +2348012345678 */
+            phone: string;
+        };
+        SignUpResponse: {
+            agentId: string;
+            /** @description Shown once. Keys does not store it, only its digest. */
+            token: string;
+        };
+        AgentProfileResponse: {
+            agentId: string;
+            displayName: string;
+            /**
+             * @description Computed from evidence on every read. Not stored.
+             * @enum {string}
+             */
+            tier: "unverified" | "identity" | "authority" | "established";
+            /** @description What was actually checked, in words a tenant could go and verify. */
+            meaning: string;
+            /** @description Properties a landlord has confirmed they may let. */
+            confirmedProperties: number;
+            /** Format: date-time */
+            joinedAt: string;
+            /** @description Upheld scam reports against this agent. Zero is not a clean bill of health. */
+            upheldReports: number;
+        };
+        AuthorityRequestBody: {
+            /** @description The property this authority would cover. */
+            propertyId: string;
+            /**
+             * @description The landlord's number. Not the agent's.
+             * @example +2348012345678
+             */
+            landlordPhone: string;
+        };
+        ChallengeOpenedResponse: {
+            /** @description Given to the landlord, not to the agent. */
+            challengeId: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** @description Whether the text could actually be sent yet. */
+            delivered: boolean;
+            whatHappensNext: string;
+        };
+        CreateListingBody: {
+            propertyId: string;
+            /** @example 2 bedroom flat, Yaba */
+            title: string;
+        };
+        ListingResponse: {
+            id: string;
+            propertyId: string;
+            title: string;
+            /** Format: date-time */
+            publishedAt: string | null;
+        };
+        AnswerChallengeBody: {
+            challengeId: string;
+            /**
+             * @description The six digits from the text.
+             * @example 049217
+             */
+            code: string;
+        };
+        ChallengeAnsweredResponse: {
+            confirmed: boolean;
+            /** @description Listings that went dark as a result. Empty on a grant. */
+            unpublishedListings: string[];
+            meaning: string;
+        };
+        IdentityCheckBody: {
+            /** @description The KYC vendor that ran the liveness and document check. */
+            vendor: string;
+            /** @description The vendor's own reference for the check, so it can be re-pulled. */
+            reference: string;
+            /** @description The agent the vendor checked. */
+            agentId: string;
         };
     };
     responses: never;
@@ -526,6 +760,220 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AgentsController_signUp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignUpBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SignUpResponse"];
+                };
+            };
+        };
+    };
+    AgentsController_publicProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentProfileResponse"];
+                };
+            };
+        };
+    };
+    AgentsController_requestAuthority: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthorityRequestBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengeOpenedResponse"];
+                };
+            };
+        };
+    };
+    AgentsController_mine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListingResponse"][];
+                };
+            };
+        };
+    };
+    AgentsController_draft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateListingBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListingResponse"];
+                };
+            };
+        };
+    };
+    AgentsController_publish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListingResponse"];
+                };
+            };
+        };
+    };
+    AuthorityController_askToWithdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengeOpenedResponse"];
+                };
+            };
+        };
+    };
+    AuthorityController_confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerChallengeBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChallengeAnsweredResponse"];
+                };
+            };
+        };
+    };
+    AuthorityController_identity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentityCheckBody"];
+            };
+        };
+        responses: {
+            /** @description The check was recorded. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AgentReviewController_withdrawIdentity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description What went dark. */
             200: {
                 headers: {
                     [name: string]: unknown;

@@ -35,5 +35,8 @@ import { ReviewController } from './review.controller';
       },
     },
   ],
+  // The agents module needs the registry: an upheld report costs an agent
+  // the `established` badge, and one import beats a copied count.
+  exports: [ReportsStore],
 })
 export class ReportsModule {}

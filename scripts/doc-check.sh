@@ -106,7 +106,7 @@ if [ -f docs/ROADMAP.md ] && [ -f docs/RELEASE-GATES.md ]; then
     done
     fail=1
   else
-    ok "every release gate the roadmap names is in the ledger"
+    green "every release gate the roadmap names is in the ledger"
   fi
 fi
 
@@ -128,7 +128,7 @@ if [ -n "$untracked_docs" ]; then
   done
   fail=1
 else
-  ok "every document under docs/ is tracked, not just the required ones"
+  green "every document under docs/ is tracked, not just the required ones"
 fi
 
 for adr in docs/adr/[0-9]*.md; do

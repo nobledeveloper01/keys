@@ -129,11 +129,15 @@ export class PostgresReportsStore
    * caller afterwards, so there is no way to ask this for an unpublished report.
    */
   async publishedFor(phone: string, now: Date = new Date()): Promise<readonly StoredReport[]> {
+    return this.publishedForHash(hashPhone(phone), now);
+  }
+
+  async publishedForHash(hash: string, now: Date = new Date()): Promise<readonly StoredReport[]> {
     await this.purgeExpired(now);
     const result = await this.pool.query<Row>(
       `SELECT ${COLUMNS} FROM reports
         WHERE reported_phone_hash = $1 AND published_at IS NOT NULL`,
-      [hashPhone(phone)],
+      [hash],
     );
     return result.rows.map(hydrate);
   }

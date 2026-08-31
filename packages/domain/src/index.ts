@@ -11,5 +11,6 @@
  * parity suite; here the server imports the same TypeScript the phone runs, so
  * `is_verified` cannot mean two different things on two surfaces.
  */
+export * from './agents.ts';
 export * from './language.ts';
 export * from './reports.ts';

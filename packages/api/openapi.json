@@ -357,6 +357,320 @@
           "health"
         ]
       }
+    },
+    "/v1/agents": {
+      "post": {
+        "operationId": "AgentsController_signUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUpResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Open an agent account. Verifies nothing on its own.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/v1/agents/{id}": {
+      "get": {
+        "operationId": "AgentsController_publicProfile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "What is publicly known about an agent. No account required.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/v1/agents/me/authority": {
+      "post": {
+        "operationId": "AgentsController_requestAuthority",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorityRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeOpenedResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Ask a landlord to confirm you may let a property.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/v1/agents/me/listings": {
+      "post": {
+        "operationId": "AgentsController_draft",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateListingBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Draft a listing. Drafts are private.",
+        "tags": [
+          "agents"
+        ]
+      },
+      "get": {
+        "operationId": "AgentsController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListingResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Your listings, drafts included.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/v1/agents/me/listings/{id}/publish": {
+      "post": {
+        "operationId": "AgentsController_publish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Publish a listing. Needs a landlord confirmation on that property.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
+    "/v1/authority/withdrawal": {
+      "post": {
+        "operationId": "AuthorityController_askToWithdraw",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeOpenedResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Ask for a code to withdraw an authority. Texted to the landlord.",
+        "tags": [
+          "authority"
+        ]
+      }
+    },
+    "/v1/authority/confirm": {
+      "post": {
+        "operationId": "AuthorityController_confirm",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerChallengeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeAnsweredResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Answer a code from a text. Grants or withdraws, as the text said.",
+        "tags": [
+          "authority"
+        ]
+      }
+    },
+    "/v1/authority/identity": {
+      "post": {
+        "operationId": "AuthorityController_identity",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentityCheckBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The check was recorded."
+          }
+        },
+        "security": [
+          {
+            "kyc-token": []
+          }
+        ],
+        "summary": "Record a completed identity check. Vendor only.",
+        "tags": [
+          "authority"
+        ]
+      }
+    },
+    "/v1/review/agents/{id}/withdraw-identity": {
+      "post": {
+        "operationId": "AgentReviewController_withdrawIdentity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What went dark."
+          }
+        },
+        "security": [
+          {
+            "reviewer-token": []
+          }
+        ],
+        "summary": "Withdraw an identity check. Unpublishes every listing that agent has.",
+        "tags": [
+          "review"
+        ]
+      }
     }
   },
   "info": {
@@ -770,6 +1084,232 @@
           "status",
           "publishedAt",
           "nowVisiblePublicly"
+        ]
+      },
+      "SignUpBody": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "example": "Chinedu Okafor"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+2348012345678"
+          }
+        },
+        "required": [
+          "displayName",
+          "phone"
+        ]
+      },
+      "SignUpResponse": {
+        "type": "object",
+        "properties": {
+          "agentId": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "Shown once. Keys does not store it, only its digest."
+          }
+        },
+        "required": [
+          "agentId",
+          "token"
+        ]
+      },
+      "AgentProfileResponse": {
+        "type": "object",
+        "properties": {
+          "agentId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "identity",
+              "authority",
+              "established"
+            ],
+            "description": "Computed from evidence on every read. Not stored."
+          },
+          "meaning": {
+            "type": "string",
+            "description": "What was actually checked, in words a tenant could go and verify."
+          },
+          "confirmedProperties": {
+            "type": "number",
+            "description": "Properties a landlord has confirmed they may let."
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "upheldReports": {
+            "type": "number",
+            "description": "Upheld scam reports against this agent. Zero is not a clean bill of health."
+          }
+        },
+        "required": [
+          "agentId",
+          "displayName",
+          "tier",
+          "meaning",
+          "confirmedProperties",
+          "joinedAt",
+          "upheldReports"
+        ]
+      },
+      "AuthorityRequestBody": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "string",
+            "description": "The property this authority would cover."
+          },
+          "landlordPhone": {
+            "type": "string",
+            "example": "+2348012345678",
+            "description": "The landlord's number. Not the agent's."
+          }
+        },
+        "required": [
+          "propertyId",
+          "landlordPhone"
+        ]
+      },
+      "ChallengeOpenedResponse": {
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "description": "Given to the landlord, not to the agent."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "delivered": {
+            "type": "boolean",
+            "description": "Whether the text could actually be sent yet."
+          },
+          "whatHappensNext": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "challengeId",
+          "expiresAt",
+          "delivered",
+          "whatHappensNext"
+        ]
+      },
+      "CreateListingBody": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "example": "2 bedroom flat, Yaba"
+          }
+        },
+        "required": [
+          "propertyId",
+          "title"
+        ]
+      },
+      "ListingResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "propertyId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "propertyId",
+          "title",
+          "publishedAt"
+        ]
+      },
+      "AnswerChallengeBody": {
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "049217",
+            "description": "The six digits from the text."
+          }
+        },
+        "required": [
+          "challengeId",
+          "code"
+        ]
+      },
+      "ChallengeAnsweredResponse": {
+        "type": "object",
+        "properties": {
+          "confirmed": {
+            "type": "boolean"
+          },
+          "unpublishedListings": {
+            "description": "Listings that went dark as a result. Empty on a grant.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "meaning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmed",
+          "unpublishedListings",
+          "meaning"
+        ]
+      },
+      "IdentityCheckBody": {
+        "type": "object",
+        "properties": {
+          "vendor": {
+            "type": "string",
+            "description": "The KYC vendor that ran the liveness and document check."
+          },
+          "reference": {
+            "type": "string",
+            "description": "The vendor's own reference for the check, so it can be re-pulled."
+          },
+          "agentId": {
+            "type": "string",
+            "description": "The agent the vendor checked."
+          }
+        },
+        "required": [
+          "vendor",
+          "reference",
+          "agentId"
         ]
       }
     }
