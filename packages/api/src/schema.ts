@@ -262,6 +262,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/agents/me/listings/{id}/costs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Say what a listing costs to move into. All five figures, zeroes included. */
+        post: operations["AgentsController_costs"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/agents/me/listings/{id}/publish": {
         parameters: {
             query?: never;
@@ -666,6 +683,33 @@ export interface components {
             delivered: boolean;
             whatHappensNext: string;
         };
+        CostsBody: {
+            /**
+             * @description Rent for the year, in kobo.
+             * @example 80000000
+             */
+            annualRentKobo: number;
+            /**
+             * @description The agent fee. Zero is an answer.
+             * @example 8000000
+             */
+            agencyFeeKobo: number;
+            /**
+             * @description Preparing the tenancy agreement.
+             * @example 8000000
+             */
+            legalFeeKobo: number;
+            /**
+             * @description Refundable at the end, payable on the day.
+             * @example 10000000
+             */
+            cautionDepositKobo: number;
+            /**
+             * @description Service charge, where a building has one.
+             * @example 4000000
+             */
+            serviceChargeKobo: number;
+        };
         CreateListingBody: {
             propertyId: string;
             /** @example 2 bedroom flat, Yaba */
@@ -673,12 +717,48 @@ export interface components {
             /** @description Where the property is. Optional at draft, needed before a capture can prove presence. */
             latitude: number | null;
             longitude: number | null;
+            /** @description What it costs. Optional at draft, needed before publication. Null is not the same as all zeroes: one is silence, the other is a claim. */
+            costs: components["schemas"]["CostsBody"] | null;
         };
         StillNeeded: {
             /** @enum {string} */
-            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld";
+            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld" | "costs_stated";
             /** @description A sentence with a next action in it, not a failure notice. */
             whatToDo: string;
+        };
+        CostsResponse: {
+            /**
+             * @description Rent for the year, in kobo.
+             * @example 80000000
+             */
+            annualRentKobo: number;
+            /**
+             * @description The agent fee. Zero is an answer.
+             * @example 8000000
+             */
+            agencyFeeKobo: number;
+            /**
+             * @description Preparing the tenancy agreement.
+             * @example 8000000
+             */
+            legalFeeKobo: number;
+            /**
+             * @description Refundable at the end, payable on the day.
+             * @example 10000000
+             */
+            cautionDepositKobo: number;
+            /**
+             * @description Service charge, where a building has one.
+             * @example 4000000
+             */
+            serviceChargeKobo: number;
+            /** @description Everything payable before keys change hands, deposit included. */
+            moveInKobo: number;
+            /** @description What is on top of the advertised rent. The surprise, named. */
+            extrasKobo: number;
+            /** @description The agency fee as a percentage of rent. Ten is customary; this says when it is not. */
+            agencyFeePercent: number | null;
+            legalFeePercent: number | null;
         };
         ListingResponse: {
             id: string;
@@ -693,8 +773,10 @@ export interface components {
             confirmedAt: string | null;
             /** @description Whether the property has coordinates. Captures cannot prove presence without them. */
             placed: boolean;
-            /** @description Which of the seven Verified conditions are unmet, and what to do. Empty means Verified. */
+            /** @description Which of the eight Verified conditions are unmet, and what to do. Empty means Verified. */
             stillNeeded: components["schemas"]["StillNeeded"][];
+            /** @description Null if the agent has not said. */
+            costs: components["schemas"]["CostsResponse"] | null;
         };
         AnswerChallengeBody: {
             challengeId: string;
@@ -750,12 +832,16 @@ export interface components {
             /** @description Computed on every search from evidence. Never a stored column. */
             verified: boolean;
             agentName: string;
+            /** @description Everything payable before keys change hands, in kobo. The comparable number — two listings advertising the same rent are not the same price, and a list showing only rent hides that. */
+            moveInKobo: number | null;
+            /** @description Rent alone, in kobo. Sent beside the total so a reader can see the gap for themselves. */
+            annualRentKobo: number | null;
             /** @description Why this is ranked where it is. Said out loud, because a ranking nobody can interrogate is one somebody will assume was bought. */
             because: string[];
         };
         ListingCheck: {
             /** @enum {string} */
-            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld";
+            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld" | "costs_stated";
             /** @description The condition as a checklist row, in the reader's language. */
             label: string;
             met: boolean;
@@ -770,6 +856,8 @@ export interface components {
             agentMeaning: string;
             /** @description Every condition, met or not. Not a badge and not a score: the list of things that were checked, which a tenant can read and disagree with. */
             checks: components["schemas"]["ListingCheck"][];
+            /** @description Null when the agent has not said, which is itself an unmet condition rather than a blank in the page. */
+            costs: components["schemas"]["CostsResponse"] | null;
         };
         RegisterDeviceBody: {
             /** @description The device's P-256 public key, SPKI DER, base64. P-256 because that is what the Secure Enclave holds. */
@@ -1212,6 +1300,31 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListingResponse"];
+                };
+            };
+        };
+    };
+    AgentsController_costs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CostsBody"];
+            };
+        };
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

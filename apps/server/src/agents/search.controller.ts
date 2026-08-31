@@ -1,11 +1,13 @@
 import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { viewCosts } from './costs.view';
 import {
   VERIFIED_CONDITIONS,
   conditionStepPhrase,
   isPlausiblePoint,
   matches,
+  moveInCostKobo,
   rank,
   say,
   type Language,
@@ -77,6 +79,16 @@ export class SearchController {
       address: listing.propertyId,
       verified: listing.verified,
       agentName: listing.agentName,
+      /*
+        The move-in figure travels with the row, not just the rent.
+
+        Two listings advertising ₦800,000 are not the same price, and a list
+        that shows only rent hides exactly the difference somebody is trying to
+        compare. Both are sent so a reader can see the gap rather than take our
+        total on faith.
+      */
+      moveInKobo: listing.costs === null ? null : moveInCostKobo(listing.costs),
+      annualRentKobo: listing.costs?.annualRentKobo ?? null,
       // Said, so a tenant can see why this is above that one. A ranking nobody
       // can interrogate is a ranking somebody will assume was bought.
       because: [...because],
@@ -123,6 +135,7 @@ export class SearchController {
         label: say(spoken, conditionStepPhrase(condition)),
         met: !assessed.unmet.has(condition),
       })),
+      costs: viewCosts(listing.costs),
     };
   }
 

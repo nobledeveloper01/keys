@@ -1,3 +1,4 @@
+import { readCosts, viewCosts } from './costs.view';
 import {
   BadRequestException,
   Body,
@@ -35,6 +36,7 @@ import {
   AgentProfileResponse,
   AuthorityRequestBody,
   ChallengeOpenedResponse,
+  CostsBody,
   CreateListingBody,
   ListingResponse,
   SignUpBody,
@@ -278,12 +280,21 @@ export class AgentsController {
       throw new BadRequestException('That is not a place.');
     }
 
+    /*
+      Costs are optional at draft for the same reason coordinates are: an agent
+      who has not been given the fee schedule yet should still be able to start
+      the listing. `costs_stated` holds publication, which is the part
+      strangers see.
+    */
+    const costs = body?.costs === null || body?.costs === undefined ? null : readCosts(body.costs);
+
     const listing = await this.store.createListing({
       agentId: agent.id,
       propertyId,
       title,
       latitude: point?.latitude ?? null,
       longitude: point?.longitude ?? null,
+      costs,
       now: new Date(),
     });
     return {
@@ -291,6 +302,36 @@ export class AgentsController {
       propertyId: listing.propertyId,
       title: listing.title,
       publishedAt: null,
+      costs: viewCosts(listing.costs),
+    };
+  }
+
+  @Post('me/listings/:id/costs')
+  @UseGuards(AgentGuard)
+  @ApiSecurity('agent-token')
+  @ApiOperation({ summary: 'Say what a listing costs to move into. All five figures, zeroes included.' })
+  @ApiOkResponse({ type: ListingResponse })
+  async costs(
+    @Req() request: RequestWithAgent,
+    @Param('id') id: string,
+    @Body() body: CostsBody,
+  ) {
+    const agent = request.agent!;
+    const costs = readCosts(body);
+    // Not theirs and not existing get the same answer, so this route cannot be
+    // used to discover which listing ids are real.
+    const stated = await this.store.stateCosts({ id, agentId: agent.id, costs });
+    if (!stated) throw new NotFoundException('No such listing.');
+
+    const after = await this.store.listing(id);
+    return {
+      id,
+      propertyId: after?.propertyId ?? '',
+      title: after?.title ?? '',
+      publishedAt: after?.publishedAt?.toISOString() ?? null,
+      confirmedAt: after?.lastConfirmedAt?.toISOString() ?? null,
+      costs: viewCosts(after?.costs ?? null),
+      stillNeeded: [],
     };
   }
 
@@ -428,6 +469,7 @@ export class AgentsController {
         publishedAt: l.publishedAt?.toISOString() ?? null,
         confirmedAt: l.lastConfirmedAt?.toISOString() ?? null,
         placed: l.latitude !== null && l.longitude !== null,
+        costs: viewCosts(l.costs),
         stillNeeded: [...(assessed.get(l.id)?.unmet ?? [])].map((condition) => ({
           condition,
           whatToDo: whatToDo(condition),

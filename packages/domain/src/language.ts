@@ -142,6 +142,7 @@ export type Phrase =
   | 'condition_not_a_known_duplicate'
   | 'condition_recently_confirmed'
   | 'condition_nothing_upheld'
+  | 'condition_costs_stated'
   | 'one_property_confirmed'
   | 'report_lede'
   | 'which_number_reported'
@@ -207,7 +208,21 @@ export type Phrase =
   | 'step_walkthrough_video'
   | 'step_not_a_known_duplicate'
   | 'step_recently_confirmed'
-  | 'step_nothing_upheld';
+  | 'step_nothing_upheld'
+  | 'step_costs_stated'
+  | 'costs_heading'
+  | 'costs_rent'
+  | 'costs_agency_fee'
+  | 'costs_legal_fee'
+  | 'costs_caution_deposit'
+  | 'costs_service_charge'
+  | 'costs_move_in_total'
+  | 'costs_extras_note'
+  | 'costs_above_custom'
+  | 'costs_not_stated'
+  | 'costs_save'
+  | 'costs_help'
+  | 'costs_saved';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -284,6 +299,7 @@ export const EN: Readonly<Record<Phrase, string>> = {
   condition_not_a_known_duplicate: "One of these images is already on a listing we blocked. Replace it with your own.",
   condition_recently_confirmed: "Confirm the property is still available. Verified listings are confirmed every fortnight.",
   condition_nothing_upheld: "A report against this listing or against you was upheld. That has to be resolved first.",
+  condition_costs_stated: "Say what it costs to move in: rent, your fee, the agreement fee, the deposit and any service charge. A zero is an answer; a blank is not.",
   one_property_confirmed: "One property a landlord confirmed",
   report_lede: "A reviewer reads this before anything appears about anybody. Nothing you write here is published until a person upholds it.",
   only_report_what_happened_to_you: "Report what happened to you, not what you heard. A report nobody can assess cannot be upheld, and one that turns out to be false is worse than no report at all.",
@@ -338,6 +354,20 @@ export const EN: Readonly<Record<Phrase, string>> = {
   step_not_a_known_duplicate: "Images not used elsewhere",
   step_recently_confirmed: "Confirmed available",
   step_nothing_upheld: "No upheld reports",
+  step_costs_stated: "Costs stated",
+  costs_heading: "What it costs to move in",
+  costs_rent: "Rent for the year",
+  costs_agency_fee: "Agency fee",
+  costs_legal_fee: "Agreement fee",
+  costs_caution_deposit: "Caution deposit",
+  costs_service_charge: "Service charge",
+  costs_move_in_total: "Total to move in",
+  costs_extras_note: "On top of the rent",
+  costs_above_custom: "Higher than the usual ten per cent",
+  costs_not_stated: "This agent has not said what the fees are",
+  costs_save: "Save the costs",
+  costs_help: "Everything a tenant pays before they get keys. Put 0 where there is nothing to pay.",
+  costs_saved: "Costs saved",
   which_number_reported: "The number you are reporting",
   what_kind: "What kind of thing was it?",
   what_happened: "What happened",
@@ -447,6 +477,7 @@ export const HA: Readonly<Record<Phrase, string>> = {
   condition_not_a_known_duplicate: "Ɗaya daga cikin waɗannan hotunan yana kan talla da muka hana. Sauya shi da naka.",
   condition_recently_confirmed: "Tabbatar da cewa wurin yana nan. Ana tabbatar da tallace-tallacen da aka tabbatar kowane mako biyu.",
   condition_nothing_upheld: "An tabbatar da rahoto kan wannan tallar ko kanka. Dole a warware shi tukuna.",
+  condition_costs_stated: "Faɗi abin da za a biya kafin shiga: haya, kuɗinka, kuɗin yarjejeniya, ajiya da kuɗin hidima. Sifili amsa ce; wofi ba amsa ba ce.",
   one_property_confirmed: "Wuri ɗaya da mai gida ya tabbatar",
   report_lede: "Mai duba yana karanta wannan kafin komai ya bayyana game da kowa. Ba a buga abin da ka rubuta a nan sai mutum ya tabbatar da shi.",
   only_report_what_happened_to_you: "Ba da rahoton abin da ya same ka, ba abin da ka ji ba. Rahoton da ba wanda zai iya tantancewa ba za a tabbatar da shi ba, kuma wanda ya zamo ƙarya ya fi rashin rahoto muni.",
@@ -501,6 +532,20 @@ export const HA: Readonly<Record<Phrase, string>> = {
   step_not_a_known_duplicate: "Hotunan ba a wani wuri ba",
   step_recently_confirmed: "An tabbatar yana nan",
   step_nothing_upheld: "Babu rahoton da aka tabbatar",
+  step_costs_stated: "An bayyana kuɗi",
+  costs_heading: "Abin da za a biya kafin shiga",
+  costs_rent: "Kuɗin haya na shekara",
+  costs_agency_fee: "Kuɗin dillali",
+  costs_legal_fee: "Kuɗin yarjejeniya",
+  costs_caution_deposit: "Ajiyar tsaro",
+  costs_service_charge: "Kuɗin hidima",
+  costs_move_in_total: "Jimlar kuɗin shiga",
+  costs_extras_note: "A kan kuɗin haya",
+  costs_above_custom: "Ya fi kashi goma da aka saba",
+  costs_not_stated: "Wannan dillali bai bayyana kuɗaɗen ba",
+  costs_save: "Ajiye kuɗaɗen",
+  costs_help: "Duk abin da mai haya zai biya kafin ya samu makullai. Sanya 0 inda babu biya.",
+  costs_saved: "An ajiye kuɗaɗen",
   which_number_reported: "Lambar da kake ba da rahoton ta",
   what_kind: "Wane irin abu ne?",
   what_happened: "Me ya faru",
@@ -610,6 +655,7 @@ export const YO: Readonly<Record<Phrase, string>> = {
   condition_not_a_known_duplicate: "Ọ̀kan nínú àwọn àwòrán wọ̀nyí wà lórí ìpolówó tí a dí. Fi tìrẹ rọ́pò rẹ̀.",
   condition_recently_confirmed: "Fọwọ́ sí i pé ilé náà ṣì wà. A ń fọwọ́ sí àwọn ìpolówó tí a ti fọwọ́ sí ní ọ̀sẹ̀ méjì méjì.",
   condition_nothing_upheld: "A gba ẹ̀sùn kan lòdì sí ìpolówó yìí tàbí lòdì sí ọ. Ó gbọ́dọ̀ yanjú kí ó tó ṣeé ṣe.",
+  condition_costs_stated: "Sọ ohun tí ó ná láti wọlé: owó ilé, owó rẹ, owó àdéhùn, owó ìdógò àti owó ìtọ́jú. Òdo jẹ́ ìdáhùn; òfìfo kọ́.",
   one_property_confirmed: "Ilé kan tí onílé fọwọ́ sí",
   report_lede: "Olùyẹ̀wò kan ka èyí kí ohunkóhun tó farahàn nípa ẹnikẹ́ni. A kì í tẹ ohun tí o kọ síbí jáde àyàfi tí ènìyàn bá gbà á.",
   only_report_what_happened_to_you: "Ròyìn ohun tí ó ṣẹlẹ̀ sí ọ, kì í ṣe ohun tí o gbọ́. Ìròyìn tí ẹnikẹ́ni kò lè ṣàyẹ̀wò ni a kò lè gbà, èyí tí ó bá sì di irọ́ burú ju àìròyìn lọ.",
@@ -664,6 +710,20 @@ export const YO: Readonly<Record<Phrase, string>> = {
   step_not_a_known_duplicate: "Àwọn àwòrán tí kò sí níbòmíràn",
   step_recently_confirmed: "A fọwọ́ sí i pé ó ṣì wà",
   step_nothing_upheld: "Kò sí ẹ̀sùn tí a gbà",
+  step_costs_stated: "A ti sọ owó",
+  costs_heading: "Ohun tí ó ná láti wọlé",
+  costs_rent: "Owó ilé fún ọdún",
+  costs_agency_fee: "Owó aṣojú",
+  costs_legal_fee: "Owó àdéhùn",
+  costs_caution_deposit: "Owó ìdógò",
+  costs_service_charge: "Owó ìtọ́jú",
+  costs_move_in_total: "Àpapọ̀ owó ìwọlé",
+  costs_extras_note: "Lórí owó ilé",
+  costs_above_custom: "Ó ju ìdá mẹ́wàá tí a mọ̀",
+  costs_not_stated: "Aṣojú yìí kò sọ ohun tí owó jẹ́",
+  costs_save: "Fi owó náà pamọ́",
+  costs_help: "Gbogbo ohun tí ayálégbé ń san kí ó tó gba kọ́kọ́rọ́. Fi 0 sí ibi tí kò sí owó.",
+  costs_saved: "A ti fi owó pamọ́",
   which_number_reported: "Nọ́mbà tí ò ń ròyìn",
   what_kind: "Irú ohun wo ni?",
   what_happened: "Ohun tí ó ṣẹlẹ̀",
@@ -773,6 +833,7 @@ export const IG: Readonly<Record<Phrase, string>> = {
   condition_not_a_known_duplicate: "Otu n'ime foto ndị a dị na mgbasa ozi anyị gbochiri. Jiri nke gị dochie ya.",
   condition_recently_confirmed: "Kwado na ụlọ ahụ ka dị. A na-akwado mgbasa ozi akwadoro kwa izu abụọ.",
   condition_nothing_upheld: "A kwadoro mkpesa megide mgbasa ozi a ma ọ bụ megide gị. A ga-edozi ya tupu nke a emee.",
+  condition_costs_stated: "Kwuo ihe ọ ga-efu ịbanye: ụgwọ ụlọ, ụgwọ gị, ụgwọ nkwekọrịta, ego nchekwa na ụgwọ ọrụ. Efu bụ azịza; oghere abụghị.",
   one_property_confirmed: "Otu ụlọ onye nwe ụlọ kwadoro",
   report_lede: "Onye nyocha na-agụ nke a tupu ihe ọ bụla apụta banyere onye ọ bụla. Anaghị ebipụta ihe i dere ebe a ruo mgbe mmadụ kwadoro ya.",
   only_report_what_happened_to_you: "Kọọ ihe mere gị, ọ bụghị ihe ị nụrụ. Mkpesa onye ọ bụla na-apụghị inyocha ka a na-apụghị ịkwado, nke ghọrọ ụgha kwa jọrọ njọ karịa enweghị mkpesa ọ bụla.",
@@ -827,6 +888,20 @@ export const IG: Readonly<Record<Phrase, string>> = {
   step_not_a_known_duplicate: "Foto na-adịghị ebe ọzọ",
   step_recently_confirmed: "Akwadoro na ọ ka dị",
   step_nothing_upheld: "Ọ dịghị mkpesa akwadoro",
+  step_costs_stated: "Ekwuola ụgwọ",
+  costs_heading: "Ihe ọ ga-efu ịbanye",
+  costs_rent: "Ụgwọ ụlọ maka afọ",
+  costs_agency_fee: "Ụgwọ onye nnọchi",
+  costs_legal_fee: "Ụgwọ nkwekọrịta",
+  costs_caution_deposit: "Ego nchekwa",
+  costs_service_charge: "Ụgwọ ọrụ",
+  costs_move_in_total: "Mkpokọta ego ịbanye",
+  costs_extras_note: "Nʼelu ụgwọ ụlọ",
+  costs_above_custom: "Ọ karịrị pasent iri a maara",
+  costs_not_stated: "Onye nnọchi a ekwughị ihe ụgwọ bụ",
+  costs_save: "Chekwaa ụgwọ ndị a",
+  costs_help: "Ihe niile onye mgbazinye na-akwụ tupu o nweta igodo. Tinye 0 ebe ọ dịghị ihe a ga-akwụ.",
+  costs_saved: "Echekwala ụgwọ",
   which_number_reported: "Nọmba ị na-akọ",
   what_kind: "Ụdị ihe dị aṅaa ka ọ bụ?",
   what_happened: "Ihe merenụ",

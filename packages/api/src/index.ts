@@ -41,6 +41,9 @@ export type ListingView =
   paths['/v1/listings/{id}']['get']['responses'][200]['content']['application/json'];
 export type SignedUp =
   paths['/v1/agents']['post']['responses'][201]['content']['application/json'];
+export type Costs =
+  paths['/v1/agents/me/listings/{id}/costs']['post']['requestBody']['content']['application/json'];
+
 export type Listing =
   paths['/v1/agents/me/listings']['post']['responses'][201]['content']['application/json'];
 export type ChallengeAnswered =
@@ -261,6 +264,16 @@ export function client(options: ClientOptions) {
         send<Listing>(options, 'POST', `/v1/agents/me/listings/${id}/place`, {
           body: { latitude, longitude },
         }),
+
+      /**
+       * Say what a listing costs. All five figures, zeroes included.
+       *
+       * Not folded into `draft` because an agent drafting at the property has
+       * the address in front of them and not necessarily the fee schedule,
+       * and a form that demands everything at once is a form people abandon.
+       */
+      stateCosts: (id: string, costs: Costs) =>
+        send<Listing>(options, 'POST', `/v1/agents/me/listings/${id}/costs`, { body: costs }),
 
       confirmStillAvailable: (id: string) =>
         send<Listing>(options, 'POST', `/v1/agents/me/listings/${id}/confirm`),

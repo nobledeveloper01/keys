@@ -1,4 +1,5 @@
 import {
+  costsAreStated,
   mayList,
   metresBetween,
   tierOf,
@@ -85,6 +86,12 @@ export async function assessListing(
     blockedDuplicate: blocked,
     lastConfirmedAt: listing.lastConfirmedAt,
     upheldReports: upheld.length,
+    /*
+      Null costs are not stated costs. An all-zero breakdown *is* stated —
+      "there is nothing else to pay" is a claim an agent can be reported for
+      breaking, and silence is not.
+    */
+    costsStated: listing.costs !== null && costsAreStated(listing.costs),
   };
 
   const unmet = new Set(unmetConditions(inputs, now));

@@ -38,6 +38,24 @@ export const VERIFIED_CONDITIONS = [
   'recently_confirmed',
   /** No upheld report against this listing or the agent behind it. */
   'nothing_upheld',
+  /**
+   * The agent has said what the place actually costs — rent, agency fee,
+   * agreement fee, deposit, service charge — including where a figure is zero.
+   *
+   * The odd one out, and deliberately so. The other seven are evidence that a
+   * property and an agent are real; this one an agent could satisfy with
+   * numbers they have invented. Stating a fee does not make it true.
+   *
+   * It earns its place because a *stated* fee is a claim on the record. An
+   * agent who wrote ₦80,000 and asks for ₦200,000 at the door can be reported
+   * for it, and `undisclosed_fees` is already a report category here. Silence
+   * cannot be reported against, which is exactly why silence is the norm and
+   * why "₦800,000" turns into ₦1,100,000 on the day.
+   *
+   * It is also the cheapest of the eight for an honest agent — four numbers —
+   * and the only one a dishonest one gains anything by skipping.
+   */
+  'costs_stated',
 ] as const;
 
 export type VerifiedCondition = (typeof VERIFIED_CONDITIONS)[number];
@@ -85,6 +103,11 @@ export interface ListingEvidence {
   readonly blockedDuplicate: boolean;
   readonly lastConfirmedAt: Date | null;
   readonly upheldReports: number;
+  /**
+   * Whether the costs are stated in full — see `costsAreStated`. An explicit
+   * zero is stated; a missing field is not.
+   */
+  readonly costsStated: boolean;
 }
 
 /** A capture that actually proves somebody stood in the property. */
@@ -149,6 +172,8 @@ export function unmetConditions(
 
   if (evidence.upheldReports > 0) unmet.push('nothing_upheld');
 
+  if (!evidence.costsStated) unmet.push('costs_stated');
+
   return unmet;
 }
 
@@ -186,5 +211,7 @@ export function whatToDo(condition: VerifiedCondition): string {
       return `Confirm the property is still available. Verified listings are confirmed every ${CONFIRMATION_DAYS} days.`;
     case 'nothing_upheld':
       return 'A report against this listing or against you was upheld. It has to be resolved before this can be Verified again.';
+    case 'costs_stated':
+      return 'State the full cost of moving in: rent, your fee, the agreement fee, the deposit and any service charge. Put zero where there is nothing to pay — a zero is an answer, a blank is not.';
   }
 }

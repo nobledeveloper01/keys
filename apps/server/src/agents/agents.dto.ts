@@ -136,6 +136,56 @@ export class AgentUnderReview {
   evidence!: AttestationView[];
 }
 
+/**
+ * What a place costs, in kobo.
+ *
+ * Kobo rather than naira because these are integers and integers do not drift.
+ * A client that wants "₦800,000" divides by a hundred at the point it prints;
+ * nothing in the wire format or the database ever does.
+ */
+export class CostsBody {
+  @ApiProperty({ example: 800_000_00, description: 'Rent for the year, in kobo.' })
+  annualRentKobo!: number;
+
+  @ApiProperty({ example: 80_000_00, description: 'The agent fee. Zero is an answer.' })
+  agencyFeeKobo!: number;
+
+  @ApiProperty({ example: 80_000_00, description: 'Preparing the tenancy agreement.' })
+  legalFeeKobo!: number;
+
+  @ApiProperty({ example: 100_000_00, description: 'Refundable at the end, payable on the day.' })
+  cautionDepositKobo!: number;
+
+  @ApiProperty({ example: 40_000_00, description: 'Service charge, where a building has one.' })
+  serviceChargeKobo!: number;
+}
+
+/**
+ * The same five, plus what they come to.
+ *
+ * The totals are computed and sent rather than left to each client, so that a
+ * phone, a browser and a support agent looking at the API all see the same
+ * number. The one figure this product exists to publish is not one to
+ * reimplement three times.
+ */
+export class CostsResponse extends CostsBody {
+  @ApiProperty({ description: 'Everything payable before keys change hands, deposit included.' })
+  moveInKobo!: number;
+
+  @ApiProperty({ description: 'What is on top of the advertised rent. The surprise, named.' })
+  extrasKobo!: number;
+
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description: 'The agency fee as a percentage of rent. Ten is customary; this says when it is not.',
+  })
+  agencyFeePercent!: number | null;
+
+  @ApiProperty({ type: Number, nullable: true })
+  legalFeePercent!: number | null;
+}
+
 export class CreateListingBody {
   @ApiProperty()
   propertyId!: string;
@@ -152,6 +202,14 @@ export class CreateListingBody {
 
   @ApiProperty({ type: Number, nullable: true })
   longitude!: number | null;
+
+  @ApiProperty({
+    type: CostsBody,
+    nullable: true,
+    description:
+      'What it costs. Optional at draft, needed before publication. Null is not the same as all zeroes: one is silence, the other is a claim.',
+  })
+  costs!: CostsBody | null;
 }
 
 export class StillNeeded {
@@ -190,9 +248,12 @@ export class ListingResponse {
 
   @ApiProperty({
     type: [StillNeeded],
-    description: 'Which of the seven Verified conditions are unmet, and what to do. Empty means Verified.',
+    description: 'Which of the eight Verified conditions are unmet, and what to do. Empty means Verified.',
   })
   stillNeeded!: StillNeeded[];
+
+  @ApiProperty({ type: CostsResponse, nullable: true, description: 'Null if the agent has not said.' })
+  costs!: CostsResponse | null;
 }
 
 export class SearchResult {
@@ -204,6 +265,21 @@ export class SearchResult {
   verified!: boolean;
 
   @ApiProperty() agentName!: string;
+
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description:
+      'Everything payable before keys change hands, in kobo. The comparable number — two listings advertising the same rent are not the same price, and a list showing only rent hides that.',
+  })
+  moveInKobo!: number | null;
+
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description: 'Rent alone, in kobo. Sent beside the total so a reader can see the gap for themselves.',
+  })
+  annualRentKobo!: number | null;
 
   @ApiProperty({
     type: [String],
@@ -240,4 +316,12 @@ export class ListingView {
       'Every condition, met or not. Not a badge and not a score: the list of things that were checked, which a tenant can read and disagree with.',
   })
   checks!: ListingCheck[];
+
+  @ApiProperty({
+    type: CostsResponse,
+    nullable: true,
+    description:
+      'Null when the agent has not said, which is itself an unmet condition rather than a blank in the page.',
+  })
+  costs!: CostsResponse | null;
 }

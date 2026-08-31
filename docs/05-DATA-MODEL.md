@@ -50,7 +50,7 @@ ScamReport (fact) ── ReportReview ── RightOfReply
 | `available_from` | date | |
 | `status` | enum | `draft` · `pending_review` · `active` · `expired` · `suspended` · `let` · `withdrawn` |
 | **`is_verified`** | bool | **server-computed only; never client-writable** |
-| `verification_failed_reasons` | text[] | which of the seven conditions are unmet |
+| `verification_failed_reasons` | text[] | which of the eight conditions are unmet |
 | `last_confirmed_at` | timestamptz | **drives expiry and the recency chip** |
 | `expires_at` | timestamptz | `last_confirmed_at + 14 days` |
 
@@ -188,7 +188,7 @@ is what ends the most common tenancy dispute in the market.
 
 ## 5. Verified Status — computed, never stored as an opinion
 
-`listings.is_verified` is derived, server-side only, from the seven FRD §3.4 conditions:
+`listings.is_verified` is derived, server-side only, from the eight conditions — the seven in FRD §3.4 plus `costs_stated`, added in phase 4:
 
 ```
 is_verified =

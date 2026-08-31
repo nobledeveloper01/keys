@@ -24,7 +24,7 @@ import { PostgresAgentsStore } from './agents.postgres';
  * registry and the ladder cannot disagree about what has been upheld.
  *
  * `CapturesStoreModule` — the store alone, not `CapturesModule` — because a
- * blocked image is one of the seven Verified conditions, and `CapturesModule`
+ * blocked image is one of the eight Verified conditions, and `CapturesModule`
  * imports this one for the agent guard. Two modules importing each other
  * resolve to `undefined` somewhere and fail as a null dereference in a route
  * far from either file.

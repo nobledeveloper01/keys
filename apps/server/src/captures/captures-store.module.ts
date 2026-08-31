@@ -7,7 +7,7 @@ import { CapturesStore, InMemoryCapturesStore } from './captures.store';
  *
  * `CapturesModule` needs `AgentsModule` for the guard that resolves an agent
  * token. `AgentsModule` needs the captures store, because whether a reviewer
- * has blocked an image is one of the seven conditions behind the Verified
+ * has blocked an image is one of the eight conditions behind the Verified
  * badge. Left as two modules importing each other, Nest resolves one of them
  * to `undefined` and the failure is a null dereference in a route far from
  * either file.

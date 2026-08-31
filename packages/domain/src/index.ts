@@ -16,6 +16,7 @@ export * from './capture.ts';
 export * from './hashing.ts';
 export * from './language.ts';
 export * from './listings.ts';
+export * from './money.ts';
 export * from './phone.ts';
 export * from './places.ts';
 export * from './search.ts';

@@ -210,7 +210,7 @@ that queue is a hard constraint on how fast Keys can grow.
 | Layer | Approach | Gate |
 |---|---|---|
 | Domain package | Unit + property-based (Verified-status rules, cost calculation, tenancy transitions) | ≥ 95% |
-| **Verified-status rules** | **Property-based: no input combination yields Verified unless all seven conditions hold** | **Release blocker** |
+| **Verified-status rules** | **Property-based: no input combination yields Verified unless all eight conditions hold** | **Release blocker** |
 | **Perceptual hashing** | Adversarial corpus: resize, recompress, crop, watermark, flip, colour-shift | **Release blocker: detection rate threshold** |
 | **Geotag capture** | Signature verification; injected-upload rejection; mock-location detection | **Release blocker** |
 | Media pipeline | Transcode output verified against size and start-time budgets | Every RC |

@@ -4,6 +4,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { attempt, client, type SearchResult } from '@keys/api';
 
 import { Chip } from '../components/Chip';
+import { naira } from '@keys/domain';
+
 import { PropertyRow } from '../components/PropertyRow';
 import { SearchField } from '../components/SearchField';
 import { Text } from '../components/Text';
@@ -84,13 +86,19 @@ export function FindScreen({
                 title={result.title}
                 address={result.address}
                 /*
-                  The agent's name as the status line, not the badge.
+                  What it costs to move in, then who is letting it.
 
-                  Everything in a filtered list is Verified, so repeating it on
-                  every row says nothing — and the thing a tenant is actually
-                  weighing is who is letting it.
+                  Not the badge: everything in a filtered list is Verified, so
+                  repeating it on every row says nothing. And not the rent —
+                  two listings advertising ₦800,000 are not the same price, and
+                  a list showing only rent hides the difference somebody opened
+                  the app to compare.
                 */
-                status={result.agentName}
+                status={
+                  result.moveInKobo === null
+                    ? result.agentName
+                    : `${naira(result.moveInKobo)} · ${result.agentName}`
+                }
                 tone={result.verified ? 'clear' : 'quiet'}
                 onPress={() => onOpen(result.id)}
               />

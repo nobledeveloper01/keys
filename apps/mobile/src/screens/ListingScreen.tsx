@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { attempt, client, type ListingView } from '@keys/api';
 
 import { Button } from '../components/Button';
+import { Costs } from '../components/Costs';
 import { Glass } from '../components/Glass';
 import { Progress } from '../components/Progress';
 import { Text } from '../components/Text';
@@ -75,6 +76,17 @@ export function ListingScreen({
               <Text variant="body">{t('not_verified_listing')}</Text>
             </Glass>
           )}
+
+          {/*
+            Cost before evidence.
+
+            Somebody scanning a listing is asking two questions and this is the
+            first of them. The evidence panel answers "is this real"; it does
+            not answer "can I afford it", and a page that makes you scroll past
+            seven ticks to find the price has its priorities from the seller's
+            side rather than the reader's.
+          */}
+          <Costs costs={listing.costs} />
 
           {/*
             Spread rather than `tone={… : undefined}`.

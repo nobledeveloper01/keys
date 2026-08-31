@@ -579,6 +579,52 @@
         ]
       }
     },
+    "/v1/agents/me/listings/{id}/costs": {
+      "post": {
+        "operationId": "AgentsController_costs",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CostsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Say what a listing costs to move into. All five figures, zeroes included.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
     "/v1/agents/me/listings/{id}/publish": {
       "post": {
         "operationId": "AgentsController_publish",
@@ -1633,6 +1679,43 @@
           "whatHappensNext"
         ]
       },
+      "CostsBody": {
+        "type": "object",
+        "properties": {
+          "annualRentKobo": {
+            "type": "number",
+            "example": 80000000,
+            "description": "Rent for the year, in kobo."
+          },
+          "agencyFeeKobo": {
+            "type": "number",
+            "example": 8000000,
+            "description": "The agent fee. Zero is an answer."
+          },
+          "legalFeeKobo": {
+            "type": "number",
+            "example": 8000000,
+            "description": "Preparing the tenancy agreement."
+          },
+          "cautionDepositKobo": {
+            "type": "number",
+            "example": 10000000,
+            "description": "Refundable at the end, payable on the day."
+          },
+          "serviceChargeKobo": {
+            "type": "number",
+            "example": 4000000,
+            "description": "Service charge, where a building has one."
+          }
+        },
+        "required": [
+          "annualRentKobo",
+          "agencyFeeKobo",
+          "legalFeeKobo",
+          "cautionDepositKobo",
+          "serviceChargeKobo"
+        ]
+      },
       "CreateListingBody": {
         "type": "object",
         "properties": {
@@ -1651,13 +1734,23 @@
           "longitude": {
             "type": "number",
             "nullable": true
+          },
+          "costs": {
+            "nullable": true,
+            "description": "What it costs. Optional at draft, needed before publication. Null is not the same as all zeroes: one is silence, the other is a claim.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CostsBody"
+              }
+            ]
           }
         },
         "required": [
           "propertyId",
           "title",
           "latitude",
-          "longitude"
+          "longitude",
+          "costs"
         ]
       },
       "StillNeeded": {
@@ -1672,7 +1765,8 @@
               "walkthrough_video",
               "not_a_known_duplicate",
               "recently_confirmed",
-              "nothing_upheld"
+              "nothing_upheld",
+              "costs_stated"
             ]
           },
           "whatToDo": {
@@ -1683,6 +1777,64 @@
         "required": [
           "condition",
           "whatToDo"
+        ]
+      },
+      "CostsResponse": {
+        "type": "object",
+        "properties": {
+          "annualRentKobo": {
+            "type": "number",
+            "example": 80000000,
+            "description": "Rent for the year, in kobo."
+          },
+          "agencyFeeKobo": {
+            "type": "number",
+            "example": 8000000,
+            "description": "The agent fee. Zero is an answer."
+          },
+          "legalFeeKobo": {
+            "type": "number",
+            "example": 8000000,
+            "description": "Preparing the tenancy agreement."
+          },
+          "cautionDepositKobo": {
+            "type": "number",
+            "example": 10000000,
+            "description": "Refundable at the end, payable on the day."
+          },
+          "serviceChargeKobo": {
+            "type": "number",
+            "example": 4000000,
+            "description": "Service charge, where a building has one."
+          },
+          "moveInKobo": {
+            "type": "number",
+            "description": "Everything payable before keys change hands, deposit included."
+          },
+          "extrasKobo": {
+            "type": "number",
+            "description": "What is on top of the advertised rent. The surprise, named."
+          },
+          "agencyFeePercent": {
+            "type": "number",
+            "nullable": true,
+            "description": "The agency fee as a percentage of rent. Ten is customary; this says when it is not."
+          },
+          "legalFeePercent": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "annualRentKobo",
+          "agencyFeeKobo",
+          "legalFeeKobo",
+          "cautionDepositKobo",
+          "serviceChargeKobo",
+          "moveInKobo",
+          "extrasKobo",
+          "agencyFeePercent",
+          "legalFeePercent"
         ]
       },
       "ListingResponse": {
@@ -1713,11 +1865,20 @@
             "description": "Whether the property has coordinates. Captures cannot prove presence without them."
           },
           "stillNeeded": {
-            "description": "Which of the seven Verified conditions are unmet, and what to do. Empty means Verified.",
+            "description": "Which of the eight Verified conditions are unmet, and what to do. Empty means Verified.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/StillNeeded"
             }
+          },
+          "costs": {
+            "nullable": true,
+            "description": "Null if the agent has not said.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CostsResponse"
+              }
+            ]
           }
         },
         "required": [
@@ -1727,7 +1888,8 @@
           "publishedAt",
           "confirmedAt",
           "placed",
-          "stillNeeded"
+          "stillNeeded",
+          "costs"
         ]
       },
       "AnswerChallengeBody": {
@@ -1901,6 +2063,16 @@
           "agentName": {
             "type": "string"
           },
+          "moveInKobo": {
+            "type": "number",
+            "nullable": true,
+            "description": "Everything payable before keys change hands, in kobo. The comparable number — two listings advertising the same rent are not the same price, and a list showing only rent hides that."
+          },
+          "annualRentKobo": {
+            "type": "number",
+            "nullable": true,
+            "description": "Rent alone, in kobo. Sent beside the total so a reader can see the gap for themselves."
+          },
           "because": {
             "description": "Why this is ranked where it is. Said out loud, because a ranking nobody can interrogate is one somebody will assume was bought.",
             "type": "array",
@@ -1915,6 +2087,8 @@
           "address",
           "verified",
           "agentName",
+          "moveInKobo",
+          "annualRentKobo",
           "because"
         ]
       },
@@ -1930,7 +2104,8 @@
               "walkthrough_video",
               "not_a_known_duplicate",
               "recently_confirmed",
-              "nothing_upheld"
+              "nothing_upheld",
+              "costs_stated"
             ]
           },
           "label": {
@@ -1975,6 +2150,15 @@
             "items": {
               "$ref": "#/components/schemas/ListingCheck"
             }
+          },
+          "costs": {
+            "nullable": true,
+            "description": "Null when the agent has not said, which is itself an unmet condition rather than a blank in the page.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CostsResponse"
+              }
+            ]
           }
         },
         "required": [
@@ -1984,7 +2168,8 @@
           "verified",
           "agentName",
           "agentMeaning",
-          "checks"
+          "checks",
+          "costs"
         ]
       },
       "RegisterDeviceBody": {

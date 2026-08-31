@@ -2,6 +2,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 
 import {
+  type Costs,
   MAX_AGENTS_PER_LANDLORD,
   cascade,
   landlordIsNotTheAgent,
@@ -45,6 +46,14 @@ export interface Listing {
    */
   readonly latitude: number | null;
   readonly longitude: number | null;
+  /**
+   * What it costs to move in, or null if the agent has not said.
+   *
+   * Null and all-zeroes are different answers and the difference is the point:
+   * one is silence, the other is "there is nothing else to pay" — a claim an
+   * agent can be held to. See `costs_stated` among the Verified conditions.
+   */
+  readonly costs: Costs | null;
 }
 
 /**
@@ -202,8 +211,23 @@ export abstract class AgentsStore {
     title: string;
     latitude: number | null;
     longitude: number | null;
+    costs: Costs | null;
     now: Date;
   }): Await<Listing>;
+
+  /**
+   * Say what a listing costs.
+   *
+   * Separate from creation because an agent drafting a listing at the property
+   * has the address in front of them and not necessarily the landlord's fee
+   * schedule, and a form that demands everything at once is a form people
+   * abandon. Returns false if the listing is not theirs.
+   */
+  abstract stateCosts(input: {
+    id: string;
+    agentId: string;
+    costs: Costs;
+  }): Await<boolean>;
 
   abstract listingsOf(agentId: string): Await<readonly Listing[]>;
   abstract listing(id: string): Await<Listing | null>;
@@ -464,6 +488,7 @@ export class InMemoryAgentsStore extends AgentsStore {
     title: string;
     latitude: number | null;
     longitude: number | null;
+    costs: Costs | null;
     now: Date;
   }) {
     const listing: Listing = {
@@ -473,11 +498,21 @@ export class InMemoryAgentsStore extends AgentsStore {
       title: input.title,
       publishedAt: null,
       lastConfirmedAt: null,
+      costs: input.costs,
       latitude: input.latitude,
       longitude: input.longitude,
     };
     this.listings.set(listing.id, listing);
     return listing;
+  }
+
+  stateCosts(input: { id: string; agentId: string; costs: Costs }) {
+    const listing = this.listings.get(input.id);
+    // Somebody else's listing is not found, rather than forbidden — a 403
+    // would confirm the id exists.
+    if (!listing || listing.agentId !== input.agentId) return false;
+    this.listings.set(input.id, { ...listing, costs: input.costs });
+    return true;
   }
 
   listingsOf(agentId: string) {

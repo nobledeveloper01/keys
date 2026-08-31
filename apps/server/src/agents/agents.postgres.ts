@@ -6,6 +6,7 @@ import { Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/com
 import { Pool, type PoolClient } from 'pg';
 
 import {
+  type Costs,
   MAX_AGENTS_PER_LANDLORD,
   cascade,
   landlordIsNotTheAgent,
@@ -70,10 +71,20 @@ interface ListingRow {
   last_confirmed_at: Date | null;
   latitude: string | null;
   longitude: string | null;
+  /*
+    BIGINT arrives as a string from node-postgres — it does not fit a double,
+    so the driver refuses to guess. Parsed, not cast, in `hydrateListing`.
+  */
+  annual_rent_kobo: string | null;
+  agency_fee_kobo: string | null;
+  legal_fee_kobo: string | null;
+  caution_deposit_kobo: string | null;
+  service_charge_kobo: string | null;
 }
 
 const LISTING_COLUMNS =
-  'id, agent_id, property_id, title, published_at, last_confirmed_at, latitude, longitude';
+  'id, agent_id, property_id, title, published_at, last_confirmed_at, latitude, longitude, ' +
+  'annual_rent_kobo, agency_fee_kobo, legal_fee_kobo, caution_deposit_kobo, service_charge_kobo';
 
 const EVIDENCE_COLUMNS = `
   agent_id, kind, attestor_kind, attestor_vendor, attestor_reference,
@@ -462,6 +473,7 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     title: string;
     latitude: number | null;
     longitude: number | null;
+    costs: Costs | null;
     now: Date;
   }) {
     const listing: Listing = {
@@ -473,10 +485,14 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
       lastConfirmedAt: null,
       latitude: input.latitude,
       longitude: input.longitude,
+      costs: input.costs,
     };
+    const c = listing.costs;
     await this.pool.query(
-      `INSERT INTO listings (id, agent_id, property_id, title, created_at, latitude, longitude)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      `INSERT INTO listings (id, agent_id, property_id, title, created_at, latitude, longitude,
+                             annual_rent_kobo, agency_fee_kobo, legal_fee_kobo,
+                             caution_deposit_kobo, service_charge_kobo)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
       [
         listing.id,
         listing.agentId,
@@ -485,9 +501,33 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
         input.now,
         listing.latitude,
         listing.longitude,
+        c?.annualRentKobo ?? null,
+        c?.agencyFeeKobo ?? null,
+        c?.legalFeeKobo ?? null,
+        c?.cautionDepositKobo ?? null,
+        c?.serviceChargeKobo ?? null,
       ],
     );
     return listing;
+  }
+
+  async stateCosts(input: { id: string; agentId: string; costs: Costs }) {
+    const { rowCount } = await this.pool.query(
+      `UPDATE listings
+          SET annual_rent_kobo = $3, agency_fee_kobo = $4, legal_fee_kobo = $5,
+              caution_deposit_kobo = $6, service_charge_kobo = $7
+        WHERE id = $1 AND agent_id = $2`,
+      [
+        input.id,
+        input.agentId,
+        input.costs.annualRentKobo,
+        input.costs.agencyFeeKobo,
+        input.costs.legalFeeKobo,
+        input.costs.cautionDepositKobo,
+        input.costs.serviceChargeKobo,
+      ],
+    );
+    return (rowCount ?? 0) > 0;
   }
 
   private hydrateListing(row: ListingRow): Listing {
@@ -507,6 +547,21 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
       */
       latitude: row.latitude === null ? null : Number(row.latitude),
       longitude: row.longitude === null ? null : Number(row.longitude),
+      /*
+        All five or none — the table has a CHECK saying so, and this reads the
+        rent to decide. A partially-filled breakdown would read as complete and
+        not be, which is the failure the whole column set exists to prevent.
+      */
+      costs:
+        row.annual_rent_kobo === null
+          ? null
+          : {
+              annualRentKobo: Number(row.annual_rent_kobo),
+              agencyFeeKobo: Number(row.agency_fee_kobo),
+              legalFeeKobo: Number(row.legal_fee_kobo),
+              cautionDepositKobo: Number(row.caution_deposit_kobo),
+              serviceChargeKobo: Number(row.service_charge_kobo),
+            },
     };
   }
 

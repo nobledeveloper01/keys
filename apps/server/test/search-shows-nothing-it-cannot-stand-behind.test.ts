@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { Pool } from 'pg';
 import * as request from 'supertest';
 
-import { claimMessage, type CaptureClaim } from '@keys/domain';
+import { VERIFIED_CONDITIONS, claimMessage, type CaptureClaim } from '@keys/domain';
 
 import { AppModule } from '../src/app.module';
 import { AgentsStore } from '../src/agents/agents.store';
@@ -60,7 +60,7 @@ describe.each(STORES)('search shows nothing it cannot stand behind (%s)', (_name
   let listingId: string;
   let landlordPhone: string;
 
-  /** A listing with all seven conditions met, from scratch. */
+  /** A listing with all eight conditions met, from scratch. */
   async function aFullyVerifiedListing(suffix: string) {
     const signedUp = await request(app.getHttpServer())
       .post('/v1/agents')
@@ -92,7 +92,20 @@ describe.each(STORES)('search shows nothing it cannot stand behind (%s)', (_name
     const draft = await request(app.getHttpServer())
       .post('/v1/agents/me/listings')
       .set('x-agent-token', theirToken)
-      .send({ propertyId: property, title: `Two bedroom flat ${suffix}`, ...YABA })
+      .send({
+        propertyId: property,
+        title: `Two bedroom flat ${suffix}`,
+        ...YABA,
+        // The eighth condition. Stated at draft here because this helper's job
+        // is "everything met"; the screen lets an agent fill it in later.
+        costs: {
+          annualRentKobo: 800_000_00,
+          agencyFeeKobo: 80_000_00,
+          legalFeeKobo: 80_000_00,
+          cautionDepositKobo: 100_000_00,
+          serviceChargeKobo: 40_000_00,
+        },
+      })
       .expect(201);
 
     // A photograph and a walkthrough, both on site and both signed.
@@ -194,7 +207,7 @@ describe.each(STORES)('search shows nothing it cannot stand behind (%s)', (_name
     delete process.env.KEYS_DATABASE_URL;
   });
 
-  it('shows a listing whose seven conditions all hold', async () => {
+  it('shows a listing whose eight conditions all hold', async () => {
     // If this fails nothing below proves anything: every other test here
     // removes one condition and checks the listing disappears.
     expect(await results()).toContain(listingId);
@@ -224,7 +237,15 @@ describe.each(STORES)('search shows nothing it cannot stand behind (%s)', (_name
       .expect(200);
 
     expect(view.body.verified).toBe(true);
-    expect(view.body.checks).toHaveLength(7);
+    /*
+      Against the domain's list, not a number typed here. `7` went stale the
+      day an eighth condition was added, and a literal in a test is a second
+      place to remember something the domain already knows.
+    */
+    expect(view.body.checks).toHaveLength(VERIFIED_CONDITIONS.length);
+    expect(view.body.checks.map((c: { condition: string }) => c.condition)).toEqual([
+      ...VERIFIED_CONDITIONS,
+    ]);
     expect(view.body.checks.every((c: { met: boolean }) => c.met)).toBe(true);
     // In the reader's language, not only English.
     const hausa = await request(app.getHttpServer())

@@ -48,6 +48,7 @@ const GOOD: ListingEvidence = {
   blockedDuplicate: false,
   lastConfirmedAt: RECENTLY,
   upheldReports: 0,
+  costsStated: true,
 };
 
 /*
@@ -67,6 +68,7 @@ const SWITCHES: readonly [name: string, break_: (e: ListingEvidence) => ListingE
   ['not_a_known_duplicate', (e) => ({ ...e, blockedDuplicate: true })],
   ['recently_confirmed', (e) => ({ ...e, lastConfirmedAt: null })],
   ['nothing_upheld', (e) => ({ ...e, upheldReports: 1 })],
+  ['costs_stated', (e) => ({ ...e, costsStated: false })],
 ];
 
 describe('no input combination yields Verified unless all seven hold', () => {

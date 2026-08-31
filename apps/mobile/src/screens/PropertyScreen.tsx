@@ -48,6 +48,20 @@ export function PropertyScreen({
   const [busy, setBusy] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [landlordPhone, setLandlordPhone] = useState('');
+  /*
+    Naira in the fields, kobo on the wire.
+
+    Nobody types kobo. An agent types 800000 and means ₦800,000, so the
+    conversion happens once, here, at the boundary — and every figure below
+    this line is an integer number of kobo that nothing divides.
+  */
+  const [money, setMoney] = useState({
+    rent: '',
+    agency: '',
+    legal: '',
+    deposit: '',
+    service: '',
+  });
 
   const unmet = new Set(listing.stillNeeded.map((n) => n.condition));
   const steps = VERIFIED_CONDITIONS.map((condition) => ({
@@ -250,6 +264,89 @@ export function PropertyScreen({
         </View>
       )}
 
+      {/*
+        What it costs, asked only while it is unanswered.
+
+        Five fields is a lot to put on a screen, which is why they are not on
+        it once they have been answered. The alternative — a permanently open
+        cost form under every property — is the thing that made the old account
+        screen unreadable.
+      */}
+      {unmet.has('costs_stated') && (
+        <View style={styles.section}>
+          <Text variant="title">{t('costs_heading')}</Text>
+          <Text variant="body" tone="secondary" style={styles.row}>
+            {t('costs_help')}
+          </Text>
+          <Field
+            label={t('costs_rent')}
+            value={money.rent}
+            onChange={(rent) => setMoney((m) => ({ ...m, rent }))}
+            keyboard="number-pad"
+          />
+          <Field
+            label={t('costs_agency_fee')}
+            value={money.agency}
+            onChange={(agency) => setMoney((m) => ({ ...m, agency }))}
+            keyboard="number-pad"
+          />
+          <Field
+            label={t('costs_legal_fee')}
+            value={money.legal}
+            onChange={(legal) => setMoney((m) => ({ ...m, legal }))}
+            keyboard="number-pad"
+          />
+          <Field
+            label={t('costs_caution_deposit')}
+            value={money.deposit}
+            onChange={(deposit) => setMoney((m) => ({ ...m, deposit }))}
+            keyboard="number-pad"
+          />
+          <Field
+            label={t('costs_service_charge')}
+            value={money.service}
+            onChange={(service) => setMoney((m) => ({ ...m, service }))}
+            keyboard="number-pad"
+          />
+          {/*
+            Everything but rent may be left blank, and blank means zero here.
+
+            That is not the server's rule — the API refuses a missing field,
+            deliberately, so that a client bug cannot invent a "nothing to pay"
+            claim on an agent's behalf. But a person who left the service
+            charge box empty on a form headed "what it costs" has answered it,
+            and this screen is where that judgement belongs.
+          */}
+          <Button
+            label={t('costs_save')}
+            disabled={busy === 'costs' || kobo(money.rent) <= 0}
+            onPress={() =>
+              run(
+                'costs',
+                async () => {
+                  const result = await attempt(() =>
+                    client({ baseUrl, agentToken: token }).agent.stateCosts(listing.id, {
+                      annualRentKobo: kobo(money.rent),
+                      agencyFeeKobo: kobo(money.agency),
+                      legalFeeKobo: kobo(money.legal),
+                      cautionDepositKobo: kobo(money.deposit),
+                      serviceChargeKobo: kobo(money.service),
+                    }),
+                  );
+                  return result.ok
+                    ? { ok: true, why: null }
+                    : {
+                        ok: false,
+                        why: result.failure.kind === 'refused' ? result.failure.detail : null,
+                      };
+                },
+                t('costs_saved'),
+              )
+            }
+          />
+        </View>
+      )}
+
       <View style={styles.section}>
         {listing.publishedAt === null ? (
           <>
@@ -320,6 +417,21 @@ export function PropertyScreen({
       </View>
     </ScrollView>
   );
+}
+
+/**
+ * Naira typed into a field, as kobo.
+ *
+ * Separators and a naira sign are stripped rather than refused — somebody who
+ * typed "₦800,000" has said what they mean, and rejecting them for punctuation
+ * is a form that argues with people. A blank is zero; anything that is not a
+ * whole number of naira is zero too, which the rent check then catches.
+ */
+function kobo(typed: string): number {
+  const digits = typed.replace(/[^0-9]/g, '');
+  if (digits === '') return 0;
+  const naira = Number(digits);
+  return Number.isSafeInteger(naira) ? naira * 100 : 0;
 }
 
 const styles = StyleSheet.create({
