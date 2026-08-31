@@ -37,6 +37,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   on arithmetic: the same photograph legitimately appears on two listings when
   an agency changes hands or a flat is re-let. Only the copy is penalised; the
   agent who was copied keeps their listing.
+- **The phone signs its own captures.** A P-256 key generated inside the Secure
+  Enclave, which cannot be exported by anything including Keys itself. What the
+  signature proves is the path the bytes took — the Keys camera, on this
+  agent's device, at a stated place and time — not what is in them; perceptual
+  hashing asks that, and the two defences are kept apart deliberately.
 - **Answering a report, in the app.** A link in the text message opens Keys
   straight on the reply screen — no tabs, no sign-in, because holding the
   texted token is the only proof of control over a number that this product

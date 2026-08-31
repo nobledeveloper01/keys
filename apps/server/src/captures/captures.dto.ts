@@ -3,7 +3,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { CAPTURE_REFUSALS, DUPLICATE_DECISIONS } from '@keys/domain';
 
 export class RegisterDeviceBody {
-  @ApiProperty({ description: "The device's Ed25519 public key, SPKI DER, base64." })
+  @ApiProperty({
+    description:
+      "The device's P-256 public key, SPKI DER, base64. P-256 because that is what the Secure Enclave holds.",
+  })
   publicKey!: string;
 }
 
@@ -32,7 +35,7 @@ export class CaptureBody {
   @ApiProperty({ type: Number, nullable: true })
   durationSeconds!: number | null;
 
-  @ApiProperty({ description: 'Ed25519 over the canonical claim, base64.' })
+  @ApiProperty({ description: 'ECDSA P-256 over SHA-256 of the canonical claim, DER, base64.' })
   signature!: string;
 
   @ApiProperty({

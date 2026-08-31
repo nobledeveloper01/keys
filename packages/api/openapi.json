@@ -1695,7 +1695,7 @@
         "properties": {
           "publicKey": {
             "type": "string",
-            "description": "The device's Ed25519 public key, SPKI DER, base64."
+            "description": "The device's P-256 public key, SPKI DER, base64. P-256 because that is what the Secure Enclave holds."
           }
         },
         "required": [
@@ -1746,7 +1746,7 @@
           },
           "signature": {
             "type": "string",
-            "description": "Ed25519 over the canonical claim, base64."
+            "description": "ECDSA P-256 over SHA-256 of the canonical claim, DER, base64."
           },
           "pixels": {
             "type": "string",

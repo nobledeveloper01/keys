@@ -11,7 +11,10 @@
  * ## What a signature does and does not prove
  *
  * It proves the bytes came out of the Keys camera on a device registered to
- * this agent, at a stated place and time, and have not changed since. It does
+ * this agent, at a stated place and time, and have not changed since. The key
+ * that signed it is generated in the Secure Enclave and cannot be exported —
+ * which is why the scheme is ECDSA P-256 and not Ed25519, the enclave holding
+ * P-256 keys and nothing else. It does
  * **not** prove the agent was photographing their own property — a device can
  * be pointed at a printout of somebody else's listing. That is what perceptual
  * hashing is for, and the two defences are separate on purpose: one is about

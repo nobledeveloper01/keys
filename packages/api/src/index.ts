@@ -219,6 +219,27 @@ export function client(options: ClientOptions) {
     signUp: (displayName: string, phone: string) =>
       send<SignedUp>(options, 'POST', '/v1/agents', { body: { displayName, phone } }),
 
+    /**
+     * Register this phone's public key, once.
+     *
+     * Its own call rather than part of sign-up, because a device is not an
+     * account: one agent may hold two phones, and a restored phone is a new
+     * device whose enclave cannot hold the old key.
+     */
+    registerDevice: (publicKey: string) =>
+      send<{ deviceId: string }>(options, 'POST', '/v1/captures/devices', {
+        body: { publicKey },
+      }),
+
+    /** A signed capture. Refused unless the signature covers exactly these bytes. */
+    submitCapture: (body: Record<string, unknown>) =>
+      send<{ accepted: boolean; duplicates: string; looksLikeListings: string[] }>(
+        options,
+        'POST',
+        '/v1/captures',
+        { body },
+      ),
+
     agent: {
       me: () => send<AgentProfile>(options, 'GET', '/v1/agents/me'),
 

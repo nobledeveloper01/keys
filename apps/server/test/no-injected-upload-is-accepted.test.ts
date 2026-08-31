@@ -20,14 +20,17 @@ import { CapturesStore } from '../src/captures/captures.store';
  * values, a real signature sent twice, and a key the attacker generated
  * themselves.
  *
- * Real Ed25519 throughout. A test that stubs the crypto proves the controller
+ * Real ECDSA P-256 throughout — the curve the Secure Enclave holds, which is
+ * why it is not Ed25519. A test that stubs the crypto proves the controller
  * calls something.
  */
 
 const KYC = 'k'.repeat(48);
 
 function keypair() {
-  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  const { publicKey, privateKey } = generateKeyPairSync('ec', {
+    namedCurve: 'prime256v1',
+  });
   return {
     privateKey,
     spki: publicKey.export({ format: 'der', type: 'spki' }).toString('base64'),
@@ -100,7 +103,9 @@ describe('no injected upload is accepted', () => {
   let device: ReturnType<typeof keypair>;
 
   function signWith(claim: CaptureClaim, key = device.privateKey): string {
-    return sign(null, Buffer.from(claimMessage(claim), 'utf8'), key).toString('base64');
+    // 'sha256', not null: null is Ed25519's pre-hashed form and a P-256 key
+    // throws on it. The phone's CryptoKit does the same digest.
+    return sign('sha256', Buffer.from(claimMessage(claim), 'utf8'), key).toString('base64');
   }
 
   function submit(body: Record<string, unknown>) {
@@ -512,6 +517,34 @@ describe('no injected upload is accepted', () => {
       .set('x-agent-token', token)
       .send({ publicKey: 'bm90IGEga2V5IGF0IGFsbCwgcmVhbGx5LCBub3QgZXZlbiBjbG9zZQ==' })
       .expect(400);
+  });
+
+  it('refuses a signature made with the wrong curve', async () => {
+    /*
+      An Ed25519 key is a perfectly good key and the wrong one here.
+
+      This scheme was Ed25519 until the phone side was written and the Secure
+      Enclave turned out to hold P-256 and nothing else. A device presenting
+      the old curve is either an old client or somebody who read an old spec,
+      and either way the answer is no rather than a 500 from a verifier handed
+      a key type it was not expecting.
+    */
+    const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+    const spki = publicKey.export({ format: 'der', type: 'spki' }).toString('base64');
+
+    const registered = await request(app.getHttpServer())
+      .post('/v1/captures/devices')
+      .set('x-agent-token', token)
+      .send({ publicKey: spki })
+      .expect(201);
+
+    const claim = claimFor();
+    const signature = sign(null, Buffer.from(claimMessage(claim), 'utf8'), privateKey);
+    const response = await submit(
+      wire(claim, registered.body.deviceId, signature.toString('base64')),
+    );
+    expect(response.status).toBe(403);
+    expect(response.body.refusals).toContain('bad_signature');
   });
 
   it('does not fall over on a malformed signature', async () => {

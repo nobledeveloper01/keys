@@ -29,9 +29,25 @@ import { NotAGrid, readGrid } from './pixels';
 /**
  * Verifies that a photograph came out of the Keys camera.
  *
- * The signature is Ed25519 over the exact string `claimMessage` builds, made
- * by a key the phone generated in its secure element and never exports. The
- * server holds only the public half, registered once.
+ * The signature is **ECDSA P-256 over SHA-256** of the exact string
+ * `claimMessage` builds, made by a key the phone generated in its Secure
+ * Enclave and cannot export. The server holds only the public half, registered
+ * once.
+ *
+ * ## Why P-256 and not Ed25519
+ *
+ * This was Ed25519 first, on the reasonable grounds that it is the better
+ * modern signature scheme. Then the phone side got written and the assumption
+ * underneath collapsed: **the Secure Enclave holds P-256 keys and nothing
+ * else.** There is no `SecureEnclave.Curve25519` in CryptoKit and there is no
+ * way to put an Ed25519 private key in the enclave.
+ *
+ * So Ed25519 would have meant a private key in software — in the Keychain at
+ * best — which is a key that can be extracted from a jailbroken or backed-up
+ * device, and a stolen signing key is an attacker who can sign captures for a
+ * property they have never been to. The whole value of this mechanism is that
+ * the key cannot leave the phone. P-256 is the curve that buys that, so P-256
+ * is the curve.
  *
  * **Nothing here trusts a field.** The location, the timestamp and the mocked-
  * location flag are all inside the signed message, so a modified client cannot
@@ -213,12 +229,15 @@ export class CapturesController {
     };
   }
 
-  /** Ed25519 over exactly the string the phone signed. */
+  /** ECDSA P-256 over SHA-256 of exactly the string the phone signed. */
   private signed(claim: CaptureClaim, publicKey: string, signature: unknown): boolean {
     if (typeof signature !== 'string' || signature.length === 0) return false;
     try {
       return verify(
-        null,
+        // Named, not null. `verify(null, …)` is Ed25519's pre-hashed form; a
+        // P-256 key needs the digest algorithm said out loud, and getting this
+        // wrong throws rather than returning false.
+        'sha256',
         Buffer.from(claimMessage(claim), 'utf8'),
         createPublicKey({
           key: Buffer.from(publicKey, 'base64'),

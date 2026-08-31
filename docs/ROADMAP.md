@@ -214,9 +214,20 @@ none of them can wait for launch.*
    The bytes are checked, not assumed: the SHA-256 inside the signature is verified against
    the upload, so a genuine capture's paperwork cannot be attached to a stolen photograph.
 
-   **Not yet:** the phone side. The key lives in the secure element and the TurboModule that
-   generates it does not exist, so nothing signs anything outside the tests. The server will
-   refuse everything until it does, which is the correct direction to be incomplete in.
+   **The phone side is built.** `KeysSigning` generates a P-256 key inside the Secure
+   Enclave and signs there; the private half is never readable, by anything, including the
+   app. A capture signed on the simulator was accepted by the server and matched as a
+   duplicate against one signed by a separate client — the whole chain, across two callers.
+
+   **P-256, not Ed25519, and that was forced.** The enclave holds P-256 keys and nothing
+   else — there is no `SecureEnclave.Curve25519`. Ed25519 would have meant a private key in
+   software, extractable from a backup or a jailbroken phone, and a stolen signing key is
+   somebody able to sign captures for a property they have never visited. The scheme was
+   Ed25519 until the phone side was written; the server verifies ECDSA P-256 over SHA-256
+   now, and refuses the old curve.
+
+   **Not yet:** the camera. Captures are still built by hand in a development probe, so
+   nothing photographs anything.
    Media arrives as a raw greyscale grid rather than a JPEG — the capture module will emit
    one alongside the encoded file, which keeps a native image decoder out of the server.
 

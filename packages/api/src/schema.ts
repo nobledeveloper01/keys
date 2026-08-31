@@ -666,7 +666,7 @@ export interface components {
             evidence: components["schemas"]["AttestationView"][];
         };
         RegisterDeviceBody: {
-            /** @description The device's Ed25519 public key, SPKI DER, base64. */
+            /** @description The device's P-256 public key, SPKI DER, base64. P-256 because that is what the Secure Enclave holds. */
             publicKey: string;
         };
         CaptureBody: {
@@ -685,7 +685,7 @@ export interface components {
             /** @enum {string} */
             kind: "photo" | "video";
             durationSeconds: number | null;
-            /** @description Ed25519 over the canonical claim, base64. */
+            /** @description ECDSA P-256 over SHA-256 of the canonical claim, DER, base64. */
             signature: string;
             /** @description The capture itself: a Keys greyscale grid, base64. Its SHA-256 must be the one inside the signature. */
             pixels: string;
