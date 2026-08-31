@@ -123,19 +123,35 @@ reply with the 7-day window, publication gating, expiry and resolution.
 
 **Launched publicly at the end of this phase**, standalone, with no listings at all.
 
-## Phase 2 — Agent Verification & Authority (Weeks 9–13) · **current**
+## Phase 2 — Agent Verification & Authority (Weeks 9–13) · **phase gate green**
 Liveness and ID TurboModule, tiers, agent profiles, authority upload and review, **landlord
 co-verification by OTP**, revocation cascade.
 
-**Phase gate:** a tier is computed only from evidence the claimant cannot write, and no
-value a client sends can raise one — tested adversarially, through every route, the way
-phase 1's registry gate is. Revocation cascades in one transaction.
+**Phase gate — ✅ green.** A tier is computed only from evidence the claimant cannot write,
+and no value a client sends can raise one: `no-client-can-raise-its-own-tier.test.ts` walks
+every route in the running router with every tier-shaped field name, in the body and the
+query, and checks both what each route *says* and what the store ends up holding.
+Revocation cascades inside one transaction, proven by deleting the cascade and watching it
+fail. Thirty assertions, against the in-memory store and against Postgres.
 
-**Release gates opened by this phase:** R4 (an Android build somebody has watched succeed)
-and R5 (dark mode reachable through a settings screen). Both are in
-[the ledger](RELEASE-GATES.md).
+**Release gates opened by this phase:** R4 (an Android build somebody has watched succeed),
+R5 (dark mode reachable through a settings screen), R6 (agents can complete an ID check)
+and R7 (an SMS a real phone received). All four are in [the ledger](RELEASE-GATES.md).
 
-## Phase 3 — Listing Integrity (Weeks 14–19) — **the technical core**
+**What is built:** the ladder and its rules in `packages/domain`; landlord co-verification by
+one-time code, in both directions, addressed to the number on the record; the revocation
+cascade in one transaction; agent profiles, public by id and by phone; the agent's own page
+on the web, with an httpOnly session; the landlord's page; and the agent list in the review
+console with the identity withdrawal.
+
+**What is not:** the liveness and ID TurboModule, which needs a KYC vendor nobody has
+chosen — R6. Agents can open an account and draft listings, and cannot climb past
+`unverified`, which the agent page says plainly rather than offering a step that cannot
+help. The agent's screens are on the web only; the app gets them when the router lands in
+phase 4, and building one now would mean guessing the shape of a navigation tree before the
+screens in it exist.
+
+## Phase 3 — Listing Integrity (Weeks 14–19) — **the technical core** · **current**
 Geotagged in-app capture with device signing, mock-location detection, video capture and
 transcoding, perceptual hashing with BK-tree indexing, the duplicate-match pipeline, the
 `is_verified` computation, forced expiry with per-listing confirmation.

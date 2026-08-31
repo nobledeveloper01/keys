@@ -16,6 +16,8 @@ built past the point anybody can honestly ship it.
 | R3 | Legal review of the report policy by a Nigerian lawyer | An outside party. **Blocks public launch outright** | Before any public launch |
 | R4 | An Android build somebody has watched succeed | A JDK on a build machine | Phase 2 |
 | R5 | Dark mode reachable in the app — a settings screen mounts `ThemeToggle` | A settings screen | Phase 2 |
+| R6 | Agents can complete an ID check. Until then nobody can climb past `unverified`, and the whole ladder is theoretical | A KYC vendor, then a liveness TurboModule | Before any public launch |
+| R7 | An SMS a real phone received. R1 covers right-of-reply; landlord co-verification rides the same provider, and without it no landlord can confirm anybody | The same SMS provider | Phase 3 |
 
 ## How a gate leaves this list
 

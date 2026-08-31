@@ -9,6 +9,47 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Agent verification.** A tenant checking a number now gets both halves of the
+  answer: what has been held against it, and what has been confirmed about
+  whoever trades under it. The second half is a sentence naming what was
+  actually checked — *"a landlord has confirmed a property they may let"* — and
+  never a badge, because a badge is a claim nobody can audit and a shape anybody
+  can screenshot. When there are upheld reports it also says, in words, that
+  being checked is not an answer to them.
+- **Landlord co-verification.** An agent asks; Keys texts the landlord a code;
+  the landlord enters it on a page that needs no account. Withdrawal works the
+  same way and is exactly as easy, because an authority nobody can take back is
+  not an authority. Withdrawing takes every listing that stood on it off the
+  market in the same transaction, not on a later sweep.
+- **The agent's own page** on the web: open an account, ask a landlord, draft a
+  listing, publish one. It shows the agent the exact words a tenant reads about
+  them. The session is an httpOnly cookie set by the server — nothing in the
+  browser can read it.
+- **The agent list in the review console**, with the one decision a reviewer can
+  take: withdrawing an ID check, which drops the agent to unverified and
+  unpublishes everything they have, everywhere, at once. Landlords' phone
+  numbers are not shown.
+- Tier sentences in Hausa, Yoruba and Igbo alongside English.
+
+### Fixed
+
+- `POST /v1/authority/withdrawal` took the landlord's phone number from the
+  request, so anybody with the link could have the code sent to their own
+  number and revoke somebody else's authority. It takes no number now; the code
+  goes to the number already on the record.
+- The landlord's page thanked people for confirming an agent they had just
+  withdrawn. One code answers both, and the server now says which it did.
+- Inputs written without a `type` attribute rendered as raw browser controls —
+  a white box with a grey bevel on a dark page.
+- The masthead offered *Report a number* on the landlord page, one tap from a
+  message about somebody they know.
+- `GET /v1/review/agents` was answered by the report console as a lookup for a
+  report with the id `agents`. Moved to `/v1/agent-review`, and the phase gate
+  now fails when any route is registered behind a wildcard that eats it.
+- Revoking a forged ID left the agent's listings published under a landlord
+  confirmation from the month before. Losing an identity now takes down
+  everything that rested on it.
+
 - The scam registry: public lookup with no account, reporting with evidence, a
   reviewer-guarded review console, and right of reply by a texted capability.
 - `packages/domain/src/reports.ts` — the publication policy, written as an
