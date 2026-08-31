@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { Pool } from 'pg';
 import * as request from 'supertest';
 
 import { TIERS, tierOf } from '@keys/domain';
@@ -130,6 +131,21 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
     */
     await app.listen(0);
     agents = app.get(AgentsStore);
+
+    /*
+      A clean set of tables, and this is not housekeeping.
+
+      The suite left its rows behind and the *next* run failed on the landlord
+      ceiling: seven runs meant seven agents vouched for by the same test
+      phone number, which is exactly what `MAX_AGENTS_PER_LANDLORD` exists to
+      refuse. The rule was right and the fixture was accumulating — a failure
+      that says nothing about the server and costs an hour to read.
+    */
+    if (databaseUrl) {
+      const pool = new Pool({ connectionString: databaseUrl });
+      await pool.query('TRUNCATE agents CASCADE');
+      await pool.end();
+    }
 
     const signedUp = await request(app.getHttpServer())
       .post('/v1/agents')
