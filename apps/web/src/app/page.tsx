@@ -1,9 +1,43 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { normalise } from '../lookup';
 import { Verdict } from './verdict';
 
 export const dynamic = 'force-dynamic';
+
+/**
+ * The preview card carries the answer.
+ *
+ * A result already has a URL — this makes that URL worth pasting. In the group
+ * chat where somebody asks *does anyone know this agent*, the reply that helps
+ * is the one that shows the verdict without anybody tapping through and waiting
+ * for a page on a Nigerian connection.
+ *
+ * Per-result, not per-site: the image route reads the same phone number and
+ * answers from the same endpoint the page does, so a preview cannot say
+ * something the product would not.
+ */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ phone?: string }>;
+}): Promise<Metadata> {
+  const { phone } = await searchParams;
+  const asked = (phone ?? '').trim();
+  const image = asked ? `/og?phone=${encodeURIComponent(asked)}` : '/og';
+
+  return {
+    title: 'Keys — check a number before you pay',
+    description:
+      'Check a Nigerian phone number against reports of rental scams. No account, no app.',
+    openGraph: {
+      images: [{ url: image, width: 1200, height: 630 }],
+      type: 'website',
+    },
+    twitter: { card: 'summary_large_image', images: [image] },
+  };
+}
 
 /**
  * The whole wedge, on one page.

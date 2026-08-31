@@ -93,6 +93,7 @@ export type Phrase =
   | 'category_impersonation'
   | 'category_undisclosed_fees'
   | 'category_no_show'
+  | 'share_this_answer'
   | 'no_signal_saved_here'
   | 'refused_reply_window_open'
   | 'refused_no_evidence'
@@ -148,6 +149,7 @@ export const EN: Readonly<Record<Phrase, string>> = {
   category_impersonation: "Pretended to be an agent or landlord they were not",
   category_undisclosed_fees: "Fees that were never mentioned",
   category_no_show: "Took the appointment and never turned up",
+  share_this_answer: "Send this to whoever asked",
 };
 
 export const HA: Readonly<Record<Phrase, string>> = {
@@ -200,6 +202,7 @@ export const HA: Readonly<Record<Phrase, string>> = {
   category_impersonation: "Sun yi kamar wakili ko mai gida da ba su ba ne",
   category_undisclosed_fees: "Kuɗaɗen da ba a taɓa ambata ba",
   category_no_show: "Sun karɓi alƙawari amma ba su zo ba",
+  share_this_answer: "Aika wannan ga wanda ya tambaya",
 };
 
 export const YO: Readonly<Record<Phrase, string>> = {
@@ -252,6 +255,7 @@ export const YO: Readonly<Record<Phrase, string>> = {
   category_impersonation: "Wọ́n ṣe bí aṣojú tàbí onílé tí wọn kì í ṣe",
   category_undisclosed_fees: "Owó tí a kò dárúkọ rí",
   category_no_show: "Wọ́n gba ìpàdé, wọn kò sì dé",
+  share_this_answer: "Fi èyí ránṣẹ́ sí ẹni tó béèrè",
 };
 
 export const IG: Readonly<Record<Phrase, string>> = {
@@ -304,6 +308,7 @@ export const IG: Readonly<Record<Phrase, string>> = {
   category_impersonation: "Ha mere ka onye nnọchiteanya ma ọ bụ onye nwe ụlọ ha na-abụghị",
   category_undisclosed_fees: "Ụgwọ a na-akpọtụghị aha ya",
   category_no_show: "Ha nabatara oge ma ha abịaghị",
+  share_this_answer: "Zigara onye jụrụ nke a",
 };
 
 const TABLES: Readonly<Record<Language, Readonly<Record<Phrase, string>>>> = {

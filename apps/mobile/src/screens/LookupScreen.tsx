@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, Share, StyleSheet, View } from 'react-native';
 
 import { attempt, client, type Lookup } from '@keys/api';
 import { categoryPhrase, type ReportCategory } from '@keys/domain';
@@ -7,6 +7,7 @@ import { categoryPhrase, type ReportCategory } from '@keys/domain';
 import { Brand } from '../components/Brand';
 import { Counter } from '../components/Counter';
 import { Glass } from '../components/Glass';
+import { Press } from '../components/Press';
 import { SearchField } from '../components/SearchField';
 import { Text } from '../components/Text';
 import { Unready } from '../components/Unready';
@@ -105,7 +106,7 @@ export function LookupScreen({
           this screen must never make. */}
       {phone !== null && <Unready query={query} onRetry={refresh} />}
 
-      {phone !== null && answer !== null && <Answer answer={answer} />}
+      {phone !== null && answer !== null && <Answer answer={answer} phone={phone} />}
 
       {/*
         No empty state before the first search.
@@ -126,7 +127,15 @@ export function LookupScreen({
   );
 }
 
-function Answer({ answer }: { answer: Lookup }) {
+/**
+ * Where a shared link points.
+ *
+ * The public site, not the API — what is being sent is something a person opens,
+ * and it has to work for somebody who has never installed this.
+ */
+const SHARE_ORIGIN = 'https://keys.ng';
+
+function Answer({ answer, phone }: { answer: Lookup; phone: string }) {
   const { t } = useLanguage();
   const colours = useColours();
   const clean = answer.upheldReports === 0;
@@ -164,6 +173,29 @@ function Answer({ answer }: { answer: Lookup }) {
         them to guess whether that was a fake listing or a no-show. Same
         registry, same answer, both places.
       */}
+      {/*
+        Sending the answer on is the point, not a nicety.
+
+        The moment this product is used is a group chat where somebody asks
+        whether an agent is known. What helps is the answer arriving in that
+        chat — the link carries a preview card showing the verdict, so the
+        people in it get it without anybody tapping through on a bad connection.
+      */}
+      <Press
+        onPress={() => {
+          void Share.share({
+            message: `${t(clean ? 'nothing_upheld' : 'this_number_was_reported')}\n${SHARE_ORIGIN}/?phone=${phone}`,
+          });
+        }}
+        accessibilityLabel={t('share_this_answer')}
+        feedback="opacity"
+        style={styles.share}
+      >
+        <Text variant="label" tone="accent">
+          {t('share_this_answer')}
+        </Text>
+      </Press>
+
       {!clean &&
         answer.categories.map((category: string) => (
           <Text key={category} variant="body" style={styles.category}>
@@ -181,6 +213,7 @@ const styles = StyleSheet.create({
   lede: { marginBottom: space.md },
   card: { marginTop: space.md },
   category: { marginTop: space.xs },
+  share: { marginTop: space.md, alignSelf: 'flex-start' },
   /* Pushed to the bottom of the scroll, the way the web's footer is. */
   claims: { marginTop: 'auto', paddingTop: space.xl },
 });
