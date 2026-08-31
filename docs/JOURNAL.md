@@ -6,6 +6,59 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — The right of reply was a database column
+
+**Did.** Deep links, so the message Keys sends opens the app; a reply screen behind them;
+and the text that carries the link, which had never been written.
+
+### What surprised us
+
+**Phase 1 shipped a right of reply that nobody was ever told about.** There was a token, a
+route that accepts it, a web page that uses it, and an exit gate asserting no unreviewed
+report escapes. There was nothing anywhere that *sent* it. "The number you reported has
+seven days to answer" is on the report form, in the API response, and in the copy on three
+surfaces — and the person being accused received no message at all.
+
+It passed every gate because every gate asked whether the token worked. None asked whether
+it was delivered. The outbox now carries it, addressed to the reported number, and deleting
+those four lines fails two tests.
+
+**A universal link is the only shape worth sending.** `keys://reply?token=…` is a dead end
+for everybody without the app — and the recipients here have just been told they are accused
+of something, so a link that does nothing is not a small failure. An https link opens the
+app when it is installed and the web page when it is not. That needs three things: an
+entitlement, an `apple-app-site-association` file the web now serves, and a provisioning
+profile this project does not have. Two of three, and R9 carries the rest.
+
+**`import React_RCTLinking` does not resolve.** The pod is called that; the Swift module is
+not. `RCTLinkingManager` lives inside the prebuilt `React.framework`, so `import React` —
+already at the top of the file — was the whole answer. One failed build to learn it.
+
+**And a placeholder that would have shipped.** The association file had
+`TEAMID.ng.keys.app` in it for about a minute. That is a syntactically perfect file
+describing an app that does not exist: universal links would have silently not worked, with
+nothing anywhere saying why. It reads `KEYS_APPLE_TEAM_ID` and returns 503 without it, the
+same way the web refuses to start without `KEYS_API_URL`.
+
+### Two things tidied because they had grown a second copy
+
+`PUBLIC_SITE` existed in `agents.controller.ts` and the same origin was typed into a
+template string in `authority.controller.ts`. Two places to change, and the failure mode is
+an SMS full of dead links sent to people who have just been accused of something. One
+`links.ts` now, with the two link builders on it.
+
+The `Outbox` lived inside `AgentsModule`, which was right while only the landlord flow sent
+anything. The registry owes texts too. Its own module — one provider, no imports, so it
+cannot join a cycle, the same shape the captures store needed for the same reason.
+
+### Still open
+
+Nobody has watched a real phone receive any of this. The outbox holds messages and there is
+no provider — R1 and R7. What changed is that the messages exist and are addressed, so
+connecting a provider is connecting a provider rather than building a flow.
+
+---
+
 ## 2026-08-31 — The app could not report anything
 
 **Did.** Reporting and settings on the phone, and a third tab. Filed a report from the
