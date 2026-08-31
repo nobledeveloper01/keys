@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 
-import { LANGUAGES, type Language, say } from '@keys/domain';
+import { LANGUAGES, say } from '@keys/domain';
 
 import { Glass } from '../components/Glass';
 import { Gradient } from '../components/Gradient';
@@ -9,25 +9,15 @@ import { Press } from '../components/Press';
 import { Text } from '../components/Text';
 import { radius, space } from '../design/tokens';
 import { useLanguage } from '../state/language';
+import { LANGUAGE_NAMES } from '../state/languageNames';
 
 /**
  * Which language to read in, asked before anything else.
  *
- * Each option is written in its own language, never in English and never as an
- * exonym — somebody picking Hausa should find the word they would write, not
- * the word we would write about them. English is offered last, deliberately:
- * putting it first makes the other three look like an afterthought.
+ * The names themselves live in `state/languageNames`, because the settings
+ * screen offers the same four and a second copy is a second place somebody
+ * adds a fifth language to.
  */
-// untranslated-check: these are the four language names, each already written
-// in its own language. Putting them through `say()` would mean translating the
-// word "Hausa" into Yoruba for somebody who is looking for the word "Hausa".
-const NAMES: Readonly<Record<Language, string>> = {
-  ha: 'Hausa',
-  yo: 'Yorùbá',
-  ig: 'Igbo',
-  en: 'English',
-};
-
 export function LanguageScreen({ onDone }: { onDone: () => void }) {
   const { setLanguage } = useLanguage();
   /*
@@ -98,7 +88,7 @@ export function LanguageScreen({ onDone }: { onDone: () => void }) {
       {LANGUAGES.map((language) => (
         <Press
           key={language}
-          accessibilityLabel={NAMES[language]}
+          accessibilityLabel={LANGUAGE_NAMES[language]}
           // Without this a screen reader announces four buttons named only
           // after languages, with nothing saying what pressing one does.
           accessibilityHint={say(language, 'check_a_number')}
@@ -109,7 +99,7 @@ export function LanguageScreen({ onDone }: { onDone: () => void }) {
           feedback="scale"
         >
           <Glass style={styles.card}>
-            <Text variant="title">{NAMES[language]}</Text>
+            <Text variant="title">{LANGUAGE_NAMES[language]}</Text>
             {/* The product's own promise, in the language being offered. */}
             <Text variant="body" tone="secondary">
               {say(language, 'check_a_number')}

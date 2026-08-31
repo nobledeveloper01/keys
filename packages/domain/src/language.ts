@@ -142,7 +142,21 @@ export type Phrase =
   | 'condition_not_a_known_duplicate'
   | 'condition_recently_confirmed'
   | 'condition_nothing_upheld'
-  | 'one_property_confirmed';
+  | 'one_property_confirmed'
+  | 'report_lede'
+  | 'which_number_reported'
+  | 'what_kind'
+  | 'what_happened'
+  | 'what_happened_help'
+  | 'send_report'
+  | 'report_received'
+  | 'report_received_detail'
+  | 'go_back'
+  | 'tab_settings'
+  | 'appearance'
+  | 'language_setting'
+  | 'report_too_short'
+  | 'only_report_what_happened_to_you';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -220,6 +234,20 @@ export const EN: Readonly<Record<Phrase, string>> = {
   condition_recently_confirmed: "Confirm the property is still available. Verified listings are confirmed every fortnight.",
   condition_nothing_upheld: "A report against this listing or against you was upheld. That has to be resolved first.",
   one_property_confirmed: "One property a landlord confirmed",
+  report_lede: "A reviewer reads this before anything appears about anybody. Nothing you write here is published until a person upholds it.",
+  only_report_what_happened_to_you: "Report what happened to you, not what you heard. A report nobody can assess cannot be upheld, and one that turns out to be false is worse than no report at all.",
+  which_number_reported: "The number you are reporting",
+  what_kind: "What kind of thing was it?",
+  what_happened: "What happened",
+  what_happened_help: "Enough that somebody who was not there can assess it. Dates, amounts, and what was said.",
+  send_report: "Send this report",
+  report_received: "A person will read this.",
+  report_received_detail: "Nothing is published unless a reviewer upholds it, and the number you reported has seven days to answer first.",
+  report_too_short: "Say more. Nobody can assess this yet.",
+  go_back: "Back",
+  tab_settings: "Settings",
+  appearance: "Appearance",
+  language_setting: "Language",
   waiting_to_send: "waiting to send",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Any format. 0803…, +234 803…, or 803….",
@@ -318,6 +346,20 @@ export const HA: Readonly<Record<Phrase, string>> = {
   condition_recently_confirmed: "Tabbatar da cewa wurin yana nan. Ana tabbatar da tallace-tallacen da aka tabbatar kowane mako biyu.",
   condition_nothing_upheld: "An tabbatar da rahoto kan wannan tallar ko kanka. Dole a warware shi tukuna.",
   one_property_confirmed: "Wuri ɗaya da mai gida ya tabbatar",
+  report_lede: "Mai duba yana karanta wannan kafin komai ya bayyana game da kowa. Ba a buga abin da ka rubuta a nan sai mutum ya tabbatar da shi.",
+  only_report_what_happened_to_you: "Ba da rahoton abin da ya same ka, ba abin da ka ji ba. Rahoton da ba wanda zai iya tantancewa ba za a tabbatar da shi ba, kuma wanda ya zamo ƙarya ya fi rashin rahoto muni.",
+  which_number_reported: "Lambar da kake ba da rahoton ta",
+  what_kind: "Wane irin abu ne?",
+  what_happened: "Me ya faru",
+  what_happened_help: "Isasshe don wanda bai kasance a wurin ba ya iya tantancewa. Kwanaki, kuɗi, da abin da aka faɗa.",
+  send_report: "Aika wannan rahoton",
+  report_received: "Mutum zai karanta wannan.",
+  report_received_detail: "Ba a buga kome sai mai duba ya tabbatar da shi, kuma lambar da ka ba da rahoton tana da kwana bakwai ta amsa tukuna.",
+  report_too_short: "Ƙara bayani. Babu wanda zai iya tantance wannan yanzu.",
+  go_back: "Koma baya",
+  tab_settings: "Saituna",
+  appearance: "Kamanni",
+  language_setting: "Harshe",
   waiting_to_send: "na jiran aikawa",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Kowace sura. 0803…, +234 803…, ko 803….",
@@ -416,6 +458,20 @@ export const YO: Readonly<Record<Phrase, string>> = {
   condition_recently_confirmed: "Fọwọ́ sí i pé ilé náà ṣì wà. A ń fọwọ́ sí àwọn ìpolówó tí a ti fọwọ́ sí ní ọ̀sẹ̀ méjì méjì.",
   condition_nothing_upheld: "A gba ẹ̀sùn kan lòdì sí ìpolówó yìí tàbí lòdì sí ọ. Ó gbọ́dọ̀ yanjú kí ó tó ṣeé ṣe.",
   one_property_confirmed: "Ilé kan tí onílé fọwọ́ sí",
+  report_lede: "Olùyẹ̀wò kan ka èyí kí ohunkóhun tó farahàn nípa ẹnikẹ́ni. A kì í tẹ ohun tí o kọ síbí jáde àyàfi tí ènìyàn bá gbà á.",
+  only_report_what_happened_to_you: "Ròyìn ohun tí ó ṣẹlẹ̀ sí ọ, kì í ṣe ohun tí o gbọ́. Ìròyìn tí ẹnikẹ́ni kò lè ṣàyẹ̀wò ni a kò lè gbà, èyí tí ó bá sì di irọ́ burú ju àìròyìn lọ.",
+  which_number_reported: "Nọ́mbà tí ò ń ròyìn",
+  what_kind: "Irú ohun wo ni?",
+  what_happened: "Ohun tí ó ṣẹlẹ̀",
+  what_happened_help: "Tó fún ẹni tí kò sí níbẹ̀ láti ṣàyẹ̀wò. Ọjọ́, owó, àti ohun tí a sọ.",
+  send_report: "Fi ìròyìn yìí ránṣẹ́",
+  report_received: "Ènìyàn yóò ka èyí.",
+  report_received_detail: "A kì í tẹ ohunkóhun jáde àyàfi tí olùyẹ̀wò bá gbà á, nọ́mbà tí o ròyìn sì ní ọjọ́ méje láti dáhùn ní àkọ́kọ́.",
+  report_too_short: "Sọ síwájú sí i. Kò sí ẹni tí ó lè ṣàyẹ̀wò èyí síbẹ̀.",
+  go_back: "Padà sẹ́yìn",
+  tab_settings: "Ètò",
+  appearance: "Ìrísí",
+  language_setting: "Èdè",
   waiting_to_send: "ń dúró láti lọ",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ìrísí èyíkéyìí. 0803…, +234 803…, tàbí 803….",
@@ -514,6 +570,20 @@ export const IG: Readonly<Record<Phrase, string>> = {
   condition_recently_confirmed: "Kwado na ụlọ ahụ ka dị. A na-akwado mgbasa ozi akwadoro kwa izu abụọ.",
   condition_nothing_upheld: "A kwadoro mkpesa megide mgbasa ozi a ma ọ bụ megide gị. A ga-edozi ya tupu nke a emee.",
   one_property_confirmed: "Otu ụlọ onye nwe ụlọ kwadoro",
+  report_lede: "Onye nyocha na-agụ nke a tupu ihe ọ bụla apụta banyere onye ọ bụla. Anaghị ebipụta ihe i dere ebe a ruo mgbe mmadụ kwadoro ya.",
+  only_report_what_happened_to_you: "Kọọ ihe mere gị, ọ bụghị ihe ị nụrụ. Mkpesa onye ọ bụla na-apụghị inyocha ka a na-apụghị ịkwado, nke ghọrọ ụgha kwa jọrọ njọ karịa enweghị mkpesa ọ bụla.",
+  which_number_reported: "Nọmba ị na-akọ",
+  what_kind: "Ụdị ihe dị aṅaa ka ọ bụ?",
+  what_happened: "Ihe merenụ",
+  what_happened_help: "Nke zuru ezu ka onye na-anọghị ebe ahụ nwee ike inyocha ya. Ụbọchị, ego, na ihe e kwuru.",
+  send_report: "Zipu mkpesa a",
+  report_received: "Mmadụ ga-agụ nke a.",
+  report_received_detail: "Anaghị ebipụta ihe ọ bụla ma ọ bụrụ na onye nyocha akwadoghị ya, nọmba i kọrọ nwekwara ụbọchị asaa iji zaa ya na mbụ.",
+  report_too_short: "Kwuo karịa. Ọ dịghị onye nwere ike inyocha nke a ugbu a.",
+  go_back: "Laghachi azụ",
+  tab_settings: "Ntọala",
+  appearance: "Ọdịdị",
+  language_setting: "Asụsụ",
   waiting_to_send: "na-echere izipu",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ụdị ọ bụla. 0803…, +234 803…, ma ọ bụ 803….",

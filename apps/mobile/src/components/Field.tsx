@@ -12,6 +12,8 @@ interface Props {
   readonly help?: string | undefined;
   readonly keyboard?: KeyboardTypeOptions | undefined;
   readonly autoComplete?: 'name' | 'tel' | 'off' | undefined;
+  /** A description, where one line will not hold what somebody has to say. */
+  readonly lines?: number | undefined;
 }
 
 /**
@@ -35,6 +37,7 @@ export function Field({
   help,
   keyboard,
   autoComplete,
+  lines,
 }: Props) {
   const colours = useColours();
 
@@ -53,10 +56,24 @@ export function Field({
         accessibilityLabel={label}
         keyboardType={keyboard}
         autoComplete={autoComplete}
-        autoCorrect={false}
-        autoCapitalize={autoComplete === 'name' ? 'words' : 'none'}
+        multiline={lines !== undefined}
+        numberOfLines={lines}
+        /*
+          Sentence case and correction on for prose, off for identifiers.
+
+          A number, a name and a property reference are things somebody has
+          written down and is copying; a description is something they are
+          composing. Autocapitalising a phone number does nothing and
+          autocorrecting one is actively harmful.
+        */
+        autoCorrect={lines !== undefined}
+        autoCapitalize={
+          lines !== undefined ? 'sentences' : autoComplete === 'name' ? 'words' : 'none'
+        }
+        textAlignVertical={lines === undefined ? 'center' : 'top'}
         style={[
           styles.input,
+          lines === undefined ? null : { minHeight: lines * 24 + space.lg, paddingTop: space.sm },
           {
             color: colours.textPrimary,
             backgroundColor: colours.surfaceDim,

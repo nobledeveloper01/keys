@@ -11,6 +11,8 @@ import { SessionProvider } from './src/state/session';
 import { AgentScreen } from './src/screens/AgentScreen';
 import { LanguageScreen } from './src/screens/LanguageScreen';
 import { LookupScreen } from './src/screens/LookupScreen';
+import { ReportScreen } from './src/screens/ReportScreen';
+import { SettingsScreen } from './src/screens/SettingsScreen';
 
 /*
   Where the server is, in development.
@@ -69,6 +71,21 @@ function Shell() {
   const [tab, setTab] = useState('check');
 
   /*
+    One level of depth inside the Check tab, and no more.
+
+    Reporting is reached from a result — you look a number up, it is the person
+    who took your money, you report it — so it is not a peer of the tabs and
+    should not be one. A number here rather than a boolean because it carries
+    the number being reported, which the lookup already has and nobody should
+    retype while angry.
+
+    This is a stack of one. It stays a `useState` until phase 4 puts listing
+    pages behind search results and there is a second thing to go *back* to;
+    that is when a router earns its dependency, not before.
+  */
+  const [reporting, setReporting] = useState<string | null>(null);
+
+  /*
     What the screen has just found out, lifted to the shell.
 
     The ambient light is behind everything, so it cannot live inside the screen
@@ -88,6 +105,7 @@ function Shell() {
   const tabs: readonly Tab[] = [
     { id: 'check', label: t('tab_check'), icon: 'search' },
     { id: 'account', label: t('tab_account'), icon: 'shield' },
+    { id: 'settings', label: t('tab_settings'), icon: 'auto' },
   ];
 
   /*
@@ -121,14 +139,41 @@ function Shell() {
       <Ambient tone={tab === 'check' ? verdict : undefined} />
 
       <View style={styles.body}>
-        {tab === 'check' ? (
-          <LookupScreen baseUrl={API_URL} onVerdict={setVerdict} />
-        ) : (
-          <AgentScreen baseUrl={API_URL} />
-        )}
+        {tab === 'check' &&
+          (reporting === null ? (
+            <LookupScreen
+              baseUrl={API_URL}
+              onVerdict={setVerdict}
+              onReport={setReporting}
+            />
+          ) : (
+            <ReportScreen
+              baseUrl={API_URL}
+              phone={reporting}
+              onDone={() => setReporting(null)}
+              onCancel={() => setReporting(null)}
+            />
+          ))}
+        {tab === 'account' && <AgentScreen baseUrl={API_URL} />}
+        {tab === 'settings' && <SettingsScreen />}
       </View>
 
-      <Tabs tabs={tabs} active={tab} onChange={setTab} />
+      {/*
+        The bar stays while reporting.
+
+        Hiding it would make the report screen a modal somebody can only leave
+        through one button, and a person who opened it by accident, on a bad
+        connection, angry, should be able to walk away the same way they walk
+        away from anything else in this app.
+      */}
+      <Tabs
+        tabs={tabs}
+        active={tab}
+        onChange={(next) => {
+          setTab(next);
+          setReporting(null);
+        }}
+      />
     </SafeAreaView>
   );
 }

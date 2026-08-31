@@ -37,6 +37,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   on arithmetic: the same photograph legitimately appears on two listings when
   an agency changes hands or a flat is re-let. Only the copy is penalised; the
   agent who was copied keeps their listing.
+- **Reporting a number, from the app.** This was web-only for two phases: a
+  tenant could look a number up on their phone, get scammed that afternoon, and
+  have nowhere in the app to say so. It is reached from the answer card, with
+  the number carried across, and the warning about what a report *is* sits
+  above the fields rather than under the send button.
+- **A settings screen**: language, changeable after first run because a phone
+  shared between a shop owner and their nephew has two readers, and appearance
+  — which puts the dark half of the palette on a screen for the first time.
 - **The agent screens on the phone**, behind a two-tab bottom bar: open an
   account, ask a landlord, draft, publish, and see which of the seven Verified
   conditions each listing still needs. Every sentence in four languages,
@@ -67,6 +75,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   E.164 form. `normalise` now lives in `packages/domain` and `hashPhone` calls
   it, so one number cannot have two hashes.
 - "1 properties a landlord confirmed" — the singular case, on both surfaces.
+- **Tapping "Send this to whoever asked" opened the report screen.** `Press`
+  lifted flex properties onto the pressable but left margins on the view
+  inside, so every control's touch area included the gap above it — and where
+  two stacked, the lower one's target covered the upper one's text. On the
+  lookup card that was the wrong action from the wrong tap, on the one card
+  where the difference matters.
+- The two actions on the answer card had touch targets about twenty points
+  tall, well under the forty-four this product holds itself to.
 - The capture route accepted a signed *claim* without the bytes it described,
   so a genuine capture's paperwork could be attached to a stolen photograph.
 

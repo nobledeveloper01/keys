@@ -11,7 +11,7 @@ import { Press } from '../components/Press';
 import { SearchField } from '../components/SearchField';
 import { Text } from '../components/Text';
 import { Unready } from '../components/Unready';
-import { space } from '../design/tokens';
+import { space, target } from '../design/tokens';
 import { useColours } from '../design/theme';
 import { useLanguage } from '../state/language';
 import { normalise } from '../state/phone';
@@ -28,10 +28,13 @@ import { useQuery } from '../state/server';
 export function LookupScreen({
   baseUrl,
   onVerdict,
+  onReport,
 }: {
   baseUrl: string;
   /** Reported up so the shell can colour the light behind the whole screen. */
   onVerdict?: (tone: string | undefined) => void;
+  /** Opens the report screen with this number already filled in. */
+  onReport?: (phone: string) => void;
 }) {
   const { t } = useLanguage();
   const [typed, setTyped] = useState('');
@@ -133,7 +136,9 @@ export function LookupScreen({
           this screen must never make. */}
       {phone !== null && <Unready query={query} onRetry={refresh} />}
 
-      {phone !== null && answer !== null && <Answer answer={answer} phone={phone} />}
+      {phone !== null && answer !== null && (
+        <Answer answer={answer} phone={phone} onReport={onReport} />
+      )}
 
       {/*
         Below the verdict, never instead of it.
@@ -173,7 +178,15 @@ export function LookupScreen({
  */
 const SHARE_ORIGIN = 'https://keys.ng';
 
-function Answer({ answer, phone }: { answer: Lookup; phone: string }) {
+function Answer({
+  answer,
+  phone,
+  onReport,
+}: {
+  answer: Lookup;
+  phone: string;
+  onReport?: ((phone: string) => void) | undefined;
+}) {
   const { t } = useLanguage();
   const colours = useColours();
   const clean = answer.upheldReports === 0;
@@ -239,6 +252,27 @@ function Answer({ answer, phone }: { answer: Lookup; phone: string }) {
           {t('share_this_answer')}
         </Text>
       </Press>
+
+      {/*
+        After the share, and quiet.
+
+        This is the whole reason the registry has anything in it, and it is
+        still the second action on the card. Somebody who has just been told a
+        number is clean is not the person we want reporting from here; somebody
+        who was scammed by it yesterday is, and they will look for it.
+      */}
+      {onReport && (
+        <Press
+          onPress={() => onReport(phone)}
+          accessibilityLabel={t('report_this_number')}
+          feedback="opacity"
+          style={styles.share}
+        >
+          <Text variant="label" tone="secondary">
+            {t('report_this_number')}
+          </Text>
+        </Press>
+      )}
     </Glass>
   );
 }
@@ -315,7 +349,24 @@ const styles = StyleSheet.create({
   lede: { marginBottom: space.md },
   card: { marginTop: space.md },
   category: { marginTop: space.xs },
-  share: { marginTop: space.md, alignSelf: 'flex-start' },
+  /*
+    A real touch target, not the height of the words.
+
+    These were bare `Text` inside a `Press`, so each one's tappable area was
+    about twenty points tall — under the forty-four this product holds itself
+    to everywhere else, and small enough that a thumb reaching from the bottom
+    of a phone misses. They are also the two most consequential taps on this
+    card: one sends the answer to a friend, the other accuses somebody.
+
+    `justifyContent` rather than padding, so the words stay where they were and
+    only the target grows around them.
+  */
+  share: {
+    marginTop: space.sm,
+    alignSelf: 'flex-start',
+    minHeight: target.standard,
+    justifyContent: 'center',
+  },
   /* Pushed to the bottom of the scroll, the way the web's footer is. */
   claims: { marginTop: 'auto', paddingTop: space.xl },
 });

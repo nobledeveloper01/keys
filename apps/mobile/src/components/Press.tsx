@@ -102,13 +102,51 @@ export function Press({
     is the whole reason `Press` takes a style at all rather than being wrapped
     in a `View` by every caller.
   */
-  const { flex, flexGrow, flexShrink, flexBasis, width, alignSelf, ...visual } =
-    StyleSheet.flatten(style) ?? {};
+  const {
+    flex,
+    flexGrow,
+    flexShrink,
+    flexBasis,
+    width,
+    alignSelf,
+    margin,
+    marginTop,
+    marginBottom,
+    marginLeft,
+    marginRight,
+    marginHorizontal,
+    marginVertical,
+    ...visual
+  } = StyleSheet.flatten(style) ?? {};
 
-  // Lifted out of the visual style, not copied from it. Left in both places,
-  // `width: '48%'` applied twice — 48% of 48% — and a grid of six report
-  // buttons came out a fifth of the screen wide with every label truncated.
-  const layout: ViewStyle = { flex, flexGrow, flexShrink, flexBasis, width, alignSelf };
+  /*
+    Lifted out of the visual style, not copied from it. Left in both places,
+    `width: '48%'` applied twice — 48% of 48% — and a grid of six report
+    buttons came out a fifth of the screen wide with every label truncated.
+
+    **Margins belong here too, and that was found the hard way.** A margin left
+    on the inner view sits *inside* the Pressable, so the touch area covers the
+    gap as well as the control — and where two of these stack, the lower one's
+    hit area lies over the upper one's text. On the lookup card that meant
+    tapping "Send this to whoever asked" opened the report screen: the wrong
+    action, from the wrong tap, on the one card in this product where the
+    difference matters. The gap between two controls belongs to neither of them.
+  */
+  const layout: ViewStyle = {
+    flex,
+    flexGrow,
+    flexShrink,
+    flexBasis,
+    width,
+    alignSelf,
+    margin,
+    marginTop,
+    marginBottom,
+    marginLeft,
+    marginRight,
+    marginHorizontal,
+    marginVertical,
+  };
 
   return (
     <Pressable
