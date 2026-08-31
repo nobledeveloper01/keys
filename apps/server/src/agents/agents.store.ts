@@ -97,6 +97,17 @@ export abstract class AgentsStore {
   abstract agentByToken(token: string): Await<StoredAgent | null>;
   abstract agentById(id: string): Await<StoredAgent | null>;
   abstract agentByPhoneHash(hash: string): Await<StoredAgent | null>;
+
+  /**
+   * Every agent, for the review console and for nothing else.
+   *
+   * Deliberately not paginated yet and deliberately not filtered: at the scale
+   * where either matters, this needs a query somebody has thought about rather
+   * than a filter bolted onto a list read. What it must never grow is a public
+   * caller — an enumerable list of agents and their phones is the directory
+   * `byPhone` refuses to be.
+   */
+  abstract everyAgent(): Await<readonly StoredAgent[]>;
   abstract evidenceFor(agentId: string): Await<readonly Evidence[]>;
 
   abstract recordIdentity(input: {
@@ -220,6 +231,12 @@ export class InMemoryAgentsStore extends AgentsStore {
 
   agentByPhoneHash(hash: string) {
     return [...this.agents.values()].find((a) => a.phoneHash === hash) ?? null;
+  }
+
+  everyAgent() {
+    return [...this.agents.values()].sort(
+      (a, b) => b.joinedAt.getTime() - a.joinedAt.getTime(),
+    );
   }
 
   evidenceFor(agentId: string) {

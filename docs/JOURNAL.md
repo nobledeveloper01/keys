@@ -6,6 +6,55 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — A route that answered as a different controller
+
+**Did.** The agent list in the review console, with the one decision a reviewer
+can take about an agent — withdrawing an ID check — driven through the real UI:
+click, confirm, and the agent's published listing goes dark, their tier drops to
+unverified, and the tenant lookup stops finding them.
+
+### What surprised us
+
+**`GET /v1/review/agents` was answered by the report console.** `ReviewController`
+declares `@Get(':id')` under `/v1/review`, and a single path segment is exactly
+what a parameter matches — so the new route returned *"No such report"*: the
+console looking for a report whose id is the string `agents`. The handler
+existed, the guard was right, the response shape was right, and no request would
+ever have reached it.
+
+The available fix was to register `AgentsModule` before `ReportsModule`, which
+would have made a route work because of the order of an imports array. The next
+person to tidy `AppModule` would have broken it silently. The path is
+`/v1/agent-review` now — one hyphen, and nothing can shadow it.
+
+**Nothing in the suite could have caught that, so now something does.** The
+phase gate walks every route in the running router; it was checking what each
+one *does* and never whether the router would dispatch to it at all. It now
+fails when a literal segment is registered behind a parameter on the same
+prefix — a structural check that names no routes, so it covers the ones written
+in phase 5 by somebody who never opened the file. Putting the collision back
+fails it.
+
+**`.listings li` matched the list inside the list.** Each attestation rendered
+as its own bordered card inside the agent's card, three panels deep, every one
+competing with the name at the top. A direct-child combinator. This is the
+third selector bug of the same family this week — a rule written for one shape
+that quietly claims another.
+
+### A thing worth being explicit about
+
+The console shows attestations **without the attestors' phone numbers**. A
+reviewer needs to know a landlord confirmed this agent on this property and
+when; they do not need the number, and a console that showed it would be a
+place where every landlord on the platform could be read off by anybody holding
+a reviewer token.
+
+Withdrawn evidence is shown, marked, rather than hidden. An agent back down to
+unverified with an empty list looks like an account that never tried; the same
+agent with a struck-through ID check looks like what actually happened.
+
+---
+
 ## 2026-08-31 — A flow nobody could complete
 
 **Did.** The landlord's page, the agent's page, and the whole loop driven end

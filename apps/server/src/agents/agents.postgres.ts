@@ -153,6 +153,23 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     return this.agentWhere('phone_hash', hash);
   }
 
+  async everyAgent() {
+    const result = await this.pool.query<{
+      id: string;
+      display_name: string;
+      phone_hash: string;
+      joined_at: Date;
+    }>(
+      'SELECT id, display_name, phone_hash, joined_at FROM agents ORDER BY joined_at DESC',
+    );
+    return result.rows.map((row) => ({
+      id: row.id,
+      displayName: row.display_name,
+      phoneHash: row.phone_hash,
+      joinedAt: row.joined_at,
+    }));
+  }
+
   async agentById(id: string) {
     // The id comes off a URL, so a value that is not a UUID reaches this query
     // routinely. Postgres raises rather than returning nothing, and a lookup

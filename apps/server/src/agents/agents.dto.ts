@@ -106,6 +106,36 @@ export class ChallengeAnsweredResponse {
   meaning!: string;
 }
 
+export class AttestationView {
+  @ApiProperty({ enum: ['identity', 'authority', 'standing'] })
+  kind!: string;
+
+  @ApiProperty({ description: "Who attested. Never a landlord's phone number." })
+  attestor!: string;
+
+  @ApiProperty({ type: String, nullable: true })
+  propertyId!: string | null;
+
+  @ApiProperty({ format: 'date-time' })
+  at!: string;
+
+  @ApiProperty({ description: 'False once withdrawn. Withdrawn evidence is kept, not deleted.' })
+  live!: boolean;
+}
+
+export class AgentUnderReview {
+  @ApiProperty() agentId!: string;
+  @ApiProperty() displayName!: string;
+  @ApiProperty({ enum: TIERS }) tier!: string;
+  @ApiProperty() meaning!: string;
+  @ApiProperty({ format: 'date-time' }) joinedAt!: string;
+  @ApiProperty() upheldReports!: number;
+  @ApiProperty() publishedListings!: number;
+
+  @ApiProperty({ type: [AttestationView] })
+  evidence!: AttestationView[];
+}
+
 export class CreateListingBody {
   @ApiProperty()
   propertyId!: string;

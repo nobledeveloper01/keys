@@ -330,7 +330,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/review/agents/{id}/withdraw-identity": {
+    "/v1/agent-review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every agent, with what has been attested about them. */
+        get: operations["AgentReviewController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agent-review/{id}/withdraw-identity": {
         parameters: {
             query?: never;
             header?: never;
@@ -548,6 +565,29 @@ export interface components {
             reference: string;
             /** @description The agent the vendor checked. */
             agentId: string;
+        };
+        AttestationView: {
+            /** @enum {string} */
+            kind: "identity" | "authority" | "standing";
+            /** @description Who attested. Never a landlord's phone number. */
+            attestor: string;
+            propertyId: string | null;
+            /** Format: date-time */
+            at: string;
+            /** @description False once withdrawn. Withdrawn evidence is kept, not deleted. */
+            live: boolean;
+        };
+        AgentUnderReview: {
+            agentId: string;
+            displayName: string;
+            /** @enum {string} */
+            tier: "unverified" | "identity" | "authority" | "established";
+            meaning: string;
+            /** Format: date-time */
+            joinedAt: string;
+            upheldReports: number;
+            publishedListings: number;
+            evidence: components["schemas"]["AttestationView"][];
         };
     };
     responses: never;
@@ -1025,6 +1065,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    AgentReviewController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentUnderReview"][];
+                };
             };
         };
     };

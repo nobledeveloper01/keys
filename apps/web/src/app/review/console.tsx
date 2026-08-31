@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import type { ReviewItem, ReviewMetrics } from '@keys/api';
+import type { AgentUnderReview, ReviewItem, ReviewMetrics } from '@keys/api';
 
 import { categoryWords } from '../../categories';
 
@@ -51,6 +51,7 @@ export function Console() {
   const [signedIn, setSignedIn] = useState(false);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [agents, setAgents] = useState<AgentUnderReview[]>([]);
   const [open, setOpen] = useState<(QueueItem & { history?: HistoryEntry[] }) | null>(null);
 
   /*
@@ -92,12 +93,14 @@ export function Console() {
   const refresh = useCallback(async (t: string) => {
     setProblem(null);
     try {
-      const [q, m] = await Promise.all([
+      const [q, m, a] = await Promise.all([
         call<{ reports: QueueItem[] }>(t, '/v1/review/queue'),
         call<Metrics>(t, '/v1/review/metrics'),
+        call<AgentUnderReview[]>(t, '/v1/agent-review'),
       ]);
       setQueue(q.reports);
       setMetrics(m);
+      setAgents(a);
       setSignedIn(true);
       try {
         sessionStorage.setItem('keys.reviewer', t);
@@ -194,6 +197,7 @@ export function Console() {
 
       {queue.length === 0 && <p className="quiet">Nothing is waiting. That is the target, not the norm.</p>}
 
+
       {queue.map((report) => (
         <button
           key={report.id}
@@ -223,12 +227,159 @@ export function Console() {
         </button>
       ))}
 
+      <Agents
+        agents={agents}
+        token={token}
+        onChanged={() => void refresh(token)}
+        onProblem={setProblem}
+      />
+
       {problem && (
         <p className="error" role="alert">
           {problem}
         </p>
       )}
     </main>
+  );
+}
+
+/**
+ * The agents, and the one decision a reviewer can take about them.
+ *
+ * Below the report queue on purpose. The queue is work with a deadline — a
+ * reply window closing on somebody's public accusation — and this is a list to
+ * be looked at. Putting it above would put the thing with no clock in front of
+ * the thing with one.
+ *
+ * The only action here is withdrawing an identity check, and it is guarded by a
+ * confirm step because it takes every listing that agent has off the market in
+ * one transaction. That is somebody's income stopping, on one click, and the
+ * click should have to be meant.
+ */
+function Agents({
+  agents,
+  token,
+  onChanged,
+  onProblem,
+}: {
+  agents: AgentUnderReview[];
+  token: string;
+  onChanged: () => void;
+  onProblem: (message: string) => void;
+}) {
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  if (agents.length === 0) {
+    return (
+      <>
+        <h2>Agents</h2>
+        <p className="quiet">Nobody has opened an agent account yet.</p>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <h2>Agents</h2>
+      <p className="small quiet">
+        A tier is computed from the attestations below every time it is read. There
+        is nothing here to set.
+      </p>
+
+      <ul className="listings">
+        {agents.map((agent) => (
+          <li key={agent.agentId}>
+            <p>
+              <strong>{agent.displayName}</strong>
+            </p>
+            <p className="small">{agent.meaning}</p>
+            <p className="small quiet">
+              Joined {new Date(agent.joinedAt).toLocaleDateString('en-NG', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+              {' · '}
+              {agent.publishedListings === 1
+                ? '1 listing public'
+                : `${agent.publishedListings} listings public`}
+              {agent.upheldReports > 0 &&
+                ` · ${agent.upheldReports} upheld report${agent.upheldReports === 1 ? '' : 's'}`}
+            </p>
+
+            {agent.evidence.length > 0 && (
+              <ul className="categories small">
+                {agent.evidence.map((e, index) => (
+                  <li key={`${e.kind}-${e.propertyId ?? ''}-${index}`}>
+                    {e.kind === 'identity'
+                      ? `ID checked by ${e.attestor}`
+                      : `Landlord confirmed ${e.propertyId ?? 'a property'}`}
+                    {' · '}
+                    {new Date(e.at).toLocaleDateString('en-NG', {
+                      day: 'numeric',
+                      month: 'short',
+                    })}
+                    {/*
+                      Withdrawn evidence is shown, struck through rather than
+                      hidden. A reviewer looking at an agent who is back down to
+                      unverified needs to see that a check happened and was
+                      taken away — a list that quietly omitted it would make a
+                      revoked forgery look like an account that never tried.
+                    */}
+                    {!e.live && <span className="withdrawn"> withdrawn</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {agent.evidence.some((e) => e.kind === 'identity' && e.live) &&
+              (confirming === agent.agentId ? (
+                <>
+                  <p className="small">
+                    This takes every listing {agent.displayName} has published off the
+                    market immediately, and drops them to unverified. It cannot be
+                    undone from here — they would have to be checked again.
+                  </p>
+                  <button
+                    type="button"
+                    disabled={busy === agent.agentId}
+                    onClick={() => {
+                      setBusy(agent.agentId);
+                      void call(
+                        token,
+                        `/v1/agent-review/${agent.agentId}/withdraw-identity`,
+                        'POST',
+                      )
+                        .then(() => {
+                          setConfirming(null);
+                          onChanged();
+                        })
+                        .catch((e: unknown) =>
+                          onProblem(e instanceof Error ? e.message : 'That did not work.'),
+                        )
+                        .finally(() => setBusy(null));
+                    }}
+                  >
+                    {busy === agent.agentId ? 'Withdrawing…' : 'Yes, withdraw it'}
+                  </button>{' '}
+                  <button type="button" className="linkish" onClick={() => setConfirming(null)}>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="linkish"
+                  onClick={() => setConfirming(agent.agentId)}
+                >
+                  Withdraw the ID check
+                </button>
+              ))}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

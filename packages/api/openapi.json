@@ -699,7 +699,37 @@
         ]
       }
     },
-    "/v1/review/agents/{id}/withdraw-identity": {
+    "/v1/agent-review": {
+      "get": {
+        "operationId": "AgentReviewController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AgentUnderReview"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "reviewer-token": []
+          }
+        ],
+        "summary": "Every agent, with what has been attested about them.",
+        "tags": [
+          "review"
+        ]
+      }
+    },
+    "/v1/agent-review/{id}/withdraw-identity": {
       "post": {
         "operationId": "AgentReviewController_withdrawIdentity",
         "parameters": [
@@ -1396,6 +1426,91 @@
           "vendor",
           "reference",
           "agentId"
+        ]
+      },
+      "AttestationView": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "identity",
+              "authority",
+              "standing"
+            ]
+          },
+          "attestor": {
+            "type": "string",
+            "description": "Who attested. Never a landlord's phone number."
+          },
+          "propertyId": {
+            "type": "string",
+            "nullable": true
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "live": {
+            "type": "boolean",
+            "description": "False once withdrawn. Withdrawn evidence is kept, not deleted."
+          }
+        },
+        "required": [
+          "kind",
+          "attestor",
+          "propertyId",
+          "at",
+          "live"
+        ]
+      },
+      "AgentUnderReview": {
+        "type": "object",
+        "properties": {
+          "agentId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "identity",
+              "authority",
+              "established"
+            ]
+          },
+          "meaning": {
+            "type": "string"
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "upheldReports": {
+            "type": "number"
+          },
+          "publishedListings": {
+            "type": "number"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttestationView"
+            }
+          }
+        },
+        "required": [
+          "agentId",
+          "displayName",
+          "tier",
+          "meaning",
+          "joinedAt",
+          "upheldReports",
+          "publishedListings",
+          "evidence"
         ]
       }
     }

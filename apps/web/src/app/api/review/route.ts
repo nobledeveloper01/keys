@@ -37,6 +37,8 @@ export async function POST(request: Request) {
   const allowed =
     path === '/v1/review/queue' ||
     path === '/v1/review/metrics' ||
+    path === '/v1/agent-review' ||
+    /^\/v1\/agent-review\/[0-9a-f-]{36}\/withdraw-identity$/i.test(path) ||
     /^\/v1\/review\/[0-9a-f-]{36}$/i.test(path) ||
     /^\/v1\/review\/[0-9a-f-]{36}\/(decision|evidence)$/i.test(path);
 

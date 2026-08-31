@@ -201,6 +201,57 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
     expect(routes.some((r) => r.path.includes('authority'))).toBe(true);
   });
 
+  it('has no route hidden behind an earlier wildcard', () => {
+    /*
+      A whole class of bug, caught structurally rather than one route at a time.
+
+      `GET /v1/review/agents` was answered for a week by `GET /v1/review/:id` —
+      the report console, looking for a report whose id is the string "agents".
+      Every test passed: the handler existed, the guard was right, the shape was
+      right, and no request ever reached it. Nothing in the suite asked the only
+      question that would have found it, which is whether the router will ever
+      dispatch to a route at all.
+
+      Express matches in registration order, so a literal segment registered
+      after a parameter on the same prefix is unreachable. That is checkable
+      without naming a single route, which means it also covers the ones written
+      in phase 5 by somebody who never opened this file.
+    */
+    const routes = routesOf(app);
+    const shadowed: string[] = [];
+
+    for (const [index, route] of routes.entries()) {
+      const segments = route.path.split('/');
+      for (const earlier of routes.slice(0, index)) {
+        if (earlier.method !== route.method) continue;
+        const before = earlier.path.split('/');
+        if (before.length !== segments.length) continue;
+
+        // Every segment matches literally, or the earlier route has a
+        // parameter where this one has a literal. That is exactly the shape
+        // that eats it.
+        let eats = false;
+        let matches = true;
+        for (let i = 0; i < segments.length; i += 1) {
+          const mine = segments[i]!;
+          const theirs = before[i]!;
+          if (theirs === mine) continue;
+          if (theirs.startsWith(':') && !mine.startsWith(':')) {
+            eats = true;
+            continue;
+          }
+          matches = false;
+          break;
+        }
+        if (matches && eats) {
+          shadowed.push(`${route.method} ${route.path} is unreachable behind ${earlier.path}`);
+        }
+      }
+    }
+
+    expect(shadowed).toEqual([]);
+  });
+
   it('starts unverified, whatever it says about itself at sign-up', async () => {
     const claiming = await request(app.getHttpServer())
       .post('/v1/agents')
@@ -522,7 +573,7 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
     }
 
     const withdrawn = await request(app.getHttpServer())
-      .post(`/v1/review/agents/${agentId}/withdraw-identity`)
+      .post(`/v1/agent-review/${agentId}/withdraw-identity`)
       .set('x-reviewer-token', REVIEWER)
       .expect(201);
 
@@ -638,7 +689,7 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
 
     // And withdrawing the identity takes them back out of the directory.
     await request(app.getHttpServer())
-      .post(`/v1/review/agents/${signedUp.body.agentId}/withdraw-identity`)
+      .post(`/v1/agent-review/${signedUp.body.agentId}/withdraw-identity`)
       .set('x-reviewer-token', REVIEWER)
       .expect(201);
     await request(app.getHttpServer()).get('/v1/agents').query({ phone }).expect(404);

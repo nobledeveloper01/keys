@@ -596,17 +596,25 @@ button:disabled {
   margin: var(--s-4) 0;
   padding: 0;
 }
-.listings li {
+/*
+  Direct children only.
+
+  `.listings li` also matched the evidence bullets nested inside each card, so
+  every attestation rendered as its own bordered panel inside the panel it
+  belonged to — three cards deep, each one competing with the agent's name. The
+  card is the agent; what is inside it is a list.
+*/
+.listings > li {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: var(--s-4) var(--s-5);
   margin-bottom: var(--s-3);
   background: var(--surface-raised);
 }
-.listings li p {
+.listings > li > p {
   margin: 0 0 var(--s-1);
 }
-.listings li button {
+.listings > li button {
   margin-top: var(--s-3);
 }
 
@@ -631,6 +639,12 @@ button:disabled {
 }
 .linkish:hover {
   color: var(--ink);
+}
+
+/* Shown, not hidden: a withdrawn check is a fact a reviewer needs. */
+.withdrawn {
+  color: var(--alarm);
+  font-weight: 600;
 }
 
 /* --- queue -------------------------------------------------------------- */
