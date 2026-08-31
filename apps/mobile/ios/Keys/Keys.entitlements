@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Universal links for keys.ng.
+
+	  This is what makes one link in one SMS work for everybody: the app opens
+	  it if it is installed, and Safari opens the same page if it is not. The
+	  alternative — sending `keys://` — is a link that does nothing at all for
+	  the majority of people who receive one, and the people receiving these
+	  have just been told they are accused of something.
+
+	  It needs three things to work, and only two of them are in this
+	  repository: this entitlement, the apple-app-site-association file the web
+	  surface now serves, and a provisioning profile with the Associated
+	  Domains capability enabled — which needs an Apple developer team this
+	  project does not have yet. Until then the app builds and the entitlement
+	  does nothing, which is the correct direction to be incomplete in.
+	-->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:keys.ng</string>
+	</array>
+</dict>
+</plist>

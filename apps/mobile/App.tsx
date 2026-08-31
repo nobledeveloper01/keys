@@ -6,11 +6,13 @@ import { Ambient } from './src/components/Ambient';
 import { Splash } from './src/components/Splash';
 import { Tabs, type Tab } from './src/components/Tabs';
 import { useColours, useTheme, ThemeProvider } from './src/design/theme';
+import { useDeepLink } from './src/state/deepLink';
 import { LanguageProvider, useLanguage } from './src/state/language';
 import { SessionProvider } from './src/state/session';
 import { AgentScreen } from './src/screens/AgentScreen';
 import { LanguageScreen } from './src/screens/LanguageScreen';
 import { LookupScreen } from './src/screens/LookupScreen';
+import { ReplyScreen } from './src/screens/ReplyScreen';
 import { ReportScreen } from './src/screens/ReportScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 
@@ -86,6 +88,16 @@ function Shell() {
   const [reporting, setReporting] = useState<string | null>(null);
 
   /*
+    A link from a text message, which is not a destination anybody navigates to.
+
+    It takes the whole screen, above the tabs, because somebody who has just
+    been accused of something and tapped the link in that message is not
+    browsing — and offering them Check and Account underneath would be the app
+    asking what else it can interest them in.
+  */
+  const { destination, clear } = useDeepLink();
+
+  /*
     What the screen has just found out, lifted to the shell.
 
     The ambient light is behind everything, so it cannot live inside the screen
@@ -124,6 +136,16 @@ function Shell() {
         <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
         <Ambient />
         <LanguageScreen onDone={() => setPicked(true)} />
+      </SafeAreaView>
+    );
+  }
+
+  if (destination?.screen === 'reply') {
+    return (
+      <SafeAreaView style={[styles.root, { backgroundColor: colours.surface }]}>
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+        <Ambient />
+        <ReplyScreen baseUrl={API_URL} token={destination.token} onDone={clear} />
       </SafeAreaView>
     );
   }

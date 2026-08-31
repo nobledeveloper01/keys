@@ -22,6 +22,30 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<!--
+			  A custom scheme, for development and for nothing else.
+
+			  The links Keys actually sends are https, so that one link works
+			  whether or not the app is installed — a `keys://` link in an SMS
+			  is a dead end for the majority of people who receive one, and the
+			  people receiving these have just been accused of something.
+
+			  This exists because a universal link cannot be exercised on a
+			  simulator without a signed associated-domains entitlement and a
+			  live apple-app-site-association file, and a flow nobody can test
+			  is a flow nobody has tested.
+			-->
+			<key>CFBundleURLName</key>
+			<string>ng.keys.app.dev</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>keys</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>

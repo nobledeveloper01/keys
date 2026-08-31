@@ -115,9 +115,16 @@ def unwired_modules() -> list[str]:
             continue
 
         stem = path.stem
+        # The app entry counts as an importer.
+        #
+        # `sources()` is `src` only, and `App.tsx` sits beside it — so a module
+        # the entry point imports and nothing else read as dead. `state/deepLink`
+        # was reported that way while `App.tsx` was calling `useDeepLink` on
+        # every render. The same correction was already made in
+        # `_unwired_under`, for `LanguageProvider`, and not here.
         importers = [
             other
-            for other in sources()
+            for other in [*sources(), *(p for p in MOBILE_ROOT.glob('*.ts*') if p.is_file())]
             if other != path and re.search(rf"from '[^']*{re.escape(stem)}'", body(other))
         ]
         if importers:

@@ -156,7 +156,19 @@ export type Phrase =
   | 'appearance'
   | 'language_setting'
   | 'report_too_short'
-  | 'only_report_what_happened_to_you';
+  | 'only_report_what_happened_to_you'
+  | 'a_report_about_your_number'
+  | 'nothing_published_yet'
+  | 'what_was_said'
+  | 'your_answer'
+  | 'your_answer_help'
+  | 'send_your_answer'
+  | 'answer_recorded'
+  | 'answer_recorded_detail'
+  | 'already_answered'
+  | 'reply_link_not_valid'
+  | 'reply_link_help'
+  | 'you_have_until';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -236,6 +248,18 @@ export const EN: Readonly<Record<Phrase, string>> = {
   one_property_confirmed: "One property a landlord confirmed",
   report_lede: "A reviewer reads this before anything appears about anybody. Nothing you write here is published until a person upholds it.",
   only_report_what_happened_to_you: "Report what happened to you, not what you heard. A report nobody can assess cannot be upheld, and one that turns out to be false is worse than no report at all.",
+  a_report_about_your_number: "A report about your number",
+  nothing_published_yet: "Nothing about this has been published, and nothing will be until a person has read your side.",
+  what_was_said: "What was said",
+  your_answer: "Your answer",
+  your_answer_help: "A reviewer reads this beside the report. Say what actually happened.",
+  send_your_answer: "Send your answer",
+  answer_recorded: "Your answer is on the record.",
+  answer_recorded_detail: "A reviewer reads it alongside the report before deciding anything.",
+  already_answered: "You have already answered this. A reviewer has your side.",
+  reply_link_not_valid: "That link is not valid",
+  reply_link_help: "Open it from the text message rather than copying part of it. It is the only way we can tell it is you, and we would rather that than ask you to make an account.",
+  you_have_until: "You have until",
   which_number_reported: "The number you are reporting",
   what_kind: "What kind of thing was it?",
   what_happened: "What happened",
@@ -348,6 +372,18 @@ export const HA: Readonly<Record<Phrase, string>> = {
   one_property_confirmed: "Wuri ɗaya da mai gida ya tabbatar",
   report_lede: "Mai duba yana karanta wannan kafin komai ya bayyana game da kowa. Ba a buga abin da ka rubuta a nan sai mutum ya tabbatar da shi.",
   only_report_what_happened_to_you: "Ba da rahoton abin da ya same ka, ba abin da ka ji ba. Rahoton da ba wanda zai iya tantancewa ba za a tabbatar da shi ba, kuma wanda ya zamo ƙarya ya fi rashin rahoto muni.",
+  a_report_about_your_number: "Rahoto game da lambarka",
+  nothing_published_yet: "Ba a buga kome game da wannan ba, kuma ba za a buga ba sai mutum ya karanta bangarenka.",
+  what_was_said: "Abin da aka faɗa",
+  your_answer: "Amsarka",
+  your_answer_help: "Mai duba yana karanta wannan tare da rahoton. Faɗi abin da ya faru da gaske.",
+  send_your_answer: "Aika amsarka",
+  answer_recorded: "An rubuta amsarka.",
+  answer_recorded_detail: "Mai duba yana karanta ta tare da rahoton kafin ya yanke shawara.",
+  already_answered: "Ka riga ka amsa wannan. Mai duba yana da bangarenka.",
+  reply_link_not_valid: "Wannan hanyar ba ta aiki",
+  reply_link_help: "Buɗe ta daga saƙon rubutu maimakon kwafin wani sashe. Ita ce kaɗai hanyar da za mu tabbatar da kai, mun fi so haka da neman ka buɗe asusu.",
+  you_have_until: "Kana da lokaci har",
   which_number_reported: "Lambar da kake ba da rahoton ta",
   what_kind: "Wane irin abu ne?",
   what_happened: "Me ya faru",
@@ -460,6 +496,18 @@ export const YO: Readonly<Record<Phrase, string>> = {
   one_property_confirmed: "Ilé kan tí onílé fọwọ́ sí",
   report_lede: "Olùyẹ̀wò kan ka èyí kí ohunkóhun tó farahàn nípa ẹnikẹ́ni. A kì í tẹ ohun tí o kọ síbí jáde àyàfi tí ènìyàn bá gbà á.",
   only_report_what_happened_to_you: "Ròyìn ohun tí ó ṣẹlẹ̀ sí ọ, kì í ṣe ohun tí o gbọ́. Ìròyìn tí ẹnikẹ́ni kò lè ṣàyẹ̀wò ni a kò lè gbà, èyí tí ó bá sì di irọ́ burú ju àìròyìn lọ.",
+  a_report_about_your_number: "Ìròyìn nípa nọ́mbà rẹ",
+  nothing_published_yet: "A kò tẹ ohunkóhun nípa èyí jáde, a kì yóò sì ṣe títí ènìyàn yóò fi ka ìdáhùn rẹ.",
+  what_was_said: "Ohun tí wọ́n sọ",
+  your_answer: "Ìdáhùn rẹ",
+  your_answer_help: "Olùyẹ̀wò ka èyí lẹ́gbẹ̀ẹ́ ìròyìn náà. Sọ ohun tí ó ṣẹlẹ̀ ní tòótọ́.",
+  send_your_answer: "Fi ìdáhùn rẹ ránṣẹ́",
+  answer_recorded: "A ti kọ ìdáhùn rẹ sílẹ̀.",
+  answer_recorded_detail: "Olùyẹ̀wò ka á pẹ̀lú ìròyìn náà kí ó tó pinnu ohunkóhun.",
+  already_answered: "O ti dáhùn èyí tẹ́lẹ̀. Olùyẹ̀wò ní ìdáhùn rẹ.",
+  reply_link_not_valid: "Ọ̀nà yìí kò wúlò",
+  reply_link_help: "Ṣí i láti inú ìránṣẹ́ náà dípò kí o da apá kan rẹ̀ kọ. Òun ni ọ̀nà kan ṣoṣo tí a fi lè mọ̀ pé ìwọ ni, a sì fẹ́ bẹ́ẹ̀ ju kí a ní kí o ṣí àkántì.",
+  you_have_until: "O ní àkókò títí di",
   which_number_reported: "Nọ́mbà tí ò ń ròyìn",
   what_kind: "Irú ohun wo ni?",
   what_happened: "Ohun tí ó ṣẹlẹ̀",
@@ -572,6 +620,18 @@ export const IG: Readonly<Record<Phrase, string>> = {
   one_property_confirmed: "Otu ụlọ onye nwe ụlọ kwadoro",
   report_lede: "Onye nyocha na-agụ nke a tupu ihe ọ bụla apụta banyere onye ọ bụla. Anaghị ebipụta ihe i dere ebe a ruo mgbe mmadụ kwadoro ya.",
   only_report_what_happened_to_you: "Kọọ ihe mere gị, ọ bụghị ihe ị nụrụ. Mkpesa onye ọ bụla na-apụghị inyocha ka a na-apụghị ịkwado, nke ghọrọ ụgha kwa jọrọ njọ karịa enweghị mkpesa ọ bụla.",
+  a_report_about_your_number: "Mkpesa gbasara nọmba gị",
+  nothing_published_yet: "E bipụtabeghị ihe ọ bụla gbasara nke a, a gaghịkwa ebipụta ruo mgbe mmadụ gụrụ akụkụ gị.",
+  what_was_said: "Ihe e kwuru",
+  your_answer: "Azịza gị",
+  your_answer_help: "Onye nyocha na-agụ nke a n'akụkụ mkpesa ahụ. Kwuo ihe mere n'ezie.",
+  send_your_answer: "Zipu azịza gị",
+  answer_recorded: "Edekọtala azịza gị.",
+  answer_recorded_detail: "Onye nyocha na-agụ ya n'akụkụ mkpesa ahụ tupu o kpebie ihe ọ bụla.",
+  already_answered: "Ị zaghachiworị nke a. Onye nyocha nwere akụkụ gị.",
+  reply_link_not_valid: "Njikọ ahụ abaghị uru",
+  reply_link_help: "Site na ozi ahụ mepee ya kama ịdepụta akụkụ ya. Ọ bụ naanị ụzọ anyị ga-esi mara na ọ bụ gị, anyị chọrọ nke ahụ karịa ịrịọ gị ka i mepee akaụntụ.",
+  you_have_until: "Ị nwere oge ruo",
   which_number_reported: "Nọmba ị na-akọ",
   what_kind: "Ụdị ihe dị aṅaa ka ọ bụ?",
   what_happened: "Ihe merenụ",
