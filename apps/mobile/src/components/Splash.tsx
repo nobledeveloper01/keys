@@ -1,10 +1,17 @@
 import { useEffect, useRef } from 'react';
-import { AccessibilityInfo, Animated, Easing, StyleSheet, View } from 'react-native';
+import {
+  AccessibilityInfo,
+  Animated,
+  Easing,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { say } from '@keys/domain';
 
 import { Glow } from './Glow';
-import { Gradient } from './Gradient';
+import { Mesh } from './Mesh';
 import { Key, Shield } from './MarkParts';
 import { Text } from './Text';
 import { SPLASH_FIELD, motion, space } from '../design/tokens';
@@ -69,6 +76,10 @@ const FIELD = SPLASH_FIELD;
  * animating things gets the mark, held, and then the app.
  */
 export function Splash({ onDone, ready }: Props) {
+  // The mesh is drawn at the screen's size; SVG needs the number, not a
+  // percentage, to place the pools.
+  const { width, height } = useWindowDimensions();
+
   // One driver for the whole sequence: every piece below reads a slice of it,
   // so nothing can drift out of step with anything else.
   const run = useRef(new Animated.Value(0)).current;
@@ -212,6 +223,16 @@ export function Splash({ onDone, ready }: Props) {
     outputRange: [0, 0, 0.42, 0, 0],
   });
 
+  // The second ring, a beat behind the first and reaching further.
+  const pulseScaleLate = run.interpolate({
+    inputRange: [0, 0.7, 1],
+    outputRange: [0.6, 0.6, 2.4],
+  });
+  const pulseLate = run.interpolate({
+    inputRange: [0, 0.7, 0.82, 1],
+    outputRange: [0, 0, 0.26, 0],
+  });
+
   const wordsIn = run.interpolate({ inputRange: [0, 0.7, 1], outputRange: [0, 0, 1] });
   const wordsUp = run.interpolate({ inputRange: [0, 0.7, 1], outputRange: [14, 14, 0] });
 
@@ -233,8 +254,24 @@ export function Splash({ onDone, ready }: Props) {
         },
       ]}
     >
-      {/* The brand gradient, over the flat field the launch screen shares. */}
-      <Gradient style={StyleSheet.absoluteFill} />
+      {/*
+        The field: four coloured pools over the flat colour the launch screen
+        shares, so the hand-over is invisible and what follows has depth a
+        linear gradient cannot.
+      */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Mesh
+          width={width}
+          height={height}
+          base={FIELD}
+          pools={[
+            ['#C6BDF7', 18, 16, 62, 0.85],
+            ['#7762EC', 82, 34, 55, 0.7],
+            ['#170B59', 74, 92, 70, 0.9],
+            ['#2E16B3', 8, 78, 52, 0.75],
+          ]}
+        />
+      </View>
 
       {/*
         Ambient light, behind everything.
@@ -263,12 +300,32 @@ export function Splash({ onDone, ready }: Props) {
       </Animated.View>
 
       <View style={styles.mark}>
+        {/*
+          A halo under the mark, so it sits in light rather than on a field.
+          Static — it is the ground the animation happens against.
+        */}
+        <View style={styles.halo} pointerEvents="none">
+          <Glow size={300} colour="#FFFFFF" intensity={0.3} />
+        </View>
+
         {/* The pulse sits behind the shield and is gone by the end. */}
+        {/*
+          Two rings, the second a beat behind the first.
+
+          One ring reads as a loading spinner's cousin; two, offset, read as
+          something opening. Both are gone before the name arrives — nothing on
+          this screen is still moving when the app appears behind it.
+        */}
+        <Animated.View
+          pointerEvents="none"
+          style={[styles.pulse, { opacity: pulseIn, transform: [{ scale: pulseScale }] }]}
+        />
         <Animated.View
           pointerEvents="none"
           style={[
             styles.pulse,
-            { opacity: pulseIn, transform: [{ scale: pulseScale }] },
+            styles.pulseWide,
+            { opacity: pulseLate, transform: [{ scale: pulseScaleLate }] },
           ]}
         />
 
@@ -362,6 +419,8 @@ const styles = StyleSheet.create({
   },
   mark: { alignItems: 'center', justifyContent: 'center' },
   key: { position: 'absolute' },
+  halo: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  pulseWide: { borderWidth: 1 },
   pulse: {
     position: 'absolute',
     width: 104,
