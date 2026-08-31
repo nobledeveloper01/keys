@@ -6,6 +6,63 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — The app could not report anything
+
+**Did.** Reporting and settings on the phone, and a third tab. Filed a report from the
+simulator and watched it arrive in the reviewer's queue.
+
+### What surprised us
+
+**Reporting had been web-only for two phases and nobody had said so.** A tenant could look
+a number up on their phone, find nothing, get scammed that afternoon, and have nowhere in
+the app to say so. The registry is only as good as what reaches it, and what reaches it
+comes from people holding phones — so the one surface that could not report was the one
+that matters.
+
+It is not a tab. It is reached from the answer card, with the number carried across
+normalised, because the person who reports is the person who just looked somebody up and
+recognised them.
+
+**Tapping "Send this to whoever asked" opened the report screen.** Found by accident, aiming
+at one and hitting the other.
+
+`Press` lifts layout properties onto the `Pressable` and leaves the visual ones on the
+animated view inside — a split its own docstring explains at length, because `flex` and
+`width` on the wrong node had already cost this project two layout bugs. Margins were in the
+wrong group. A margin inside the pressable makes the gap above a control part of its touch
+area, and where two of these stack, the lower one — drawn later — wins the tap over the
+upper one's text.
+
+On the lookup card that meant the wrong action from the wrong tap, on the one card in this
+product where the difference is *share a result* versus *accuse somebody*. The gap between
+two controls belongs to neither of them.
+
+**Then the right link stopped working, which was the same bug wearing the other face.** With
+the margins lifted, each target was exactly the height of its words — about twenty points,
+against the forty-four this product holds itself to everywhere else. Both of these are one
+tap from somebody who has just been scammed. `justifyContent` rather than padding, so the
+words stay put and only the target grows.
+
+**And a `?? 'fake_listing'` I wrote to satisfy the type checker.** `category` is nullable
+until somebody picks one, the send button is disabled until they do, and the call site
+needed a non-null value. The fallback would have filed a report under a category nobody
+chose if the disabled button were ever bypassed. It returns instead. A default that invents
+an accusation is worse than a button that does nothing.
+
+### Two things closed
+
+**R5 is cleared.** `ThemeToggle` was written in phase 0, is covered by the palette gate, and
+had never once been mounted — so the dark half of a generated palette had never appeared on
+a screen in this product. `wired-check` exempts components deliberately, because a design
+system that had to be deleted and rewritten one screen at a time would be worse; the price
+of that exemption was this, carried in the roadmap for two phases.
+
+**The language can be changed after first run.** A phone shared between a shop owner and
+their nephew is one phone with two readers, and a choice made once at installation is not a
+setting.
+
+---
+
 ## 2026-08-31 — Three hardcoded answers
 
 **Did.** Closed the duplicate-match pipeline: a match opens a pair for review, a reviewer
