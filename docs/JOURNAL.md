@@ -6,6 +6,67 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — The curve was chosen by the enclave, not by me
+
+**Did.** The signing module: a P-256 key generated inside the Secure Enclave, signing there,
+and a capture from the simulator accepted by the server and matched as a duplicate against
+one signed by a completely separate client.
+
+### What surprised us
+
+**The signature scheme was wrong, and only writing the phone side revealed it.** The server
+verified Ed25519 — the better modern choice, picked on that basis, tested adversarially with
+fifteen assertions, all of them passing. Then the Swift went in and the assumption
+underneath collapsed: **the Secure Enclave holds P-256 keys and nothing else.** There is no
+`SecureEnclave.Curve25519` in CryptoKit and no way to put an Ed25519 private key in the
+enclave.
+
+Ed25519 would therefore have meant a private key in software — the Keychain at best — which
+can be recovered from a device backup or a jailbroken phone. A stolen signing key is
+somebody able to sign captures for a property they have never stood in, which is precisely
+and only what this mechanism exists to prevent. The curve was never a free choice; it was
+determined by where the key has to live, and I chose it before asking that question.
+
+The server verifies ECDSA P-256 over SHA-256 now and there is a test that an Ed25519 device
+key is refused rather than crashing a verifier handed a type it did not expect.
+
+**Four encodings had to agree and none of them fails loudly.** `derRepresentation` versus
+`x963Representation` for the public key; DER versus raw for the signature; `verify('sha256')`
+versus `verify(null)`; and the claim string itself. Every mismatch comes back as
+`bad_signature` — the same answer a genuine forgery gets. That is why the probe sends a real
+capture through the real route rather than checking the pieces: each piece was individually
+correct in the version that did not work.
+
+**`RCT_EXTERN_METHOD(publicKeyWithResolver:...)` exports a method called
+`publicKeyWithResolver`.** The JS name is the selector up to its first colon, and the spec
+was calling `publicKey()`. `undefined is not a function`, from a name nothing points at.
+
+**And a comment of mine was wrong in a way a test caught.** I put the hand-written SHA-256
+beside the capture probe and wrote that importing it would not touch the native bridge. The
+probe's first line is `TurboModuleRegistry.getEnforcing`, which runs at *import* time — so
+the test could not run at all. The hash is its own module now, which it should have been
+anyway: a pure function should be importable without starting a bridge.
+
+### What is asserted, and what is only claimed
+
+The hash is held to Node's across the block-boundary lengths where a hand-written SHA-256
+goes wrong — a second implementation of something the server compares by equality, where one
+wrong bit is `bytes_do_not_match` on a genuine capture.
+
+**The enclave is not asserted, and cannot be.** A simulator has none; the module falls back
+to a software key so the flow can be developed. That fallback is a real weakening and *the
+server cannot see it* — a P-256 public key does not say where its private half lives. It
+needs attestation, and until then `hasSecureEnclave()` reports it and R10 carries it, rather
+than the fallback sitting in the code unmentioned.
+
+### Deleted rather than kept warm
+
+A `useDevice` hook, written for a capture screen that does not exist because the camera is
+not written. A hook waiting for a screen nobody has designed is a guess at what that screen
+will need. `wired-check` found it the same day.
+
+---
+
 ## 2026-08-31 — The right of reply was a database column
 
 **Did.** Deep links, so the message Keys sends opens the app; a reply screen behind them;
