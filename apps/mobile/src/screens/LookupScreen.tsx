@@ -173,6 +173,12 @@ function Answer({ answer, phone }: { answer: Lookup; phone: string }) {
         them to guess whether that was a fake listing or a no-show. Same
         registry, same answer, both places.
       */}
+      {!clean &&
+        answer.categories.map((category: string) => (
+          <Text key={category} variant="body" style={styles.category}>
+            {`·  ${t(categoryPhrase(category as ReportCategory))}`}
+          </Text>
+        ))}
       {/*
         Sending the answer on is the point, not a nicety.
 
@@ -195,13 +201,6 @@ function Answer({ answer, phone }: { answer: Lookup; phone: string }) {
           {t('share_this_answer')}
         </Text>
       </Press>
-
-      {!clean &&
-        answer.categories.map((category: string) => (
-          <Text key={category} variant="body" style={styles.category}>
-            {`·  ${t(categoryPhrase(category as ReportCategory))}`}
-          </Text>
-        ))}
     </Glass>
   );
 }

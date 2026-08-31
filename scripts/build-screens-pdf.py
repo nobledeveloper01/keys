@@ -50,7 +50,8 @@ APP = [
      'and the card still states it in words, because colour alone is not a claim this product makes.'),
     ('09-lookup-upheld', 'One upheld report',
      'Red, and the count climbs to it rather than appearing. What it was reported for is named, in '
-     'the reader’s own language.'),
+     'the reader’s own language — and the answer can be sent straight back into the chat it came '
+     'from, where the link carries a preview card showing the verdict.'),
     ('10-lookup-unreachable', 'Could not reach Keys',
      'The one mistake this screen must never make is rendering a failed lookup as zero. Grey, never '
      'red: not knowing is not bad news.'),
@@ -74,6 +75,11 @@ WEB = [
     ('16-web-review', 'The review console',
      'Every action names a reviewer and states a reason. The queue depth is the constraint on how '
      'fast Keys can open a city.'),
+    ('17-web-transparency', 'How often we are wrong',
+     'The dismissal rate, the queue depth and the median time to a decision, published by the '
+     'registry about itself. The endpoint behind it has no field that could name a reporter, a '
+     'reviewer or a report — checked by the same test that checks no unreviewed report is '
+     'reachable by any route.'),
 ]
 
 
