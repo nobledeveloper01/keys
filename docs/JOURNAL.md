@@ -6,6 +6,76 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — The app was a phase behind, and nobody had said so
+
+**Did.** The agent screens on the phone — sign up, ask a landlord, draft, publish, and
+what each listing still needs — behind a two-tab bottom bar, driven end to end on the
+simulator.
+
+### What surprised us
+
+**We had built a phase of a React Native product entirely in Next.js.** The agent page, the
+landlord page and the review console were all web-only; the app got the tenant lookup panel
+and nothing else. The repo's own pattern is web-first — there is a journal entry titled
+*"Doing the web first made the app's gaps obvious"* — so it was not wrong, but web-first
+only works if the app follows, and nothing in the gates asks whether it has.
+
+**One number had two hashes.** The verification panel did not appear on the phone for an
+agent who was plainly verified. Agent sign-up hashed the raw typed string; tenant lookup
+hashed the E.164 form. `08099887766` and `+2348099887766` are the same number and were two
+rows.
+
+`normalise` existed twice, byte-identical, in the app and the web, and both docstrings
+carried the same justification: *this is a fact about how Nigerians write phone numbers into
+a text field, not a rule about reports.* That was a reasonable line while only the two
+clients used it. It stopped being reasonable the moment the server started hashing phone
+numbers of its own — and the server had no copy at all. It is in `packages/domain` now, and
+`hashPhone` calls it, so no future caller can reintroduce this by forgetting.
+
+**A success message that destroyed itself.** "We have queued a text to that landlord" was
+set by the same handler that asked for a refresh; the refresh put the query back to
+`loading`, everything below unmounted, and the message went with it. The agent saw two
+cleared fields and no confirmation, which on a phone reads as a button that did not work. A
+notice about an action has to outlive the component that performed it.
+
+**"Open an accou".** The button label was clipped by a hard vertical edge. `Gradient` paints
+with an SVG `<Rect width="100%">`, and a percentage inside a container whose width is being
+decided *by its children* is a measurement with nothing to measure against. The disabled
+variant is a plain `View` and rendered fine, which is what pointed at the gradient rather
+than at the text. The plain View owns the layout in both states now and the gradient sits
+behind it.
+
+**And the double inset, again.** The tab bar reads the home-indicator inset and pads for it,
+and `SafeAreaView` was applying it too — the bar sat above a strip of bare background with
+the ambient gradient showing through. This app made the same mistake between `SafeAreaView`
+and a screen header in phase 1 and it cost 94 points at the top. Whichever element paints to
+the edge owns the inset.
+
+### Two decisions
+
+**Navigation is a `useState`, not a library.** The roadmap deferred a router to phase 4
+because a tree drawn before its screens exist is a guess. That was right and is no longer
+the situation — there is a screen a tenant uses and a screen an agent uses, and they are not
+steps in a flow. The moment there is a second thing to go *back* to, in phase 4, it becomes
+a router. Writing one now would be generalising from a sample of two.
+
+**"1 properties a landlord confirmed".** The phrase tables carry no interpolation on purpose,
+because word order differs across these four languages — which leaves a count beside a
+plural noun as the only shape available, and English is the language that punishes it. There
+is a separate singular phrase now. Hausa, Yoruba and Igbo do not inflect that noun, so their
+two strings are the same sentence, which is a good argument for four tables rather than one
+with a pluralisation rule.
+
+### Still open
+
+The agent's token is in `AsyncStorage` — a plain file on iOS, unencrypted preferences on
+Android. For a language choice that is fine; for a bearer token that lets somebody publish
+under an agent's name it is not. The web surface does this properly, with an httpOnly
+cookie, which is exactly why the gap needed writing down rather than assuming. R8 in the
+ledger, and a hard blocker on any real agent account.
+
+---
+
 ## 2026-08-31 — Signing the claim, not the file
 
 **Did.** Phase 3's third gate: Ed25519 verification of every capture, and fifteen
