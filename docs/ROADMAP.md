@@ -157,7 +157,7 @@ chosen — R6. Agents can open an account and draft listings, and cannot climb p
 The agent's session on the phone is in `AsyncStorage` rather than the Keychain — R8, and a
 hard blocker on any real agent account.
 
-## Phase 3 — Listing Integrity (Weeks 14–19) — **the technical core** · **current**
+## Phase 3 — Listing Integrity (Weeks 14–19) — **the technical core** · **phase gates green**
 Geotagged in-app capture with device signing, mock-location detection, video capture and
 transcoding, perceptual hashing with BK-tree indexing, the duplicate-match pipeline, the
 `is_verified` computation, forced expiry with per-listing confirmation.
@@ -254,13 +254,21 @@ none of them can wait for launch.*
    Media arrives as a raw greyscale grid rather than a JPEG — the capture module will emit
    one alongside the encoded file, which keeps a native image decoder out of the server.
 
-## Phase 4 — Search & Discovery (Weeks 20–23)
+## Phase 4 — Search & Discovery (Weeks 20–23) · **current**
 Postgres FTS + PostGIS search, filters with Verified defaulting on, map search, ranking in the
 domain package, total-cost calculation, listing pages with the evidence panel, **SSR and
 structured data on web**.
 
-**Exit gate:** sub-1.5 s results; rendered HTML asserted to contain listing content; structured data
-validating.
+**Phase gate:** a search never returns a listing the searcher could not have seen — the
+Verified filter is computed, not stored, and a listing that lost its badge this morning is
+gone from this afternoon's results without anything having to re-index it.
+
+**Release gates:** sub-1.5 s results, rendered HTML asserted to contain listing content, and
+structured data validating. All three are about a deployment nobody has stood up.
+
+**Starts by closing a phase-3 loop.** `capture_on_site` has been unmet on every listing since
+it was written, because `provesPresence` needs a distance and nothing knew where a property
+*was*. Properties get coordinates here, which is the same thing search needs.
 
 ## Phase 5 — Marketplace Loop (Weeks 24–27)
 Messaging with deferred contact exchange, inspection requests with fee policy, outcome recording

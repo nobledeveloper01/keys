@@ -21,7 +21,9 @@ import {
 
 import {
   isLive,
+  isPlausiblePoint,
   mayList,
+  metresBetween,
   tierOf,
   tierSentence,
   unmetConditions,
@@ -261,10 +263,29 @@ export class AgentsController {
     // Drafting is deliberately unguarded by tier. An agent should be able to
     // prepare a listing while the landlord's confirmation is still in flight;
     // what a tier gates is publication, which is the part strangers see.
+    /*
+      Coordinates are optional at draft time and required before publication.
+
+      An agent drafting a listing on the bus has not stood at the property yet;
+      one publishing it has. Demanding a location at the first step would push
+      them to type something — and a made-up coordinate is worse than none,
+      because `capture_on_site` would then compare a real capture against a
+      fiction and refuse it for the wrong reason.
+    */
+    const point =
+      typeof body?.latitude === 'number' && typeof body?.longitude === 'number'
+        ? { latitude: body.latitude, longitude: body.longitude }
+        : null;
+    if (point !== null && !isPlausiblePoint(point)) {
+      throw new BadRequestException('That is not a place.');
+    }
+
     const listing = await this.store.createListing({
       agentId: agent.id,
       propertyId,
       title,
+      latitude: point?.latitude ?? null,
+      longitude: point?.longitude ?? null,
       now: new Date(),
     });
     return {
@@ -391,7 +412,21 @@ export class AgentsController {
           // rather than by a flag somebody set.
           capturedInApp: true,
           signatureValid: true,
-          distanceM: c.distanceM,
+          /*
+            Measured now, from the listing's own coordinates.
+
+            Not stored on the capture: a listing whose location is corrected —
+            an agent fixed a typo, or added coordinates after drafting —
+            should re-answer this rather than carry a distance computed
+            against the wrong place for ever.
+          */
+          distanceM:
+            l.latitude !== null && l.longitude !== null
+              ? metresBetween(
+                  { latitude: l.latitude, longitude: l.longitude },
+                  { latitude: c.latitude, longitude: c.longitude },
+                )
+              : null,
           durationSeconds: c.durationSeconds,
         })),
         blockedDuplicate: blocked.has(l.id),

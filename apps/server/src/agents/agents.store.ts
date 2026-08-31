@@ -34,6 +34,17 @@ export interface Listing {
    * fortnight and make the first confirmation the one nobody ever does.
    */
   readonly lastConfirmedAt: Date | null;
+  /**
+   * Where the property is.
+   *
+   * On the listing rather than on a `properties` table, because a property is
+   * not yet an entity in this product — it is a string an agent typed, shared
+   * between an authority and a listing. Giving it coordinates here is the
+   * smallest thing that makes `capture_on_site` answerable; a real property
+   * record arrives when two agents need to refer to the same one.
+   */
+  readonly latitude: number | null;
+  readonly longitude: number | null;
 }
 
 /**
@@ -189,6 +200,8 @@ export abstract class AgentsStore {
     agentId: string;
     propertyId: string;
     title: string;
+    latitude: number | null;
+    longitude: number | null;
     now: Date;
   }): Await<Listing>;
 
@@ -432,6 +445,8 @@ export class InMemoryAgentsStore extends AgentsStore {
     agentId: string;
     propertyId: string;
     title: string;
+    latitude: number | null;
+    longitude: number | null;
     now: Date;
   }) {
     const listing: Listing = {
@@ -441,6 +456,8 @@ export class InMemoryAgentsStore extends AgentsStore {
       title: input.title,
       publishedAt: null,
       lastConfirmedAt: null,
+      latitude: input.latitude,
+      longitude: input.longitude,
     };
     this.listings.set(listing.id, listing);
     return listing;

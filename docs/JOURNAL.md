@@ -6,6 +6,51 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — A condition nothing could ever satisfy
+
+**Did.** Walkthrough recording, and coordinates on listings — which closed a condition that
+had been unmeetable since the day it was written.
+
+### What surprised us
+
+**`capture_on_site` had never been satisfiable by anybody.** It asks whether a capture was
+taken within two hundred metres of the property. `provesPresence` needs a distance; nothing
+knew where a property *was*; so every listing failed it no matter what its agent did. The
+condition was correct, tested exhaustively in the domain, and structurally impossible in the
+product. It was documented as "waiting for phase 4" and that was true — but a rule nobody
+can satisfy is not the same as a rule not yet enforced, and the agent's screen had been
+telling people to go and take a photo that would not have counted.
+
+**The walkthrough duration was outside the signature.** `walkthrough_video` asks for thirty
+seconds, which is the entire mechanism — it is what makes somebody walk the flat rather than
+film a doorway. The duration arrived beside the signature, so a two-second clip could claim
+thirty. It is inside now, which changed the message shape, which is what the `v1` prefix
+existed for: `keys.capture.v2`.
+
+**A break that passed, and the gap it revealed.** Making a missing location read as a
+distance of zero — so a listing with no coordinates would count as on-site — failed nothing.
+None of the tests had a listing without coordinates. A listing drafted on the bus has none,
+which is the ordinary case, and it would have become Verified on a photograph taken
+anywhere. There is a test now, and it fails on that break.
+
+### Two decisions
+
+**The distance is measured at read time, not stored on the capture.** An agent who adds
+coordinates after drafting, or corrects a typo, should get a re-answer rather than carry a
+distance computed against the wrong place for ever.
+
+**A walkthrough is hashed by one frame, a second in.** The file's bytes are megabytes and
+change completely on every re-encode, so hashing them would say nothing about whether two
+agents are using the same footage. A frame goes through the same perceptual hash a
+photograph does. One second in rather than zero, because the first frame of a hand-held
+video is usually a blur of somebody's thumb.
+
+**And `0, 0` is refused as a place.** It is in the Gulf of Guinea, about seven hundred
+kilometres off Lagos — close enough to look plausible for a Nigerian product, and exactly
+what an uninitialised location arrives as.
+
+---
+
 ## 2026-08-31 — A black screen with no way out
 
 **Did.** Forced expiry, and the camera. Phase 3's scope is now built except for object

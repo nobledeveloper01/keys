@@ -142,6 +142,16 @@ export class CreateListingBody {
 
   @ApiProperty({ example: '2 bedroom flat, Yaba' })
   title!: string;
+
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description: 'Where the property is. Optional at draft, needed before a capture can prove presence.',
+  })
+  latitude!: number | null;
+
+  @ApiProperty({ type: Number, nullable: true })
+  longitude!: number | null;
 }
 
 export class StillNeeded {

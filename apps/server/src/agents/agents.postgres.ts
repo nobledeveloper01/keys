@@ -68,10 +68,12 @@ interface ListingRow {
   title: string;
   published_at: Date | null;
   last_confirmed_at: Date | null;
+  latitude: string | null;
+  longitude: string | null;
 }
 
 const LISTING_COLUMNS =
-  'id, agent_id, property_id, title, published_at, last_confirmed_at';
+  'id, agent_id, property_id, title, published_at, last_confirmed_at, latitude, longitude';
 
 const EVIDENCE_COLUMNS = `
   agent_id, kind, attestor_kind, attestor_vendor, attestor_reference,
@@ -458,6 +460,8 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     agentId: string;
     propertyId: string;
     title: string;
+    latitude: number | null;
+    longitude: number | null;
     now: Date;
   }) {
     const listing: Listing = {
@@ -467,11 +471,21 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
       title: input.title,
       publishedAt: null,
       lastConfirmedAt: null,
+      latitude: input.latitude,
+      longitude: input.longitude,
     };
     await this.pool.query(
-      `INSERT INTO listings (id, agent_id, property_id, title, created_at)
-       VALUES ($1,$2,$3,$4,$5)`,
-      [listing.id, listing.agentId, listing.propertyId, listing.title, input.now],
+      `INSERT INTO listings (id, agent_id, property_id, title, created_at, latitude, longitude)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [
+        listing.id,
+        listing.agentId,
+        listing.propertyId,
+        listing.title,
+        input.now,
+        listing.latitude,
+        listing.longitude,
+      ],
     );
     return listing;
   }
@@ -484,6 +498,15 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
       title: row.title,
       publishedAt: row.published_at,
       lastConfirmedAt: row.last_confirmed_at,
+      /*
+        `NUMERIC` comes back from `pg` as a string, deliberately — the driver
+        will not silently round something Postgres kept exactly. Parsed here
+        rather than left to a caller, because a coordinate that is a string
+        where a number is expected fails as a distance of `NaN`, and `NaN`
+        compares false against every radius.
+      */
+      latitude: row.latitude === null ? null : Number(row.latitude),
+      longitude: row.longitude === null ? null : Number(row.longitude),
     };
   }
 

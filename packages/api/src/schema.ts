@@ -619,6 +619,9 @@ export interface components {
             propertyId: string;
             /** @example 2 bedroom flat, Yaba */
             title: string;
+            /** @description Where the property is. Optional at draft, needed before a capture can prove presence. */
+            latitude: number | null;
+            longitude: number | null;
         };
         StillNeeded: {
             /** @enum {string} */

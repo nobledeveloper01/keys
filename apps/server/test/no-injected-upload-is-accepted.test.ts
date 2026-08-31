@@ -507,6 +507,207 @@ describe('no injected upload is accepted', () => {
     expect(after[0]!.distanceM).toBeNull();
   });
 
+  it('finally lets a capture prove it was taken at the property', async () => {
+    /*
+      `capture_on_site` has been unmet on every listing since it was written,
+      because `provesPresence` needs a distance and nothing knew where a
+      property was. This is that loop closing — and it is asserted from the
+      agent's own view, which is where the condition is read.
+    */
+    const account = await request(app.getHttpServer())
+      .post('/v1/agents')
+      .send({ displayName: 'Standing Right Here', phone: '+2348123456780' })
+      .expect(201);
+    const theirs = { 'x-agent-token': account.body.token as string };
+
+    await request(app.getHttpServer())
+      .post('/v1/authority/identity')
+      .set('x-kyc-token', KYC)
+      .send({ agentId: account.body.agentId, vendor: 'smile-id', reference: 'on-site' })
+      .expect(201);
+
+    const yaba = { latitude: 6.5095, longitude: 3.3711 };
+    const draft = await request(app.getHttpServer())
+      .post('/v1/agents/me/listings')
+      .set(theirs)
+      .send({ propertyId: 'a-flat-in-yaba', title: 'Two bed, Yaba', ...yaba })
+      .expect(201);
+
+    const device = keypair();
+    const registered = await request(app.getHttpServer())
+      .post('/v1/captures/devices')
+      .set(theirs)
+      .send({ publicKey: device.spki })
+      .expect(201);
+
+    // Photographed from across the street, about 100 m away.
+    const photo = grid(202);
+    const nearby = claimFor({
+      listingId: draft.body.id,
+      sha256: createHash('sha256').update(photo).digest('hex'),
+      latitude: yaba.latitude + 0.0009,
+      longitude: yaba.longitude,
+    });
+    await request(app.getHttpServer())
+      .post('/v1/captures')
+      .set(theirs)
+      .send(
+        wire(
+          nearby,
+          registered.body.deviceId,
+          sign('sha256', Buffer.from(claimMessage(nearby), 'utf8'), device.privateKey).toString(
+            'base64',
+          ),
+          photo,
+        ),
+      )
+      .expect(201);
+
+    const mine = await request(app.getHttpServer())
+      .get('/v1/agents/me/listings')
+      .set(theirs)
+      .expect(200);
+    const unmet = mine.body[0].stillNeeded.map((n: { condition: string }) => n.condition);
+    expect(unmet).not.toContain('capture_on_site');
+    // And the walkthrough is still missing, because one photograph is not two
+    // conditions — the media rules are not "one of each".
+    expect(unmet).toContain('walkthrough_video');
+  });
+
+  it('does not count a photograph taken in the next neighbourhood', async () => {
+    const account = await request(app.getHttpServer())
+      .post('/v1/agents')
+      .send({ displayName: 'Somewhere Else Entirely', phone: '+2348123456781' })
+      .expect(201);
+    const theirs = { 'x-agent-token': account.body.token as string };
+
+    await request(app.getHttpServer())
+      .post('/v1/authority/identity')
+      .set('x-kyc-token', KYC)
+      .send({ agentId: account.body.agentId, vendor: 'smile-id', reference: 'off-site' })
+      .expect(201);
+
+    const draft = await request(app.getHttpServer())
+      .post('/v1/agents/me/listings')
+      .set(theirs)
+      .send({
+        propertyId: 'another-flat-in-yaba',
+        title: 'Two bed, Yaba',
+        latitude: 6.5095,
+        longitude: 3.3711,
+      })
+      .expect(201);
+
+    const device = keypair();
+    const registered = await request(app.getHttpServer())
+      .post('/v1/captures/devices')
+      .set(theirs)
+      .send({ publicKey: device.spki })
+      .expect(201);
+
+    // Surulere: a genuine capture, genuinely signed, genuinely two kilometres
+    // from the flat it claims to be of.
+    const photo = grid(303);
+    const elsewhere = claimFor({
+      listingId: draft.body.id,
+      sha256: createHash('sha256').update(photo).digest('hex'),
+      latitude: 6.5027,
+      longitude: 3.355,
+    });
+    await request(app.getHttpServer())
+      .post('/v1/captures')
+      .set(theirs)
+      .send(
+        wire(
+          elsewhere,
+          registered.body.deviceId,
+          sign(
+            'sha256',
+            Buffer.from(claimMessage(elsewhere), 'utf8'),
+            device.privateKey,
+          ).toString('base64'),
+          photo,
+        ),
+      )
+      // Accepted as a capture: it really was taken by this camera. It just
+      // does not prove presence at *this* property, which is a different
+      // question and answered further down.
+      .expect(201);
+
+    const mine = await request(app.getHttpServer())
+      .get('/v1/agents/me/listings')
+      .set(theirs)
+      .expect(200);
+    expect(
+      mine.body[0].stillNeeded.map((n: { condition: string }) => n.condition),
+    ).toContain('capture_on_site');
+  });
+
+  it('a listing with no coordinates cannot be proved on-site by anything', async () => {
+    /*
+      The gap this fills was found by breaking the code and watching nothing
+      fail: treating a missing location as a distance of zero passed every
+      test, because none of them had a listing without coordinates.
+
+      A listing drafted on the bus has no location yet. Its captures are real
+      and prove nothing about *where*, and no comparison against a place that
+      is not recorded can say otherwise — the answer is unmet, not on-site.
+    */
+    const account = await request(app.getHttpServer())
+      .post('/v1/agents')
+      .send({ displayName: 'Drafted On The Bus', phone: '+2348123456782' })
+      .expect(201);
+    const theirs = { 'x-agent-token': account.body.token as string };
+
+    await request(app.getHttpServer())
+      .post('/v1/authority/identity')
+      .set('x-kyc-token', KYC)
+      .send({ agentId: account.body.agentId, vendor: 'smile-id', reference: 'no-place' })
+      .expect(201);
+
+    const draft = await request(app.getHttpServer())
+      .post('/v1/agents/me/listings')
+      .set(theirs)
+      // No latitude, no longitude. Allowed at draft; unprovable until added.
+      .send({ propertyId: 'a-flat-with-no-address', title: 'Somewhere, eventually' })
+      .expect(201);
+
+    const device = keypair();
+    const registered = await request(app.getHttpServer())
+      .post('/v1/captures/devices')
+      .set(theirs)
+      .send({ publicKey: device.spki })
+      .expect(201);
+
+    const photo = grid(404);
+    const claim = claimFor({
+      listingId: draft.body.id,
+      sha256: createHash('sha256').update(photo).digest('hex'),
+    });
+    await request(app.getHttpServer())
+      .post('/v1/captures')
+      .set(theirs)
+      .send(
+        wire(
+          claim,
+          registered.body.deviceId,
+          sign('sha256', Buffer.from(claimMessage(claim), 'utf8'), device.privateKey).toString(
+            'base64',
+          ),
+          photo,
+        ),
+      )
+      .expect(201);
+
+    const mine = await request(app.getHttpServer())
+      .get('/v1/agents/me/listings')
+      .set(theirs)
+      .expect(200);
+    expect(
+      mine.body[0].stillNeeded.map((n: { condition: string }) => n.condition),
+    ).toContain('capture_on_site');
+  });
+
   it('refuses a device Keys has never seen', async () => {
     const claim = claimFor();
     const response = await submit(wire(claim, 'device-nobody-registered', signWith(claim)));

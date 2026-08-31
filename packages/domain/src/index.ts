@@ -17,4 +17,5 @@ export * from './hashing.ts';
 export * from './language.ts';
 export * from './listings.ts';
 export * from './phone.ts';
+export * from './places.ts';
 export * from './reports.ts';

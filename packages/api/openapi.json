@@ -1509,11 +1509,22 @@
           "title": {
             "type": "string",
             "example": "2 bedroom flat, Yaba"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true,
+            "description": "Where the property is. Optional at draft, needed before a capture can prove presence."
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
           }
         },
         "required": [
           "propertyId",
-          "title"
+          "title",
+          "latitude",
+          "longitude"
         ]
       },
       "StillNeeded": {

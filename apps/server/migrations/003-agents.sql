@@ -92,3 +92,12 @@ CREATE INDEX IF NOT EXISTS listings_property ON listings (property_id);
 -- confirmation would hand every listing a free fortnight of Verified and make
 -- the first confirmation the one nobody ever does.
 ALTER TABLE listings ADD COLUMN IF NOT EXISTS last_confirmed_at TIMESTAMPTZ;
+
+-- Where a property is.
+--
+-- `NUMERIC(9,6)` rather than `DOUBLE PRECISION`: six decimal places is about
+-- eleven centimetres, far finer than a phone's GPS, and an exact decimal type
+-- means a coordinate written is the coordinate read. PostGIS lands with search
+-- in phase 4; this is what `capture_on_site` needs to be answerable at all.
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS latitude NUMERIC(9,6);
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS longitude NUMERIC(9,6);
