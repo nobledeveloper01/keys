@@ -2,22 +2,19 @@ import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { attempt, client, type AgentProfile, type Listing } from '@keys/api';
-import { conditionPhrase, tierPhrase } from '@keys/domain';
+import { tierPhrase } from '@keys/domain';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import KeysCapture from '../native/NativeKeysCapture';
-import { captureFor, deviceIdFor } from '../state/capture';
 import { Button } from '../components/Button';
 import { Field } from '../components/Field';
 import { Glass } from '../components/Glass';
+import { PropertyRow } from '../components/PropertyRow';
 import { Text } from '../components/Text';
 import { Unready } from '../components/Unready';
 import { space } from '../design/tokens';
-import { useColours } from '../design/theme';
 import { useLanguage } from '../state/language';
 import { useSession } from '../state/session';
 import { useQuery } from '../state/server';
+import { PropertyScreen } from './PropertyScreen';
 
 /**
  * The agent's own screen.
@@ -53,6 +50,16 @@ export function AgentScreen({ baseUrl }: { baseUrl: string }) {
     setNotice(said);
     setNonce((n) => n + 1);
   }, []);
+
+  /*
+    Which property is open, and whether one is being added.
+
+    Two levels, not a router. There is a list and a thing in the list; phase 4
+    brings search results and listing pages, and that is when a back stack you
+    can push onto starts earning a dependency.
+  */
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const { query, refresh } = useQuery<{
     profile: AgentProfile;
@@ -94,6 +101,41 @@ export function AgentScreen({ baseUrl }: { baseUrl: string }) {
   }
 
   const answer = query.state === 'ready' ? query.value : null;
+  const open = answer?.listings.find((listing) => listing.id === openId) ?? null;
+
+  if (adding) {
+    return (
+      <AddProperty
+        baseUrl={baseUrl}
+        token={token}
+        onDone={(said) => {
+          setAdding(false);
+          again(said);
+        }}
+        onCancel={() => setAdding(false)}
+      />
+    );
+  }
+
+  if (open) {
+    return (
+      <PropertyScreen
+        baseUrl={baseUrl}
+        token={token}
+        listing={open}
+        onBack={() => setOpenId(null)}
+        onChanged={again}
+      />
+    );
+  }
+
+  /*
+    An id that no longer matches anything closes the screen rather than
+    showing nothing. A listing can vanish between renders — a reviewer
+    withdrew the agent's identity, or the session ended — and a detail screen
+    for something that is gone is a dead end with a back button.
+  */
+  if (openId !== null && answer !== null) setOpenId(null);
 
   return (
     <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
@@ -116,12 +158,10 @@ export function AgentScreen({ baseUrl }: { baseUrl: string }) {
             </Glass>
           )}
 
-          <AskALandlord baseUrl={baseUrl} token={token} onDone={again} />
-          <Listings
-            baseUrl={baseUrl}
-            token={token}
+          <Properties
             listings={answer.listings}
-            onDone={again}
+            onOpen={(listing) => setOpenId(listing.id)}
+            onAdd={() => setAdding(true)}
           />
 
           <View style={styles.out}>
@@ -247,26 +287,110 @@ function Standing({ profile }: { profile: AgentProfile }) {
   );
 }
 
-function AskALandlord({
+/**
+ * The properties, as a list you can scan.
+ *
+ * This was every action for every listing rendered inline — three properties
+ * meant fifteen buttons in one scroll, and no way to tell at a glance which
+ * one needed attention. A row now says what it is, where it is, and where it
+ * stands; everything you can do to it is on its own screen.
+ */
+function Properties({
+  listings,
+  onOpen,
+  onAdd,
+}: {
+  listings: Listing[];
+  onOpen: (listing: Listing) => void;
+  onAdd: () => void;
+}) {
+  const { t } = useLanguage();
+
+  return (
+    <View style={styles.section}>
+      <Text variant="title">{t('your_properties')}</Text>
+
+      {listings.length === 0 ? (
+        <Text variant="body" tone="secondary" style={styles.row}>
+          {t('no_properties_yet')}
+        </Text>
+      ) : (
+        <View style={styles.rows}>
+          {listings.map((listing) => {
+            const left = listing.stillNeeded.length;
+            /*
+              One short status, not a sentence.
+
+              Published and complete is the only "Verified"; published with
+              work outstanding says how much, because that is the number an
+              agent can act on. A draft says draft, because whether it is
+              public is the first thing they want to know.
+            */
+            const status =
+              listing.publishedAt === null
+                ? t('a_draft')
+                : left === 0
+                  ? t('is_verified')
+                  : `${left} ${t('steps_left')}`;
+            const tone =
+              listing.publishedAt === null
+                ? ('quiet' as const)
+                : left === 0
+                  ? ('clear' as const)
+                  : ('caution' as const);
+
+            return (
+              <PropertyRow
+                key={listing.id}
+                title={listing.title}
+                address={listing.propertyId}
+                status={status}
+                tone={tone}
+                onPress={() => onOpen(listing)}
+              />
+            );
+          })}
+        </View>
+      )}
+
+      <Button label={t('add_a_property')} onPress={onAdd} />
+    </View>
+  );
+}
+
+/**
+ * Adding a property, behind a button rather than always on the screen.
+ *
+ * The draft form used to sit permanently open under the listings — two empty
+ * fields and a disabled button at the bottom of every visit, whether or not
+ * anybody was adding anything.
+ */
+function AddProperty({
   baseUrl,
   token,
   onDone,
+  onCancel,
 }: {
   baseUrl: string;
   token: string;
   onDone: (said: string) => void;
+  onCancel: () => void;
 }) {
   const { t } = useLanguage();
+  const [title, setTitle] = useState('');
   const [propertyId, setPropertyId] = useState('');
-  const [landlordPhone, setLandlordPhone] = useState('');
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
 
   return (
-    <View style={styles.section}>
-      <Text variant="title">{t('ask_a_landlord')}</Text>
+    <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+      <Button label={t('go_back')} onPress={onCancel} quiet />
+
+      <Text variant="headline" style={styles.title}>
+        {t('add_a_property')}
+      </Text>
       <Text variant="body" tone="secondary" style={styles.row}>
-        {t('ask_a_landlord_help')}
+        {t('add_property_help')}
       </Text>
 
       {problem !== null && (
@@ -275,324 +399,37 @@ function AskALandlord({
         </Text>
       )}
 
+      <Field label={t('what_you_are_letting')} value={title} onChange={setTitle} />
       <Field label={t('which_property')} value={propertyId} onChange={setPropertyId} />
-      <Field
-        label={t('landlord_number')}
-        value={landlordPhone}
-        onChange={setLandlordPhone}
-        keyboard="phone-pad"
-      />
 
       <Button
-        label={t('ask_them')}
-        disabled={busy || propertyId.trim().length < 3 || landlordPhone.trim().length < 7}
+        label={t('save_draft')}
+        disabled={busy || title.trim().length < 3 || propertyId.trim().length < 3}
         onPress={() => {
           setBusy(true);
           setProblem(null);
           void attempt(() =>
-            client({ baseUrl, agentToken: token }).agent.askLandlord(
-              propertyId.trim(),
-              landlordPhone.trim(),
-            ),
+            client({ baseUrl, agentToken: token }).agent.draft(propertyId.trim(), title.trim()),
           ).then((result) => {
             setBusy(false);
-            if (result.ok) {
-              setPropertyId('');
-              setLandlordPhone('');
-              onDone(t('text_queued'));
-            } else {
+            if (result.ok) onDone(t('drafted'));
+            else
               setProblem(
                 result.failure.kind === 'refused'
                   ? result.failure.detail
                   : t('no_signal_saved_here'),
               );
-            }
           });
         }}
       />
-    </View>
-  );
-}
-
-function Listings({
-  baseUrl,
-  token,
-  listings,
-  onDone,
-}: {
-  baseUrl: string;
-  token: string;
-  listings: Listing[];
-  onDone: (said: string) => void;
-}) {
-  const { t } = useLanguage();
-  const colours = useColours();
-  const [title, setTitle] = useState('');
-  const [propertyId, setPropertyId] = useState('');
-  const [busy, setBusy] = useState<string | null>(null);
-  const [problem, setProblem] = useState<string | null>(null);
-
-  function refuse(detail: string | null) {
-    setProblem(detail ?? t('no_signal_saved_here'));
-  }
-
-  /**
-   * The device id, fetched once and remembered.
-   *
-   * Registration is idempotent on this phone's key, so asking again is safe —
-   * but it is a round trip an agent standing in a flat on a bad connection
-   * should not pay for every photograph.
-   */
-  async function device(): Promise<string | null> {
-    const remembered = await AsyncStorage.getItem('keys.device.id').catch(() => null);
-    const answer = await deviceIdFor(baseUrl, token, remembered);
-    if ('why' in answer) {
-      refuse(answer.why);
-      return null;
-    }
-    if (!remembered) await AsyncStorage.setItem('keys.device.id', answer.deviceId).catch(() => {});
-    return answer.deviceId;
-  }
-
-  return (
-    <View style={styles.section}>
-      <Text variant="title">{t('your_listings')}</Text>
-
-      {problem !== null && (
-        <Text variant="body" tone="alarm" accessibilityRole="alert" style={styles.row}>
-          {problem}
-        </Text>
-      )}
-
-      {listings.length === 0 && (
-        <Text variant="body" tone="secondary" style={styles.row}>
-          {t('no_listings_yet')}
-        </Text>
-      )}
-
-      {listings.map((listing) => {
-        /*
-          Publication and the badge are different questions.
-
-          Two of the seven conditions gate publishing at all — a live ID check
-          and a landlord confirmation on this property. The other five gate the
-          Verified badge, and a listing can be public without it. Offering a
-          button the server will refuse makes a working product look broken.
-        */
-        const cannotPublish = listing.stillNeeded.some(
-          (n) => n.condition === 'agent_identity' || n.condition === 'landlord_authority',
-        );
-
-        return (
-          <Glass key={listing.id} style={styles.card}>
-            <Text variant="title">{listing.title}</Text>
-            <Text variant="label" tone="secondary" style={styles.row}>
-              {listing.propertyId}
-            </Text>
-
-            {listing.stillNeeded.length === 0 ? (
-              <Text variant="body" tone="clear" style={styles.row}>
-                {t('listing_verified')}
-              </Text>
-            ) : (
-              <>
-                <Text variant="label" tone="secondary" style={styles.row}>
-                  {t('not_verified_yet')}
-                </Text>
-                {listing.stillNeeded.map((needed) => (
-                  <Text key={needed.condition} variant="body" style={styles.needed}>
-                    {`·  ${t(conditionPhrase(needed.condition))}`}
-                  </Text>
-                ))}
-              </>
-            )}
-
-            {/*
-              The confirmation, on published listings only.
-
-              A draft nobody can see does not go stale, and asking an agent to
-              keep confirming something private is asking for a habit they will
-              form and then apply without reading — which is exactly what makes
-              a confirmation worthless.
-            */}
-            {/*
-              Placing comes before photographing, and the screen says so.
-
-              A capture taken against a listing with no coordinates is a real
-              photograph that proves nothing about where, and an agent who
-              takes six of them before finding that out has walked a flat for
-              nothing. The camera buttons do not appear until the property has
-              a location.
-            */}
-            {!listing.placed ? (
-              <>
-                <Text variant="body" tone="secondary" style={styles.row}>
-                  {t('mark_where_this_is_help')}
-                </Text>
-                <Button
-                  label={t('mark_where_this_is')}
-                  disabled={busy === `place-${listing.id}`}
-                  onPress={() => {
-                    setBusy(`place-${listing.id}`);
-                    setProblem(null);
-                    void (async () => {
-                      try {
-                        const here = await KeysCapture.whereAmI();
-                        const result = await attempt(() =>
-                          client({ baseUrl, agentToken: token }).agent.place(
-                            listing.id,
-                            here.latitude,
-                            here.longitude,
-                          ),
-                        );
-                        setBusy(null);
-                        if (result.ok) onDone(t('property_placed'));
-                        else
-                          refuse(
-                            result.failure.kind === 'refused' ? result.failure.detail : null,
-                          );
-                      } catch (error) {
-                        setBusy(null);
-                        refuse(error instanceof Error ? error.message : null);
-                      }
-                    })();
-                  }}
-                />
-              </>
-            ) : (
-              <>
-                <Button
-                  label={t('take_a_photo')}
-                  quiet
-                  disabled={busy === `photo-${listing.id}`}
-                  onPress={() => {
-                    setBusy(`photo-${listing.id}`);
-                    setProblem(null);
-                    void (async () => {
-                      const id = await device();
-                      if (id === null) {
-                        setBusy(null);
-                        return;
-                      }
-                      const result = await captureFor(baseUrl, token, listing.id, 'photo', id);
-                      setBusy(null);
-                      if (result.ok) onDone(t('capture_accepted'));
-                      else refuse(result.why);
-                    })();
-                  }}
-                />
-                <Button
-                  label={t('record_a_walkthrough')}
-                  quiet
-                  disabled={busy === `video-${listing.id}`}
-                  onPress={() => {
-                    setBusy(`video-${listing.id}`);
-                    setProblem(null);
-                    void (async () => {
-                      const id = await device();
-                      if (id === null) {
-                        setBusy(null);
-                        return;
-                      }
-                      const result = await captureFor(baseUrl, token, listing.id, 'video', id);
-                      setBusy(null);
-                      if (result.ok) onDone(t('capture_accepted'));
-                      else refuse(result.why);
-                    })();
-                  }}
-                />
-              </>
-            )}
-
-            {listing.publishedAt !== null && (
-              <>
-                <Text variant="label" tone="secondary" style={styles.row}>
-                  {t('confirm_every_fortnight')}
-                </Text>
-                <Button
-                  label={t('still_available')}
-                  disabled={busy === `confirm-${listing.id}`}
-                  onPress={() => {
-                    setBusy(`confirm-${listing.id}`);
-                    setProblem(null);
-                    void attempt(() =>
-                      client({ baseUrl, agentToken: token }).agent.confirmStillAvailable(
-                        listing.id,
-                      ),
-                    ).then((result) => {
-                      setBusy(null);
-                      if (result.ok) onDone(t('confirmed_today'));
-                      else
-                        refuse(
-                          result.failure.kind === 'refused' ? result.failure.detail : null,
-                        );
-                    });
-                  }}
-                />
-              </>
-            )}
-
-            {listing.publishedAt === null ? (
-              <>
-                <Text variant="label" tone="secondary" style={styles.row}>
-                  {t('draft_private')}
-                </Text>
-                <Button
-                  label={t('publish_listing')}
-                  disabled={busy === listing.id || cannotPublish}
-                  onPress={() => {
-                    setBusy(listing.id);
-                    setProblem(null);
-                    void attempt(() =>
-                      client({ baseUrl, agentToken: token }).agent.publish(listing.id),
-                    ).then((result) => {
-                      setBusy(null);
-                      if (result.ok) onDone(t('published_now'));
-                      else refuse(result.failure.kind === 'refused' ? result.failure.detail : null);
-                    });
-                  }}
-                />
-              </>
-            ) : (
-              <Text variant="body" style={[styles.row, { color: colours.clear }]}>
-                {t('published_now')}
-              </Text>
-            )}
-          </Glass>
-        );
-      })}
-
-      <Text variant="title" style={styles.section}>
-        {t('draft_another')}
-      </Text>
-      <Field label={t('what_you_are_letting')} value={title} onChange={setTitle} />
-      <Field label={t('which_property')} value={propertyId} onChange={setPropertyId} />
-      <Button
-        label={t('save_draft')}
-        disabled={busy === 'draft' || title.trim().length < 3 || propertyId.trim().length < 3}
-        onPress={() => {
-          setBusy('draft');
-          setProblem(null);
-          void attempt(() =>
-            client({ baseUrl, agentToken: token }).agent.draft(propertyId.trim(), title.trim()),
-          ).then((result) => {
-            setBusy(null);
-            if (result.ok) {
-              setTitle('');
-              setPropertyId('');
-              onDone(t('drafted'));
-            } else {
-              refuse(result.failure.kind === 'refused' ? result.failure.detail : null);
-            }
-          });
-        }}
-      />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   page: { padding: space.lg, paddingTop: space.xl, gap: space.sm, flexGrow: 1 },
+  rows: { marginTop: space.md },
+  title: { marginTop: space.md },
   lede: { marginTop: space.sm, marginBottom: space.md },
   card: { marginTop: space.md },
   section: { marginTop: space.xl },

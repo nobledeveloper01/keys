@@ -41,6 +41,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **The agent's account is a list of properties, not a wall of forms.** It was
+  one endless scroll: standing, a landlord form, every listing, a draft form,
+  and sign-out, with every form permanently open. Now it is your standing, your
+  properties as rows you can scan, and one button. Each property has its own
+  screen with a checklist — seven short rows, ticked or not, with the
+  instruction only on the one you can do next — and the actions for that
+  property in the order they have to happen.
 - **Agents photograph a listing from their own screen.** Mark where the
   property is while standing at it — recorded once, and not movable, because
   moving it would change what every photo already taken there proves — then

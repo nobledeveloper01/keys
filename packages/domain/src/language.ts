@@ -178,7 +178,25 @@ export type Phrase =
   | 'take_a_photo'
   | 'record_a_walkthrough'
   | 'capture_accepted'
-  | 'place_it_first';
+  | 'place_it_first'
+  | 'your_properties'
+  | 'add_a_property'
+  | 'no_properties_yet'
+  | 'a_draft'
+  | 'is_verified'
+  | 'steps_left'
+  | 'all_steps_done'
+  | 'back_to_properties'
+  | 'what_this_property_needs'
+  | 'this_property'
+  | 'add_property_help'
+  | 'step_agent_identity'
+  | 'step_landlord_authority'
+  | 'step_capture_on_site'
+  | 'step_walkthrough_video'
+  | 'step_not_a_known_duplicate'
+  | 'step_recently_confirmed'
+  | 'step_nothing_upheld';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -280,6 +298,24 @@ export const EN: Readonly<Record<Phrase, string>> = {
   record_a_walkthrough: "Record a walkthrough here",
   capture_accepted: "Accepted.",
   place_it_first: "Mark where the property is first, or photos cannot prove where they were taken.",
+  your_properties: "Your properties",
+  add_a_property: "Add a property",
+  no_properties_yet: "No properties yet. Add one, then mark where it is and photograph it.",
+  a_draft: "Draft",
+  is_verified: "Verified",
+  steps_left: "left to do",
+  all_steps_done: "Everything done",
+  back_to_properties: "Your properties",
+  what_this_property_needs: "What this property needs",
+  this_property: "This property",
+  add_property_help: "One property at a time. You can draft it anywhere; the rest has to be done standing at it.",
+  step_agent_identity: "ID check",
+  step_landlord_authority: "Landlord confirmation",
+  step_capture_on_site: "Photo at the property",
+  step_walkthrough_video: "Walkthrough video",
+  step_not_a_known_duplicate: "Your own images",
+  step_recently_confirmed: "Confirmed available",
+  step_nothing_upheld: "No upheld reports",
   which_number_reported: "The number you are reporting",
   what_kind: "What kind of thing was it?",
   what_happened: "What happened",
@@ -414,6 +450,24 @@ export const HA: Readonly<Record<Phrase, string>> = {
   record_a_walkthrough: "Ɗauki bidiyon zagayawa a nan",
   capture_accepted: "An karɓa.",
   place_it_first: "Ka fara yin alama inda wurin yake, in ba haka ba hotuna ba za su tabbatar da inda aka ɗauke su ba.",
+  your_properties: "Wuraren ka",
+  add_a_property: "Ƙara wuri",
+  no_properties_yet: "Babu wurare tukuna. Ƙara ɗaya, sannan ka yi alama inda yake ka ɗauki hoto.",
+  a_draft: "Shiri",
+  is_verified: "An tabbatar",
+  steps_left: "sun rage",
+  all_steps_done: "An gama komai",
+  back_to_properties: "Wuraren ka",
+  what_this_property_needs: "Abin da wannan wurin ke buƙata",
+  this_property: "Wannan wurin",
+  add_property_help: "Wuri ɗaya a lokaci ɗaya. Za ka iya shirya shi ko'ina; sauran dole ka yi shi kana tsaye a wurin.",
+  step_agent_identity: "Duba katin shaida",
+  step_landlord_authority: "Tabbatarwar mai gida",
+  step_capture_on_site: "Hoto a wurin",
+  step_walkthrough_video: "Bidiyon zagayawa",
+  step_not_a_known_duplicate: "Hotunanka na kanka",
+  step_recently_confirmed: "An tabbatar yana nan",
+  step_nothing_upheld: "Babu rahoton da aka tabbatar",
   which_number_reported: "Lambar da kake ba da rahoton ta",
   what_kind: "Wane irin abu ne?",
   what_happened: "Me ya faru",
@@ -548,6 +602,24 @@ export const YO: Readonly<Record<Phrase, string>> = {
   record_a_walkthrough: "Ya fídíò ìrìn àyíká níbí",
   capture_accepted: "A ti gbà á.",
   place_it_first: "Sàmi ibi tí ilé náà wà ní àkọ́kọ́, bí bẹ́ẹ̀ kọ́ àwọn fọ́tò kò lè fi ibi tí a ti yà wọ́n hàn.",
+  your_properties: "Àwọn ilé rẹ",
+  add_a_property: "Fi ilé kún un",
+  no_properties_yet: "Kò sí ilé kankan síbẹ̀. Fi ọ̀kan kún un, kí o sàmi ibi tí ó wà kí o sì ya fọ́tò rẹ̀.",
+  a_draft: "Àkọsílẹ̀",
+  is_verified: "A ti fọwọ́ sí i",
+  steps_left: "ó ṣẹ́kù",
+  all_steps_done: "Gbogbo rẹ̀ ti parí",
+  back_to_properties: "Àwọn ilé rẹ",
+  what_this_property_needs: "Ohun tí ilé yìí nílò",
+  this_property: "Ilé yìí",
+  add_property_help: "Ilé kan lẹ́ẹ̀kan. O lè kọ ọ́ sílẹ̀ níbikíbi; ìyókù gbọ́dọ̀ ṣe nígbà tí o dúró níbẹ̀.",
+  step_agent_identity: "Ìṣàyẹ̀wò káàdì ìdánimọ̀",
+  step_landlord_authority: "Ìfọwọ́sí onílé",
+  step_capture_on_site: "Fọ́tò ní ibẹ̀",
+  step_walkthrough_video: "Fídíò ìrìn àyíká",
+  step_not_a_known_duplicate: "Àwọn àwòrán tìrẹ",
+  step_recently_confirmed: "A fọwọ́ sí i pé ó ṣì wà",
+  step_nothing_upheld: "Kò sí ẹ̀sùn tí a gbà",
   which_number_reported: "Nọ́mbà tí ò ń ròyìn",
   what_kind: "Irú ohun wo ni?",
   what_happened: "Ohun tí ó ṣẹlẹ̀",
@@ -682,6 +754,24 @@ export const IG: Readonly<Record<Phrase, string>> = {
   record_a_walkthrough: "Dekọọ vidiyo njegharị ebe a",
   capture_accepted: "Anabatala ya.",
   place_it_first: "Buru ụzọ debe ebe ụlọ ahụ dị, ma ọ bụghị ya foto agaghị egosi ebe e sere ha.",
+  your_properties: "Ụlọ gị",
+  add_a_property: "Tinye ụlọ",
+  no_properties_yet: "Enweghị ụlọ ugbu a. Tinye otu, wee debe ebe ọ dị ma sere ya foto.",
+  a_draft: "Ederede",
+  is_verified: "Akwadoro ya",
+  steps_left: "fọdụrụ",
+  all_steps_done: "Emechaala ihe niile",
+  back_to_properties: "Ụlọ gị",
+  what_this_property_needs: "Ihe ụlọ a chọrọ",
+  this_property: "Ụlọ a",
+  add_property_help: "Otu ụlọ n'otu oge. Ị nwere ike ide ya ebe ọ bụla; ihe fọdụrụ ka a ga-eme ka ị guzo na ya.",
+  step_agent_identity: "Nyocha kaadị njirimara",
+  step_landlord_authority: "Nkwado onye nwe ụlọ",
+  step_capture_on_site: "Foto n'ebe ahụ",
+  step_walkthrough_video: "Vidiyo njegharị",
+  step_not_a_known_duplicate: "Foto nke gị",
+  step_recently_confirmed: "Akwadoro na ọ ka dị",
+  step_nothing_upheld: "Ọ dịghị mkpesa akwadoro",
   which_number_reported: "Nọmba ị na-akọ",
   what_kind: "Ụdị ihe dị aṅaa ka ọ bụ?",
   what_happened: "Ihe merenụ",
@@ -772,6 +862,27 @@ export function tierPhrase(tier: string): Phrase {
  */
 export function conditionPhrase(condition: string): Phrase {
   return `condition_${condition}` as Phrase;
+}
+
+/**
+ * The condition as a checklist row: a noun, true whether it is met or not.
+ *
+ * `conditionPhrase` is an instruction — *take a photo standing at the
+ * property* — which is the right words for something outstanding and the
+ * wrong words for something done. A checklist that ticked the instruction read
+ * as "✓ one of these images is already on a listing we blocked", which is a
+ * solved problem stated as a live one.
+ *
+ * Writing a second, past-tense set was the obvious fix and the wrong one:
+ * "Your ID is checked" is a lie on an unticked row, so it would have needed a
+ * *third* set for the unmet case. A noun phrase — "ID check" — is true in both
+ * states, which is why checklists are written that way.
+ *
+ * Short on purpose. Six paragraphs is not a checklist; the instruction earns
+ * its length only on the one step that is next.
+ */
+export function conditionStepPhrase(condition: string): Phrase {
+  return `step_${condition}` as Phrase;
 }
 
 export function isLanguage(value: unknown): value is Language {

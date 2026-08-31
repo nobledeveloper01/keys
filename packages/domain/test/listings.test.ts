@@ -2,7 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { TIERS } from '../src/agents.ts';
-import { EN, conditionPhrase, say } from '../src/language.ts';
+import { EN, conditionStepPhrase, conditionPhrase, say } from '../src/language.ts';
 import {
   CAPTURE_RADIUS_M,
   CONFIRMATION_DAYS,
@@ -206,8 +206,14 @@ describe('the server and the phone describe the same conditions', () => {
       VERIFIED_CONDITIONS.map((c) => `condition_${c}`).sort(),
     );
 
+    // And the checklist half, which is a second set that has to stay in step.
+    const rows = Object.keys(EN).filter((key) => key.startsWith('step_'));
+    assert.deepEqual(rows.sort(), VERIFIED_CONDITIONS.map((c) => `step_${c}`).sort());
+
     for (const condition of VERIFIED_CONDITIONS) {
       assert.equal(conditionPhrase(condition), `condition_${condition}`);
+      assert.equal(conditionStepPhrase(condition), `step_${condition}`);
+      assert.equal(typeof say('en', conditionStepPhrase(condition)), 'string');
       // And the phrase resolves — `say` throws or returns undefined for a key
       // no table holds, which is the failure this is standing in front of.
       assert.equal(typeof say('en', conditionPhrase(condition)), 'string');
