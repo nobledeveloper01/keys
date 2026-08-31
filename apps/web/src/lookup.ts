@@ -7,7 +7,7 @@ import { client, type Lookup } from '@keys/api';
  * from the environment of the process actually serving, not baked in at build
  * time by whichever machine ran `next build`.
  */
-export function api() {
+export function api(options: { agentToken?: string } = {}) {
   const baseUrl = process.env.KEYS_API_URL;
   if (!baseUrl) {
     throw new Error(
@@ -15,7 +15,9 @@ export function api() {
         'a production build silently pointing at a developer machine is worse than one that will not start.',
     );
   }
-  return client({ baseUrl });
+  // The agent's token arrives from an httpOnly cookie read in a route handler,
+  // never from a page. Nothing that runs in a browser can construct this.
+  return client({ baseUrl, ...options });
 }
 
 export type { Lookup };

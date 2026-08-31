@@ -35,6 +35,10 @@ export type SubmitReply =
   paths['/v1/registry/reply']['post']['requestBody']['content']['application/json'];
 export type AgentProfile =
   paths['/v1/agents']['get']['responses'][200]['content']['application/json'];
+export type SignedUp =
+  paths['/v1/agents']['post']['responses'][201]['content']['application/json'];
+export type Listing =
+  paths['/v1/agents/me/listings']['post']['responses'][201]['content']['application/json'];
 export type ChallengeAnswered =
   paths['/v1/authority/confirm']['post']['responses'][200]['content']['application/json'];
 export type ChallengeOpened =
@@ -129,6 +133,12 @@ export interface ClientOptions {
   readonly baseUrl: string;
   /** Present only in the review console. Absent everywhere else, by construction. */
   readonly reviewerToken?: string;
+  /**
+   * The agent's own session. Present only on the agent surface's server side —
+   * it is read out of an httpOnly cookie by a proxy, so no browser this token
+   * belongs to can read it.
+   */
+  readonly agentToken?: string;
   readonly fetch?: typeof globalThis.fetch;
 }
 
@@ -147,6 +157,7 @@ async function send<T>(
     headers: {
       ...(init.body ? { 'content-type': 'application/json' } : {}),
       ...(options.reviewerToken ? { 'x-reviewer-token': options.reviewerToken } : {}),
+      ...(options.agentToken ? { 'x-agent-token': options.agentToken } : {}),
     },
     ...(init.body ? { body: JSON.stringify(init.body) } : {}),
   });
@@ -193,6 +204,35 @@ export function client(options: ClientOptions) {
      */
     agentByPhone: (phone: string) =>
       send<AgentProfile>(options, 'GET', '/v1/agents', { query: { phone } }),
+
+    /**
+     * The agent's own calls.
+     *
+     * `signUp` is the only one reachable without a token, and it verifies
+     * nothing — an account is a name and a phone number until a vendor has
+     * checked an ID and a landlord has confirmed a property.
+     */
+    signUp: (displayName: string, phone: string) =>
+      send<SignedUp>(options, 'POST', '/v1/agents', { body: { displayName, phone } }),
+
+    agent: {
+      me: () => send<AgentProfile>(options, 'GET', '/v1/agents/me'),
+
+      askLandlord: (propertyId: string, landlordPhone: string) =>
+        send<ChallengeOpened>(options, 'POST', '/v1/agents/me/authority', {
+          body: { propertyId, landlordPhone },
+        }),
+
+      draft: (propertyId: string, title: string) =>
+        send<Listing>(options, 'POST', '/v1/agents/me/listings', {
+          body: { propertyId, title },
+        }),
+
+      publish: (id: string) =>
+        send<Listing>(options, 'POST', `/v1/agents/me/listings/${id}/publish`),
+
+      listings: () => send<Listing[]>(options, 'GET', '/v1/agents/me/listings'),
+    },
 
     /** The landlord's two calls. No account, by design — see the controller. */
     confirmAuthority: (challengeId: string, code: string) =>

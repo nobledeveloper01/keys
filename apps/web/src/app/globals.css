@@ -578,6 +578,61 @@ button:disabled {
   font-weight: 600;
 }
 
+/*
+  Something worked. Green, but not the verdict's green — a confirmation of an
+  action is not a finding about a number, and using the same treatment for both
+  would make "we sent a text" look like an all-clear.
+*/
+.notice {
+  color: var(--clear);
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+
+/* --- the agent's own page ------------------------------------------------ */
+
+.listings {
+  list-style: none;
+  margin: var(--s-4) 0;
+  padding: 0;
+}
+.listings li {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--s-4) var(--s-5);
+  margin-bottom: var(--s-3);
+  background: var(--surface-raised);
+}
+.listings li p {
+  margin: 0 0 var(--s-1);
+}
+.listings li button {
+  margin-top: var(--s-3);
+}
+
+/*
+  A button that reads as a link.
+
+  It is a `button` because it performs an action — signing out is a POST, not a
+  destination — and making it look like a link is honest about its weight
+  rather than about its mechanism. Keeps the keyboard and screen-reader
+  behaviour of the element that is actually correct.
+*/
+.linkish {
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 0;
+  color: var(--ink-quiet);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  box-shadow: none;
+}
+.linkish:hover {
+  color: var(--ink);
+}
+
 /* --- queue -------------------------------------------------------------- */
 
 .queue-item {

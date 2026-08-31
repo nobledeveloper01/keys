@@ -419,6 +419,33 @@
         ]
       }
     },
+    "/v1/agents/me": {
+      "get": {
+        "operationId": "AgentsController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Your own standing, computed from your evidence.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
     "/v1/agents/{id}": {
       "get": {
         "operationId": "AgentsController_publicProfile",

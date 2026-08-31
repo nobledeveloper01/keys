@@ -146,6 +146,21 @@ export class AgentsController {
     return answer;
   }
 
+  /*
+    Declared before `:id`, and that ordering is the whole reason this comment
+    exists. Nest matches routes in declaration order, so a `:id` handler above
+    this one would answer `/v1/agents/me` by looking for an agent whose id is
+    the string "me" — a 404 that looks like a broken session.
+  */
+  @Get('me')
+  @UseGuards(AgentGuard)
+  @ApiSecurity('agent-token')
+  @ApiOperation({ summary: 'Your own standing, computed from your evidence.' })
+  @ApiOkResponse({ type: AgentProfileResponse })
+  async me(@Req() request: RequestWithAgent) {
+    return this.profile(request.agent!, new Date());
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'What is publicly known about an agent. No account required.',

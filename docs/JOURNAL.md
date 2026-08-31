@@ -6,6 +6,76 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — A flow nobody could complete
+
+**Did.** The landlord's page, the agent's page, and the whole loop driven end
+to end in a browser: sign up, ID check, ask a landlord, landlord confirms,
+draft, publish, withdraw, and the listing goes dark.
+
+### What surprised us
+
+**The co-verification flow had been complete and unreachable.** The routes were
+built, the domain rules were right, the exit gate was green — and there was no
+page anywhere in the product where a landlord could type six digits. A human
+could not have completed a single confirmation. Everything above it in the
+ladder was therefore theoretical.
+
+**Building the page found a hole in the route it called.** `POST
+/v1/authority/withdrawal` took the landlord's phone number in the request body.
+It is an unauthenticated route by design — a landlord has no account, and
+requiring them to prove who they are before they may ask to prove who they are
+is circular — so anybody with the link could ask for the code to be sent to
+*their own* number and revoke somebody else's authority. The route was a
+revocation endpoint with a confirmation step that confirmed nothing. It takes no
+phone number now; the code goes to the number already on the record, which is
+the only number with any standing. The gate walks that too, and it fails when
+the old behaviour is put back.
+
+**The page thanked a landlord for confirming an agent they had just
+withdrawn.** One code answers both a grant and a withdrawal — the right design,
+same six digits, same screen — and the response did not say which it had done,
+so the page guessed from the listing count. A withdrawal that unpublished
+nothing took the "thank you for confirming" branch. The server says now.
+
+**The input was a raw browser control on a dark page.** `input[type='text']`
+does not match `<input id="code">`, because `text` is the default *behaviour*
+and not a default attribute. Second time this exact shape has bitten — the
+first was a `display` rule that missed a bare `form` tag. The selector is now
+"every input that is not one of the few that are something else".
+
+**And the masthead was recruiting again.** The journal records fixing this for
+`/reply`: the only thing in the header is *Report a number*, and offering it to
+somebody who has just been accused is an invitation to retaliate. The fix was
+`path !== '/reply'`, so the landlord page walked straight into it on the day it
+was written. It is a named list now — `ARRIVED_FROM_A_TEXT_WE_SENT` — because
+the next capability page will otherwise do the same thing.
+
+### A decision worth recording
+
+**The agent's session never reaches the browser.** Sign-up returns a token once.
+The obvious move is `localStorage`; that puts a bearer token for somebody's
+livelihood where any script on the origin can read it. It is set as an httpOnly
+cookie by a route handler instead, and every agent action goes through that
+handler. `document.cookie` returns an empty string on the agent page, which is
+the point.
+
+**And there is a development SMS sink, guarded twice.** Without a provider,
+nobody — including us — could exercise a landlord confirmation, so the code goes
+to the server's own log when `KEYS_SMS_LOG=1` *and* `NODE_ENV` is not
+production. It never goes into a response body: that shortcut would turn every
+landlord confirmation into a self-confirmation permanently, for real users. A
+one-time code in a log is a real risk, so it is paid only on a machine somebody
+is sitting at.
+
+### Still open
+
+An agent at `unverified` cannot advance, because no KYC vendor has been chosen.
+The page says so plainly rather than offering them a step that cannot help —
+sending somebody to spend a landlord's goodwill on a rung that changes nothing
+is worse than telling them to wait.
+
+---
+
 ## 2026-08-31 — The gate that finds dead code was dead
 
 **Did.** Phase 2's tier ladder, landlord co-verification by one-time code, and
