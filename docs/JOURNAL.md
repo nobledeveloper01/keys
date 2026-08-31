@@ -6,6 +6,108 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — The gate that finds dead code was dead
+
+**Did.** Phase 2's tier ladder, landlord co-verification by one-time code, and
+the revocation cascade — domain rules, both stores, the routes, and an exit
+gate that walks every route in the running router trying to raise a tier.
+
+### What surprised us
+
+**`wired-check` — the gate whose entire job is finding code nothing calls —
+had a rule that called nothing.** Rule 2 looks for methods on the API client
+that no screen ever calls. It was pointed at `apps/mobile/src/api/client.ts`, a
+path from the previous project. There is no such file here. It returned an
+empty list on every run for a whole phase.
+
+The moment it was repointed at `packages/api` it found three: `review.one`,
+`review.decide`, and the `agentByPhone` written twenty minutes earlier. The
+first two had been dead since the review console was built, because the console
+reaches the API through a same-origin proxy — it cannot call the generated
+client at all, so it hand-wrote the paths, and the client's `review.*` methods
+were never going to have a caller.
+
+**This is the sixth instance of ADR-0004, and ADR-0004's own remedy missed
+it.** `scanned_nothing()` was written after the last two, precisely so a rule
+whose root had moved would fail loudly. It checked three roots — the app, the
+server, the domain — and not the one belonging to the rule that was broken. A
+liveness check that does not cover every rule is a liveness check that tells
+you the rules it happens to know about are alive.
+
+**Then wiring the types found the next one down.** The console had hand-written
+copies of the server's response shapes. Replacing them with the generated ones
+would not compile: `ThroughputResponse.decisions` was declared as an inline
+`Array<{ reviewer; action; count }>`, which Nest's reflector cannot see inside,
+so the OpenAPI document had been describing it as an array of *strings* since
+the day it was written. `api-fresh` was green throughout — it checks that the
+generated client matches the document, and both were wrong in the same way.
+Nothing consumed the generated type, so nothing ever disagreed with it. The
+hand-written copy in the console was right, which is exactly why the lie
+survived.
+
+### What we changed because of it
+
+- Rule 2 points at `packages/api` and matches the methods on the object
+  `client()` returns, nested groups included.
+- `scanned_nothing()` covers every root any rule reads, the web and the API
+  package included. `_unwired_under` searches the web too — a domain rule
+  applied only by the web surface would have been reported as dead.
+- Roughly 450 lines of C# reader — `cs_files`, `blank_literals`,
+  `public_methods`, `unwired_server_methods` — deleted. It had not run against
+  anything since the repository was created.
+- `ReviewerTally` is a real class, so the document describes the response.
+- The console imports `ReviewItem` and `ReviewMetrics` instead of retyping them.
+
+### Still open
+
+Phase 2's liveness and ID check is a TurboModule against a KYC vendor nobody
+has picked. Everything above it is built and gated; the bottom rung is a
+release gate, not a phase gate, and it is in the ledger.
+
+---
+
+## 2026-08-31 — A tier you can send is a tier you can choose
+
+**Did.** Wrote phase 2's exit gate before the code it guards, then built to it.
+
+### What surprised us
+
+**Breaking it on purpose caught two of three attacks and waved the third
+through.** The gate posts every tier-shaped field name — `tier`, `verified`,
+`trustLevel`, nested one and two deep — at every route in the running router,
+then checks the agent's profile. Deleting the revocation cascade failed it.
+Returning the landlord's code in a response failed it. Making the profile route
+echo back a `tier` the caller had sent **passed**, because the store was never
+touched and the final state was therefore correct.
+
+Every client on earth would have believed that response. Reflecting a tier is
+raising a tier as far as anybody reading the screen is concerned, and a gate
+that only inspects the database at the end cannot see it. The walk now checks
+what each route *says*, not only where the data ends up.
+
+**The same shape appeared again one test down.** *A withdrawn identity takes
+every listing down* stayed green with the Postgres cascade's `UPDATE` deleted —
+it asserted on `unpublishedListings` in the response, and `cascade()` still
+*named* the listings it intended to take down. The server was reporting its
+intention and the test was reading the report. It asks the store now.
+
+**And the fixture out-accumulated the rule.** After seven runs against the same
+test database, `a code cannot be spent twice` started failing — seven runs had
+created seven agents vouched for by the same landlord phone number, which is
+precisely what `MAX_AGENTS_PER_LANDLORD` exists to refuse. The rule was right
+and the fixture was growing. `TRUNCATE agents CASCADE` before the durable pass.
+
+### A hole the tests found in the rules
+
+`mayList` asked about authority and not about identity, so revoking a forged ID
+dropped the agent to `unverified` and left their listings published under a
+landlord confirmation from last month. The badge said nothing and the flat
+stayed on the market. The ladder is climbed in order, so it has to be descended
+in order: `mayList` now requires a live identity, and an identity revocation
+cascades across every property rather than none.
+
+---
+
 ## 2026-08-31 — The masthead was recruiting on the reply page
 
 **Did.** Report and reply, at 375 points wide, both flows driven end to end

@@ -68,3 +68,21 @@ whether a name appears anywhere but its own definition. An earlier draft walked
 the call graph and refused to count same-file callers, and it named the four
 live vocabulary tables as dead. It therefore misses two dead helpers that call
 each other, and that is the accepted price of never crying wolf.
+
+## Postscript, 2026-08-31 — the remedy had the defect
+
+This ADR's remedy was `scanned_nothing()`: a liveness check that fails when a
+root a rule reads has stopped existing. It was added to `wired-check.py` after
+the fourth and fifth instances.
+
+A sixth was found on 2026-08-31, in `wired-check.py`, by hand. Rule 2 pointed
+at `apps/mobile/src/api/client.ts` — a path from the previous project — and had
+returned an empty list on every run for a whole phase. `scanned_nothing()`
+covered the app, the server and the domain, and not the API package, which is
+the root the broken rule read.
+
+**A liveness check that does not enumerate every root every rule uses is itself
+a rule that cannot fail.** The check now derives its roots from the same
+constants the rules do. That is the specific correction; the general one is
+that "the guard is guarded" is a claim to be tested rather than a design to be
+admired, and the way to test it is to move a path and watch the build break.

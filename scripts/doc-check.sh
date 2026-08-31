@@ -181,7 +181,11 @@ if [ -f docs/JOURNAL.md ] && git rev-parse --git-dir >/dev/null 2>&1; then
   last_journal=$(git log -1 --format=%ct -- docs/JOURNAL.md 2>/dev/null || echo 0)
   last_code=$(git log -1 --format=%ct -- 'packages' 'apps' 2>/dev/null || echo 0)
   if [ "$last_code" -gt "$last_journal" ] 2>/dev/null; then
-    amber "code has moved since the last journal entry — make journal T=\"...\""
+    # Says what to do, not what a previous project's Makefile could do. This
+    # line named `make journal`, a target that does not exist here, so the one
+    # warning in this gate that asks for human judgement was also the one
+    # nobody could act on without first discovering it was wrong.
+    amber "code has moved since the last entry in docs/JOURNAL.md — add one and commit it after the code"
     warn=1
   fi
 fi
