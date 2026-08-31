@@ -653,12 +653,21 @@ export interface components {
             durationSeconds: number | null;
             /** @description Ed25519 over the canonical claim, base64. */
             signature: string;
+            /** @description The capture itself: a Keys greyscale grid, base64. Its SHA-256 must be the one inside the signature. */
+            pixels: string;
         };
         CaptureRefusedResponse: {
             accepted: boolean;
             refusals: ("unknown_device" | "not_this_agents_device" | "bad_signature" | "bytes_do_not_match" | "replayed" | "stale" | "from_the_future" | "mock_location")[];
             /** @description One sentence per refusal, written for the agent. */
             meaning: string[];
+            /**
+             * @description Never "blocked" here. A match opens a review; a person decides.
+             * @enum {string}
+             */
+            duplicates: "blocked" | "allowed" | "pending";
+            /** @description Listings this image resembles. */
+            looksLikeListings: string[];
         };
     };
     responses: never;

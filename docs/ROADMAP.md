@@ -188,6 +188,10 @@ none of them can wait for launch.*
    threshold of 10; the two most similar different rooms are 21 apart. Both margins are
    asserted, not just the pass.
 
+   **Wired into the capture route.** An accepted capture is hashed, matched against every
+   image Keys holds, and indexed — after acceptance, never before, so a refused upload
+   cannot poison the index. A listing is never matched against its own earlier photographs.
+
    **What it does not catch, written down rather than excused:** a horizontal flip, which
    inverts every column comparison. There is a test asserting it is missed, so the hole
    cannot be forgotten. Indexing both orientations doubles the index and is a decision to
@@ -204,9 +208,14 @@ none of them can wait for launch.*
    message, so a modified client cannot change any of them — signing as mocked and sending
    as real is refused as a bad signature rather than laundered.
 
+   The bytes are checked, not assumed: the SHA-256 inside the signature is verified against
+   the upload, so a genuine capture's paperwork cannot be attached to a stolen photograph.
+
    **Not yet:** the phone side. The key lives in the secure element and the TurboModule that
    generates it does not exist, so nothing signs anything outside the tests. The server will
    refuse everything until it does, which is the correct direction to be incomplete in.
+   Media arrives as a raw greyscale grid rather than a JPEG — the capture module will emit
+   one alongside the encoded file, which keeps a native image decoder out of the server.
 
 ## Phase 4 — Search & Discovery (Weeks 20–23)
 Postgres FTS + PostGIS search, filters with Verified defaulting on, map search, ranking in the

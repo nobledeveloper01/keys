@@ -179,9 +179,17 @@ def unwired_client_methods() -> list[str]:
     return found
 
 
+# `class` was missing, and a whole module walked through because of it.
+#
+# `packages/domain/src/hashing.ts` — the perceptual hashing, the BK-tree, the
+# duplicate policy — was written, tested against an adversarial corpus, and
+# called by nothing. This gate reported clean on every run, because its own
+# regex knew about `function` and `const` and not about `class`, and `HashIndex`
+# is a class. Seventh time a guard in this repository has been green over
+# unexamined code; see ADR 0004.
 DOMAIN_EXPORT_RE = re.compile(
     r'^export\s+(?:async\s+)?'
-    r'(?:function|const)\s+'
+    r'(?:function|const|class|abstract\s+class)\s+'
     r'([A-Za-z_][A-Za-z0-9_]*)',
     re.MULTILINE,
 )

@@ -1670,6 +1670,10 @@
           "signature": {
             "type": "string",
             "description": "Ed25519 over the canonical claim, base64."
+          },
+          "pixels": {
+            "type": "string",
+            "description": "The capture itself: a Keys greyscale grid, base64. Its SHA-256 must be the one inside the signature."
           }
         },
         "required": [
@@ -1683,7 +1687,8 @@
           "mockLocation",
           "kind",
           "durationSeconds",
-          "signature"
+          "signature",
+          "pixels"
         ]
       },
       "CaptureRefusedResponse": {
@@ -1714,12 +1719,30 @@
             "items": {
               "type": "string"
             }
+          },
+          "duplicates": {
+            "type": "string",
+            "enum": [
+              "blocked",
+              "allowed",
+              "pending"
+            ],
+            "description": "Never \"blocked\" here. A match opens a review; a person decides."
+          },
+          "looksLikeListings": {
+            "description": "Listings this image resembles.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "accepted",
           "refusals",
-          "meaning"
+          "meaning",
+          "duplicates",
+          "looksLikeListings"
         ]
       }
     }

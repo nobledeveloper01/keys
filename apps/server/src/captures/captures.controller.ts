@@ -1,4 +1,4 @@
-import { createPublicKey, verify } from 'node:crypto';
+import { createHash, createPublicKey, verify } from 'node:crypto';
 import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
@@ -11,11 +11,20 @@ import {
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
-import { claimMessage, refuseCapture, refusalMeans, type CaptureClaim } from '@keys/domain';
+import {
+  claimMessage,
+  refuseCapture,
+  refusalMeans,
+  verdictFor,
+  type CaptureClaim,
+  type Grey,
+  type Match,
+} from '@keys/domain';
 
 import { AgentGuard, type RequestWithAgent } from '../agents/agent.guard';
 import { CapturesStore } from './captures.store';
 import { CaptureBody, CaptureRefusedResponse, RegisterDeviceBody } from './captures.dto';
+import { NotAGrid, readGrid } from './pixels';
 
 /**
  * Verifies that a photograph came out of the Keys camera.
@@ -100,6 +109,30 @@ export class CapturesController {
     const device = await this.store.device(body?.deviceId ?? '');
 
     /*
+      The bytes, and whether they are the bytes that were signed.
+
+      This was `bytesMatch: true` with a comment saying object storage would
+      arrive later — which meant the signature covered a hash of *something*
+      and the server never checked that the something was what it received. A
+      capture is its bytes; taking the claim without them proves the agent once
+      held a photograph, not that this is it.
+    */
+    let image: Grey | null = null;
+    let bytesMatch = false;
+    if (typeof body?.pixels === 'string' && body.pixels.length > 0) {
+      const bytes = Buffer.from(body.pixels, 'base64');
+      bytesMatch = createHash('sha256').update(bytes).digest('hex') === claim.sha256;
+      try {
+        image = readGrid(bytes);
+      } catch (error) {
+        // A grid we cannot read is not a 500 — it is an upload that did not
+        // come from the Keys camera, which is what this route exists to refuse.
+        if (!(error instanceof NotAGrid)) throw error;
+        bytesMatch = false;
+      }
+    }
+
+    /*
       The nonce is claimed before anything is decided.
 
       Claiming it only on success would mean a capture that fails for any other
@@ -115,10 +148,7 @@ export class CapturesController {
         deviceKnown: device !== null,
         deviceBelongsToAgent: device?.agentId === agent.id,
         signatureValid: device !== null && this.signed(claim, device.publicKey, body?.signature),
-        // The bytes are not here. Object storage lands with the upload route;
-        // until then this asks whether the *claim* is signed, which is the
-        // property that keeps a gallery photo out.
-        bytesMatch: true,
+        bytesMatch,
         nonceSeen: !fresh,
       },
       now,
@@ -140,6 +170,18 @@ export class CapturesController {
       });
     }
 
+    /*
+      Indexed after it is accepted, never before.
+
+      A capture that fails verification must leave nothing behind. Indexing
+      first would let anybody with an agent token poison the duplicate index
+      with images they never had to prove they took — and every honest listing
+      that later matched one would go to a reviewer.
+    */
+    const looksLike: readonly Match[] = image
+      ? await this.store.indexAndMatch(claim.listingId, image)
+      : [];
+
     await this.store.record({
       id: randomUUID(),
       listingId: claim.listingId,
@@ -152,9 +194,22 @@ export class CapturesController {
       kind: body?.kind === 'video' ? 'video' : 'photo',
       durationSeconds:
         typeof body?.durationSeconds === 'number' ? body.durationSeconds : null,
+      looksLike,
     });
 
-    return { accepted: true, refusals: [], meaning: [] };
+    return {
+      accepted: true,
+      refusals: [],
+      meaning: [],
+      /*
+        `pending`, never `blocked`. The verdict is a domain decision and it is
+        deliberately not "the distance was small enough": the same photograph
+        legitimately appears on two listings when an agency changes hands or a
+        flat is re-let, so a match opens a review and a person decides.
+      */
+      duplicates: verdictFor(looksLike),
+      looksLikeListings: looksLike.map((m) => m.id),
+    };
   }
 
   /** Ed25519 over exactly the string the phone signed. */

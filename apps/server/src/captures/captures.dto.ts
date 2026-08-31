@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { CAPTURE_REFUSALS } from '@keys/domain';
+import { CAPTURE_REFUSALS, DUPLICATE_DECISIONS } from '@keys/domain';
 
 export class RegisterDeviceBody {
   @ApiProperty({ description: "The device's Ed25519 public key, SPKI DER, base64." })
@@ -34,6 +34,12 @@ export class CaptureBody {
 
   @ApiProperty({ description: 'Ed25519 over the canonical claim, base64.' })
   signature!: string;
+
+  @ApiProperty({
+    description:
+      'The capture itself: a Keys greyscale grid, base64. Its SHA-256 must be the one inside the signature.',
+  })
+  pixels!: string;
 }
 
 export class CaptureRefusedResponse {
@@ -45,4 +51,13 @@ export class CaptureRefusedResponse {
 
   @ApiProperty({ type: [String], description: 'One sentence per refusal, written for the agent.' })
   meaning!: string[];
+
+  @ApiProperty({
+    enum: DUPLICATE_DECISIONS,
+    description: 'Never "blocked" here. A match opens a review; a person decides.',
+  })
+  duplicates!: string;
+
+  @ApiProperty({ type: [String], description: 'Listings this image resembles.' })
+  looksLikeListings!: string[];
 }

@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
+import { HashIndex, type Grey, type Match } from '@keys/domain';
+
 export interface Device {
   readonly id: string;
   readonly agentId: string;
@@ -19,6 +21,8 @@ export interface StoredCapture {
   readonly distanceM: number | null;
   readonly kind: 'photo' | 'video';
   readonly durationSeconds: number | null;
+  /** Listings whose images this one resembles. Empty is the ordinary case. */
+  readonly looksLike: readonly Match[];
 }
 
 type Await<T> = Promise<T> | T;
@@ -52,6 +56,15 @@ export abstract class CapturesStore {
 
   abstract record(capture: StoredCapture): Await<void>;
   abstract capturesFor(listingId: string): Await<readonly StoredCapture[]>;
+
+  /**
+   * What else looks like this picture, and remember it.
+   *
+   * One call, because the two halves must not drift: an image checked against
+   * the index and then not added is an image the next upload cannot match, and
+   * one added before being checked matches itself.
+   */
+  abstract indexAndMatch(listingId: string, image: Grey): Await<readonly Match[]>;
 }
 
 @Injectable()
@@ -61,6 +74,8 @@ export class InMemoryCapturesStore extends CapturesStore {
   private readonly nonces = new Set<string>();
 
   private readonly captures: StoredCapture[] = [];
+
+  private readonly images = new HashIndex();
 
   private next = 0;
 
@@ -95,5 +110,21 @@ export class InMemoryCapturesStore extends CapturesStore {
 
   capturesFor(listingId: string) {
     return this.captures.filter((c) => c.listingId === listingId);
+  }
+
+  indexAndMatch(listingId: string, image: Grey) {
+    /*
+      Matched before it is added, and its own listing filtered out.
+
+      Without the filter, an agent adding a second photograph of the same room
+      matches their own first one and opens a duplicate review against
+      themselves — which is both wrong and the fastest way to make reviewers
+      stop reading the queue.
+    */
+    const found = this.images
+      .nearImage(image)
+      .filter((match) => match.id !== listingId);
+    this.images.addImage(listingId, image);
+    return found;
   }
 }

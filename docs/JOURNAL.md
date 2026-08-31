@@ -6,6 +6,56 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — A whole module the gate could not see
+
+**Did.** Wired the perceptual hashing into the capture route: bytes verified against the
+hash inside the signature, hashed, matched, indexed.
+
+### What surprised us
+
+**`wired-check` matched `export function` and `export const`, and not `export class`.**
+`packages/domain/src/hashing.ts` — the hash, the BK-tree, the duplicate policy, tested
+against nine attacks — had no caller anywhere, and the gate had reported clean on every run
+since it was written. It was found by grepping for its own name.
+
+This is the seventh instance of ADR 0004 and the second inside `wired-check.py` itself. The
+fix after the sixth was `scanned_nothing()`, which asks whether each root still exists —
+and this root existed and was full of code. **A liveness check answers "is this rule looking
+at anything". It cannot answer "is this rule seeing what is there."** The second question
+only yields to breaking the guard on purpose in the shape it claims to catch, which is the
+practice this repo already had for gates and had never once applied to the gate-checker.
+
+**And wiring it exposed a `true` I had written myself.** The capture route passed
+`bytesMatch: true` with a comment saying object storage would arrive later. What that meant
+was: the signature covers a SHA-256 of *something*, and the server never checks that the
+something is what it received. Every other assertion in that suite was about the paperwork —
+and the paperwork was genuine while the file could be anything. A stolen photograph
+submitted under a real capture's signature would have been accepted by all fifteen
+assertions.
+
+### Two orderings that are the whole security property
+
+**Index after acceptance, never before.** Indexing as the grid is read is the obvious
+place — the image is right there. It also lets anybody with an agent token push pictures
+they never proved they took, and every honest listing that later resembles one goes to a
+reviewer. Moving those four lines above the refusal gate fails exactly one test.
+
+**Match before adding, and filter out the listing's own id.** Without the filter an agent
+adding a second photograph of the same room opens a duplicate review against themselves,
+which is both wrong and the fastest way to make a reviewer stop reading the queue.
+
+### A decision about a dependency
+
+The server decodes a raw greyscale grid with an eight-byte header, not a JPEG. `sharp` is a
+compiled dependency that has to build on every machine and in every container, to do one
+thing — and what a Keys capture may be is decided by the Keys camera rather than by whatever
+someone found on the internet, because the signature refuses everything else. The capture
+module will emit the grid alongside the encoded file. The dimensions live in the header
+rather than in fields beside the signature, because those fields are outside what the device
+signs and the grid is not.
+
+---
+
 ## 2026-08-31 — The app was a phase behind, and nobody had said so
 
 **Did.** The agent screens on the phone — sign up, ask a landlord, draft, publish, and

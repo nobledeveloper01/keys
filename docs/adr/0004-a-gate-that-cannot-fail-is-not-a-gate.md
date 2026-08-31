@@ -86,3 +86,22 @@ a rule that cannot fail.** The check now derives its roots from the same
 constants the rules do. That is the specific correction; the general one is
 that "the guard is guarded" is a claim to be tested rather than a design to be
 admired, and the way to test it is to move a path and watch the build break.
+
+## Second postscript, 2026-08-31 — a seventh, in the same file again
+
+`wired-check.py`'s domain rule matched `export function` and `export const`. It
+did not match `export class`.
+
+`packages/domain/src/hashing.ts` — the perceptual hash, the BK-tree, the
+duplicate policy, written against an adversarial corpus of nine attacks — was
+called by nothing at all, and the gate reported clean on every run because
+`HashIndex` is a class. The module was found by grepping for its own name, not
+by any guard.
+
+Note what the first postscript's fix did *not* cover. `scanned_nothing()` asks
+whether each root still exists; this root existed and was full of code. The rule
+read it and understood none of what was in it. **A liveness check answers "is
+this rule looking at anything"; it cannot answer "is this rule seeing what is
+there."** The second question needs the guard to be broken on purpose in the
+shape it claims to catch — which is the practice this repository already had for
+gates and had never applied to the gate-checker itself.

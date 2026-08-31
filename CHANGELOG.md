@@ -30,6 +30,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   unpublishes everything they have, everywhere, at once. Landlords' phone
   numbers are not shown.
 - Tier sentences in Hausa, Yoruba and Igbo alongside English.
+- **Duplicate detection.** An accepted capture is perceptually hashed and
+  matched against every image Keys holds. A match opens a review; it never
+  blocks a listing on its own, because the same photograph legitimately appears
+  on two listings when an agency changes hands or a flat is re-let.
 - **The agent screens on the phone**, behind a two-tab bottom bar: open an
   account, ask a landlord, draft, publish, and see which of the seven Verified
   conditions each listing still needs. Every sentence in four languages,
@@ -60,6 +64,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   E.164 form. `normalise` now lives in `packages/domain` and `hashPhone` calls
   it, so one number cannot have two hashes.
 - "1 properties a landlord confirmed" — the singular case, on both surfaces.
+- The capture route accepted a signed *claim* without the bytes it described,
+  so a genuine capture's paperwork could be attached to a stolen photograph.
 
 - The scam registry: public lookup with no account, reporting with evidence, a
   reviewer-guarded review console, and right of reply by a texted capability.
