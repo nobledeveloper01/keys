@@ -149,6 +149,10 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     return this.agentWhere('token_hash', hashToken(token));
   }
 
+  async agentByPhoneHash(hash: string) {
+    return this.agentWhere('phone_hash', hash);
+  }
+
   async agentById(id: string) {
     // The id comes off a URL, so a value that is not a UUID reaches this query
     // routinely. Postgres raises rather than returning nothing, and a lookup

@@ -182,7 +182,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Whether a number belongs to a verified agent. No account required. */
+        get: operations["AgentsController_byPhone"];
         put?: never;
         /** Open an agent account. Verifies nothing on its own. */
         post: operations["AgentsController_signUp"];
@@ -409,11 +410,17 @@ export interface components {
             hasReply: boolean;
             reply: string | null;
         };
+        ReviewerTally: {
+            reviewer: string;
+            /** @enum {string} */
+            action: "upheld" | "not_upheld" | "insufficient_evidence" | "evidence_recorded";
+            count: number;
+        };
         ThroughputResponse: {
             /** Format: date-time */
             since: string;
             /** @description What each reviewer decided. Named, because "a reviewer" is not an answer to "who decided this". */
-            decisions: string[];
+            decisions: components["schemas"]["ReviewerTally"][];
             /** @description Reports waiting. This is the constraint on how fast Keys can open a city. */
             waiting: number;
             /** Format: date-time */
@@ -765,6 +772,27 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    AgentsController_byPhone: {
+        parameters: {
+            query: {
+                phone: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentProfileResponse"];
+                };
             };
         };
     };

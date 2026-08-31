@@ -2,32 +2,29 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import type { ReviewItem, ReviewMetrics } from '@keys/api';
+
 import { categoryWords } from '../../categories';
 
-interface QueueItem {
-  id: string;
-  status: string;
-  category: string;
-  submittedAt: string;
-  replyDeadlineAt: string;
-  publishedAt: string | null;
-  description: string;
-  evidenceCount: number;
-  hasReply: boolean;
-  reply: string | null;
-}
+/*
+  The server's own shapes, generated from its controllers.
+
+  These were three hand-written interfaces copied from the API's responses.
+  They were correct, and they were a second place the wire format lived — the
+  console would have gone on rendering `evidenceCount` after the server renamed
+  it, with `tsc` green the whole way. The console cannot call the generated
+  client (it goes through a same-origin proxy so the reviewer's token stays on
+  this origin), but there is no reason for it to retype what the client already
+  knows.
+*/
+type QueueItem = ReviewItem;
+type Metrics = ReviewMetrics;
 
 interface HistoryEntry {
   reviewer: string;
   action: string;
   reasoning: string;
   at: string;
-}
-
-interface Metrics {
-  waiting: number;
-  oldestWaitingSince: string | null;
-  decisions: Array<{ reviewer: string; action: string; count: number }>;
 }
 
 async function call<T>(

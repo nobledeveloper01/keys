@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -20,7 +21,7 @@ import {
 
 import { isLive, mayList, tierOf, tierSentence, type Evidence } from '@keys/domain';
 
-import { ReportsStore } from '../reports/reports.store';
+import { ReportsStore, hashPhone } from '../reports/reports.store';
 import { AgentGuard, type RequestWithAgent } from './agent.guard';
 import {
   AgentProfileResponse,
@@ -100,6 +101,38 @@ export class AgentsController {
     // The token is the only thing in this response that is not already public.
     // It is shown once; Keys keeps a digest and cannot return it again.
     return { agentId: agent.id, token };
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Whether a number belongs to a verified agent. No account required.',
+  })
+  @ApiOkResponse({ type: AgentProfileResponse })
+  async byPhone(@Query('phone') phone?: string) {
+    if (!phone || phone.trim().length < 7) {
+      throw new BadRequestException('Give a phone number to look up.');
+    }
+
+    const now = new Date();
+    const agent = await this.store.agentByPhoneHash(hashPhone(phone.trim()));
+    if (!agent) throw new NotFoundException('No verified agent uses that number.');
+
+    const answer = await this.profile(agent, now);
+
+    /*
+      An unverified sign-up is not findable by phone, and that is a privacy
+      decision rather than a tidiness one.
+
+      Returning every account would make this a reverse phone directory: type a
+      number, get a name. What justifies answering at all is that the agent has
+      been through an identity check in order to trade under this number — they
+      have opted into being a checkable business, which is the whole thing they
+      are signing up for. Somebody who merely opened an account has not.
+    */
+    if (answer.tier === 'unverified') {
+      throw new NotFoundException('No verified agent uses that number.');
+    }
+    return answer;
   }
 
   @Get(':id')

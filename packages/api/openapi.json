@@ -388,6 +388,35 @@
         "tags": [
           "agents"
         ]
+      },
+      "get": {
+        "operationId": "AgentsController_byPhone",
+        "parameters": [
+          {
+            "name": "phone",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Whether a number belongs to a verified agent. No account required.",
+        "tags": [
+          "agents"
+        ]
       }
     },
     "/v1/agents/{id}": {
@@ -977,6 +1006,31 @@
           "reply"
         ]
       },
+      "ReviewerTally": {
+        "type": "object",
+        "properties": {
+          "reviewer": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "upheld",
+              "not_upheld",
+              "insufficient_evidence",
+              "evidence_recorded"
+            ]
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "reviewer",
+          "action",
+          "count"
+        ]
+      },
       "ThroughputResponse": {
         "type": "object",
         "properties": {
@@ -988,7 +1042,7 @@
             "description": "What each reviewer decided. Named, because \"a reviewer\" is not an answer to \"who decided this\".",
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/ReviewerTally"
             }
           },
           "waiting": {

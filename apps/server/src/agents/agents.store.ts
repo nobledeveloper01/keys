@@ -96,6 +96,7 @@ export abstract class AgentsStore {
 
   abstract agentByToken(token: string): Await<StoredAgent | null>;
   abstract agentById(id: string): Await<StoredAgent | null>;
+  abstract agentByPhoneHash(hash: string): Await<StoredAgent | null>;
   abstract evidenceFor(agentId: string): Await<readonly Evidence[]>;
 
   abstract recordIdentity(input: {
@@ -190,6 +191,10 @@ export class InMemoryAgentsStore extends AgentsStore {
 
   agentById(id: string) {
     return this.agents.get(id) ?? null;
+  }
+
+  agentByPhoneHash(hash: string) {
+    return [...this.agents.values()].find((a) => a.phoneHash === hash) ?? null;
   }
 
   evidenceFor(agentId: string) {

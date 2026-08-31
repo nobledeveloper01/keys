@@ -161,15 +161,38 @@ export class DecisionBody {
   reasoning!: string;
 }
 
+/**
+ * One reviewer's count of one kind of decision.
+ *
+ * A named class rather than an inline `Array<{ ... }>`, and the difference is
+ * not style. Nest's reflector cannot see inside an inline object type, so it
+ * emitted `string[]` — the OpenAPI document had been describing this array as
+ * strings since it was written, and the generated client agreed. Nothing
+ * caught it because nothing consumed the generated type: the console had a
+ * hand-written copy of the real shape, which was right, and therefore never
+ * disagreed with anything.
+ */
+export class ReviewerTally {
+  @ApiProperty()
+  reviewer!: string;
+
+  @ApiProperty({ enum: ['upheld', 'not_upheld', 'insufficient_evidence', 'evidence_recorded'] })
+  action!: string;
+
+  @ApiProperty()
+  count!: number;
+}
+
 export class ThroughputResponse {
   @ApiProperty({ format: 'date-time' })
   since!: string;
 
   @ApiProperty({
+    type: [ReviewerTally],
     description:
       'What each reviewer decided. Named, because "a reviewer" is not an answer to "who decided this".',
   })
-  decisions!: Array<{ reviewer: string; action: string; count: number }>;
+  decisions!: ReviewerTally[];
 
   @ApiProperty({
     description: 'Reports waiting. This is the constraint on how fast Keys can open a city.',

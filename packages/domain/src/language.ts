@@ -1,7 +1,7 @@
 import type { ReportCategory } from './reports.ts';
 
 /**
- * Backhaul in four languages.
+ * Keys in four languages.
  *
  * English, **Hausa**, **Yoruba** and **Igbo** — the three languages that,
  * with English, cover most of the people who will use this. Not a
@@ -97,7 +97,15 @@ export type Phrase =
   | 'no_signal_saved_here'
   | 'refused_reply_window_open'
   | 'refused_no_evidence'
-  | 'refused_already_decided';
+  | 'refused_already_decided'
+  | 'verified_agent'
+  | 'no_verified_agent'
+  | 'what_was_checked'
+  | 'properties_confirmed'
+  | 'tier_unverified'
+  | 'tier_identity'
+  | 'tier_authority'
+  | 'tier_established';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -130,6 +138,14 @@ export const EN: Readonly<Record<Phrase, string>> = {
   refused_reply_window_open: "The seven days are not up yet.",
   refused_no_evidence: "There is nothing attached to assess.",
   refused_already_decided: "Somebody has already decided this one.",
+  verified_agent: "This number belongs to an agent Keys has checked.",
+  no_verified_agent: "No agent Keys has checked uses this number.",
+  what_was_checked: "What was checked",
+  properties_confirmed: "properties a landlord confirmed",
+  tier_unverified: "Nothing about this person has been checked.",
+  tier_identity: "Their ID was checked against a live photo of their face.",
+  tier_authority: "A landlord confirmed they may let this property.",
+  tier_established: "Landlords have confirmed them on several properties over months, with nothing upheld against them.",
   waiting_to_send: "waiting to send",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Any format. 0803…, +234 803…, or 803….",
@@ -183,6 +199,14 @@ export const HA: Readonly<Record<Phrase, string>> = {
   refused_reply_window_open: "Kwanaki bakwai ba su cika ba tukuna.",
   refused_no_evidence: "Babu wata shaida da aka haɗa.",
   refused_already_decided: "An riga an yanke hukunci a kan wannan.",
+  verified_agent: "Wannan lambar mallakar wakili ne da Keys ya duba.",
+  no_verified_agent: "Babu wakilin da Keys ya duba da ke amfani da wannan lambar.",
+  what_was_checked: "Abin da aka duba",
+  properties_confirmed: "wurare da mai gida ya tabbatar",
+  tier_unverified: "Ba a duba kome game da wannan mutumin ba.",
+  tier_identity: "An duba katin shaidarsa da hoton fuskarsa kai tsaye.",
+  tier_authority: "Mai gida ya tabbatar da cewa yana da izinin haya wannan wurin.",
+  tier_established: "Masu gidaje sun tabbatar da shi a wurare da dama cikin watanni, kuma ba a tabbatar da wani rahoto a kansa ba.",
   waiting_to_send: "na jiran aikawa",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Kowace sura. 0803…, +234 803…, ko 803….",
@@ -236,6 +260,14 @@ export const YO: Readonly<Record<Phrase, string>> = {
   refused_reply_window_open: "Ọjọ́ méje kò tí ì pé.",
   refused_no_evidence: "Kò sí ẹ̀rí kankan tí a so mọ́ ọn.",
   refused_already_decided: "Ẹnìkan ti pinnu lórí èyí tẹ́lẹ̀.",
+  verified_agent: "Nọ́mbà yìí jẹ́ ti aṣojú tí Keys ti ṣàyẹ̀wò.",
+  no_verified_agent: "Kò sí aṣojú tí Keys ṣàyẹ̀wò tó ń lo nọ́mbà yìí.",
+  what_was_checked: "Ohun tí a ṣàyẹ̀wò",
+  properties_confirmed: "ilé tí onílé fọwọ́ sí",
+  tier_unverified: "A kò ṣàyẹ̀wò ohunkóhun nípa ẹni yìí.",
+  tier_identity: "A fi fọ́tò ojú rẹ̀ tààrà ṣàyẹ̀wò káàdì ìdánimọ̀ rẹ̀.",
+  tier_authority: "Onílé fọwọ́ sí i pé ó lè yá ilé yìí.",
+  tier_established: "Àwọn onílé ti fọwọ́ sí i ní ilé púpọ̀ fún ọ̀pọ̀ oṣù, kò sì sí ẹ̀sùn tí a gbà lòdì sí i.",
   waiting_to_send: "ń dúró láti lọ",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ìrísí èyíkéyìí. 0803…, +234 803…, tàbí 803….",
@@ -289,6 +321,14 @@ export const IG: Readonly<Record<Phrase, string>> = {
   refused_reply_window_open: "Ụbọchị asaa erubeghị.",
   refused_no_evidence: "Ọ dịghị ihe akaebe e jikọtara na ya.",
   refused_already_decided: "Otu onye ekpebiela nke a.",
+  verified_agent: "Nọmba a bụ nke onye nnọchiteanya Keys nyochara.",
+  no_verified_agent: "Ọ dịghị onye nnọchiteanya Keys nyochara na-eji nọmba a.",
+  what_was_checked: "Ihe e nyochara",
+  properties_confirmed: "ụlọ onye nwe ụlọ kwadoro",
+  tier_unverified: "Ọ dịghị ihe e nyochara banyere onye a.",
+  tier_identity: "E ji foto ihu ya nyochaa kaadị njirimara ya.",
+  tier_authority: "Onye nwe ụlọ kwadoro na ọ nwere ike ịgbazinye ụlọ a.",
+  tier_established: "Ndị nwe ụlọ akwadowo ya n'ọtụtụ ụlọ kemgbe ọtụtụ ọnwa, ọ dịghịkwa mkpesa a kwadoro megide ya.",
   waiting_to_send: "na-echere izipu",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ụdị ọ bụla. 0803…, +234 803…, ma ọ bụ 803….",
@@ -340,6 +380,18 @@ export const LANGUAGES: readonly Language[] = ['ha', 'yo', 'ig', 'en'];
  */
 export function categoryPhrase(category: ReportCategory): Phrase {
   return `category_${category}` as Phrase;
+}
+
+/**
+ * The sentence for a tier, in the reader's own language.
+ *
+ * `tierSentence` in `agents.ts` returns English and belongs to the API — it is
+ * what the OpenAPI document carries for a caller who is not this app. A screen
+ * uses this instead, because a tenant in Kano being told what was checked in
+ * English is being told nothing.
+ */
+export function tierPhrase(tier: string): Phrase {
+  return `tier_${tier}` as Phrase;
 }
 
 export function isLanguage(value: unknown): value is Language {

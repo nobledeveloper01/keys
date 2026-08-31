@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Share, StyleSheet, View } from 'react-native';
 
-import { attempt, client, type Lookup } from '@keys/api';
-import { categoryPhrase, type ReportCategory } from '@keys/domain';
+import { attempt, client, type AgentProfile, type Lookup } from '@keys/api';
+import { categoryPhrase, tierPhrase, type ReportCategory } from '@keys/domain';
 
 import { Brand } from '../components/Brand';
 import { Counter } from '../components/Counter';
@@ -47,6 +47,33 @@ export function LookupScreen({
         : Promise.resolve({ ok: true as const, value: null }),
     [phone, baseUrl],
   );
+
+  /*
+    The other half of the answer, asked separately and allowed to fail.
+
+    The registry says what has been held against a number. This says what has
+    been confirmed about whoever trades under it, and a screen showing only the
+    first tells a tenant what to fear and nothing about what to trust.
+
+    Separate query on purpose: a 404 here is the ordinary case — most numbers
+    belong to nobody on Keys — and folding it into the lookup would mean an
+    ordinary absence could take the warning down with it. The warning is the
+    part that must always render.
+  */
+  const { query: agentQuery } = useQuery<AgentProfile | null>(
+    () =>
+      phone
+        ? attempt(() => client({ baseUrl }).agentByPhone(phone)).then((result) =>
+            result.ok
+              ? result
+              : result.failure.kind === 'refused' && result.failure.status === 404
+                ? ({ ok: true as const, value: null })
+                : result,
+          )
+        : Promise.resolve({ ok: true as const, value: null }),
+    [phone, baseUrl],
+  );
+  const agent = agentQuery.state === 'ready' ? agentQuery.value : null;
 
   /*
     Told once, when the answer changes.
@@ -107,6 +134,15 @@ export function LookupScreen({
       {phone !== null && <Unready query={query} onRetry={refresh} />}
 
       {phone !== null && answer !== null && <Answer answer={answer} phone={phone} />}
+
+      {/*
+        Below the verdict, never instead of it.
+
+        An agent Keys has checked can still have upheld reports against them,
+        and the order on the screen has to say which of the two matters more.
+        A confirmation panel above a warning would read as a rebuttal of it.
+      */}
+      {phone !== null && answer !== null && agent !== null && <Verified agent={agent} />}
 
       {/*
         No empty state before the first search.
@@ -205,8 +241,45 @@ function Answer({ answer, phone }: { answer: Lookup; phone: string }) {
   );
 }
 
+/**
+ * What Keys has confirmed about the person behind a number.
+ *
+ * Deliberately not a badge. A badge is a claim nobody can audit and a shape
+ * anybody can screenshot; what this shows is the sentence naming *what was
+ * checked*, so a tenant reading it could go and check the same thing. The tier
+ * word itself never appears on the screen.
+ */
+function Verified({ agent }: { agent: AgentProfile }) {
+  const { t } = useLanguage();
+  const colours = useColours();
+
+  return (
+    <Glass
+      tone={{ line: colours.clear, wash: colours.clearWash }}
+      style={styles.card}
+    >
+      <Text variant="label" tone="secondary">
+        {t('verified_agent')}
+      </Text>
+      <Text variant="title">{agent.displayName}</Text>
+
+      <Text variant="label" tone="secondary" style={styles.checkedLabel}>
+        {t('what_was_checked')}
+      </Text>
+      <Text variant="body">{t(tierPhrase(agent.tier))}</Text>
+
+      {agent.confirmedProperties > 0 && (
+        <Text variant="body" tone="secondary" style={styles.category}>
+          {`${agent.confirmedProperties}  ${t('properties_confirmed')}`}
+        </Text>
+      )}
+    </Glass>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  checkedLabel: { marginTop: space.md },
   page: { padding: space.lg, paddingTop: space.xl, gap: space.sm, flexGrow: 1 },
   title: { marginTop: space.lg },
   lede: { marginBottom: space.md },

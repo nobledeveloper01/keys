@@ -533,6 +533,43 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
     }
   });
 
+  it('is not a reverse phone directory for accounts that verified nothing', async () => {
+    const phone = '+2348044444444';
+    const signedUp = await request(app.getHttpServer())
+      .post('/v1/agents')
+      .send({ displayName: 'Findable Estates', phone })
+      .expect(201);
+
+    // Signed up and nothing else: typing the number must not return a name.
+    const hidden = await request(app.getHttpServer())
+      .get('/v1/agents')
+      .query({ phone })
+      .expect(404);
+    expect(JSON.stringify(hidden.body)).not.toContain('Findable');
+
+    await request(app.getHttpServer())
+      .post('/v1/authority/identity')
+      .set('x-kyc-token', KYC)
+      .send({ agentId: signedUp.body.agentId, vendor: 'smile-id', reference: 'check-2' })
+      .expect(201);
+
+    // Verified: now they are a checkable business, which is what they signed
+    // up to be.
+    const found = await request(app.getHttpServer())
+      .get('/v1/agents')
+      .query({ phone })
+      .expect(200);
+    expect(found.body.displayName).toBe('Findable Estates');
+    expect(found.body.tier).toBe('identity');
+
+    // And withdrawing the identity takes them back out of the directory.
+    await request(app.getHttpServer())
+      .post(`/v1/review/agents/${signedUp.body.agentId}/withdraw-identity`)
+      .set('x-reviewer-token', REVIEWER)
+      .expect(201);
+    await request(app.getHttpServer()).get('/v1/agents').query({ phone }).expect(404);
+  });
+
   it('will not let an agent be their own landlord', async () => {
     const signedUp = await request(app.getHttpServer())
       .post('/v1/agents')

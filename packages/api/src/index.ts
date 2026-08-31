@@ -33,12 +33,16 @@ export type ReplyView =
   paths['/v1/registry/reply']['get']['responses'][200]['content']['application/json'];
 export type SubmitReply =
   paths['/v1/registry/reply']['post']['requestBody']['content']['application/json'];
+export type AgentProfile =
+  paths['/v1/agents']['get']['responses'][200]['content']['application/json'];
 export type ReviewItem =
   paths['/v1/review/{id}']['get']['responses'][200]['content']['application/json'];
 export type Decision =
   paths['/v1/review/{id}/decision']['post']['requestBody']['content']['application/json'];
 export type DecisionMade =
   paths['/v1/review/{id}/decision']['post']['responses'][200]['content']['application/json'];
+export type ReviewMetrics =
+  paths['/v1/review/metrics']['get']['responses'][200]['content']['application/json'];
 
 /**
  * What went wrong, in words a person can read.
@@ -157,10 +161,34 @@ async function send<T>(
   return parsed as T;
 }
 
+/**
+ * The calls anything outside this package makes.
+ *
+ * The review console is deliberately absent. Its browser reaches the API
+ * through a same-origin proxy that allow-lists paths, so the reviewer's token
+ * never leaves the origin — which means the console cannot call these
+ * functions, and a set of `review.*` methods lived here for a phase with no
+ * caller anywhere. `wired-check` could not see it: the rule that looks for
+ * exactly this was pointed at a path from the previous project.
+ *
+ * What the console does share is the *types*. It had hand-written copies of
+ * the server's response shapes, which is the same duplication one level down.
+ */
 export function client(options: ClientOptions) {
   return {
     lookup: (phone: string) =>
       send<Lookup>(options, 'GET', '/v1/registry/lookup', { query: { phone } }),
+
+    /**
+     * The other half of the answer about a number.
+     *
+     * `lookup` says what has been held against it; this says what has been
+     * confirmed about whoever trades under it. A screen showing only the first
+     * tells a tenant what to fear and nothing about what to trust, and 404 is
+     * the ordinary answer here — most numbers belong to nobody on Keys.
+     */
+    agentByPhone: (phone: string) =>
+      send<AgentProfile>(options, 'GET', '/v1/agents', { query: { phone } }),
 
     report: (body: SubmitReport) =>
       send<ReportAccepted>(options, 'POST', '/v1/registry/reports', { body }),
@@ -177,12 +205,6 @@ export function client(options: ClientOptions) {
         { body },
       ),
 
-    review: {
-      queue: () => send<ReviewItem[]>(options, 'GET', '/v1/review/queue'),
-      one: (id: string) => send<ReviewItem>(options, 'GET', `/v1/review/${id}`),
-      decide: (id: string, body: Decision) =>
-        send<DecisionMade>(options, 'POST', `/v1/review/${id}/decision`, { body }),
-    },
   };
 }
 

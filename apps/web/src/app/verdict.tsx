@@ -28,6 +28,17 @@ export async function Verdict({ phone }: { phone: string }) {
     );
   }
 
+  /*
+    The other half, asked separately and allowed to be absent.
+
+    A 404 here is the ordinary case — most numbers belong to nobody on Keys —
+    so it must not be able to take the verdict down with it. The warning is the
+    part that always renders.
+  */
+  const agent = await api()
+    .agentByPhone(phone)
+    .catch(() => null);
+
   const clean = result.upheldReports === 0;
 
   return (
@@ -76,6 +87,35 @@ export async function Verdict({ phone }: { phone: string }) {
             </p>
           )}
         </>
+      )}
+
+      {/*
+        Below the verdict, never instead of it.
+
+        An agent Keys has checked can still have upheld reports against them,
+        and the order on the page has to say which of the two matters more. A
+        confirmation sitting above a warning reads as a rebuttal of it.
+
+        No badge, deliberately. A badge is a claim nobody can audit and a shape
+        anybody can screenshot; the sentence names what was checked, so a reader
+        could go and check the same thing. The tier word never appears.
+      */}
+      {agent && (
+        <div className="checked">
+          <p className="small quiet">This number belongs to an agent Keys has checked</p>
+          <p>
+            <strong>{agent.displayName}</strong>
+          </p>
+          <p className="small quiet">What was checked</p>
+          <p className="small">{agent.meaning}</p>
+          {agent.confirmedProperties > 0 && (
+            <p className="small quiet">
+              {agent.confirmedProperties === 1
+                ? 'One property a landlord confirmed'
+                : `${agent.confirmedProperties} properties a landlord confirmed`}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
