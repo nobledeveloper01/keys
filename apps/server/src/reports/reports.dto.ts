@@ -62,6 +62,36 @@ export class SubmitReportBody {
   evidenceKeys?: string[];
 }
 
+export class TransparencyResponse {
+  @ApiProperty({ format: 'date-time' })
+  since!: string;
+
+  @ApiProperty({ description: 'Reports submitted in the window.' })
+  received!: number;
+
+  @ApiProperty()
+  upheld!: number;
+
+  @ApiProperty({
+    description:
+      'Dismissed or found to have insufficient evidence. The number nobody in this market publishes.',
+  })
+  notUpheld!: number;
+
+  @ApiProperty()
+  awaitingDecision!: number;
+
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description: 'Median, not mean — one stalled case must not hide the typical wait.',
+  })
+  medianDaysToDecision!: number | null;
+
+  @ApiProperty({ type: Number, nullable: true })
+  oldestAwaitingDays!: number | null;
+}
+
 export class ReplyView {
   @ApiProperty({ enum: REPORT_CATEGORIES })
   category!: string;

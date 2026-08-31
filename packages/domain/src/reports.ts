@@ -236,3 +236,84 @@ function monthsAfter(from: Date, months: number): Date {
   to.setMonth(to.getMonth() + months);
   return to;
 }
+
+
+/**
+ * What the registry is willing to say about itself, in public.
+ *
+ * A registry that publishes accusations about named people and publishes
+ * nothing about its own accuracy is asking for a trust it has not earned. This
+ * is the counterweight: how many reports arrived, how many were upheld, how
+ * many were not, and how long a decision took.
+ *
+ * **It is aggregate by construction, not by discipline.** The shape below has
+ * no field that could carry a reviewer, a reporter, a phone number or a report
+ * id, so the endpoint that returns it cannot leak one by somebody adding a
+ * property to a response later.
+ *
+ * The dismissal rate is the number that matters and the one nobody publishes.
+ * A registry that upholds everything is a rumour mill; one that upholds nothing
+ * is not working. Printing the figure is what makes either visible.
+ */
+export interface Transparency {
+  readonly since: Date;
+  readonly received: number;
+  readonly upheld: number;
+  readonly notUpheld: number;
+  readonly awaitingDecision: number;
+  /** Null when nothing has been decided yet — never zero, which would read as instant. */
+  readonly medianDaysToDecision: number | null;
+  /** Null when the queue is empty. */
+  readonly oldestAwaitingDays: number | null;
+}
+
+export function transparency(
+  reports: readonly Report[],
+  now: Date,
+  since: Date,
+): Transparency {
+  const inWindow = reports.filter((r) => r.submittedAt.getTime() >= since.getTime());
+
+  const decided = inWindow.filter(
+    (r) => r.status === 'upheld' || r.status === 'not_upheld' || r.status === 'insufficient_evidence',
+  );
+  const waiting = inWindow.filter(
+    (r) => r.status === 'submitted' || r.status === 'under_review' || r.status === 'awaiting_reply',
+  );
+
+  /*
+    Median, not mean.
+
+    One report that sat for six months while a reviewer chased a document
+    would drag a mean far enough to be a lie about the typical wait, in the
+    direction that flatters nobody and informs nobody.
+  */
+  const days = decided
+    .map((r) => (r.publishedAt ?? r.expiresAt ?? now).getTime() - r.submittedAt.getTime())
+    .map((ms) => ms / 86_400_000)
+    .sort((a, b) => a - b);
+
+  const median =
+    days.length === 0
+      ? null
+      : days.length % 2 === 1
+        ? days[(days.length - 1) / 2]!
+        : (days[days.length / 2 - 1]! + days[days.length / 2]!) / 2;
+
+  const oldest = waiting.reduce<number | null>((worst, r) => {
+    const age = (now.getTime() - r.submittedAt.getTime()) / 86_400_000;
+    return worst === null || age > worst ? age : worst;
+  }, null);
+
+  return {
+    since,
+    received: inWindow.length,
+    upheld: inWindow.filter((r) => r.status === 'upheld').length,
+    notUpheld: inWindow.filter(
+      (r) => r.status === 'not_upheld' || r.status === 'insufficient_evidence',
+    ).length,
+    awaitingDecision: waiting.length,
+    medianDaysToDecision: median === null ? null : Math.round(median * 10) / 10,
+    oldestAwaitingDays: oldest === null ? null : Math.round(oldest * 10) / 10,
+  };
+}

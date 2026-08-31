@@ -226,6 +226,14 @@ export class PostgresReportsStore
     }));
   }
 
+  async since(when: Date): Promise<readonly StoredReport[]> {
+    const result = await this.pool.query<Row>(
+      `SELECT ${COLUMNS} FROM reports WHERE submitted_at >= $1`,
+      [when],
+    );
+    return result.rows.map(hydrate);
+  }
+
   async throughput(since: Date): Promise<Throughput> {
     const result = await this.pool.query<{ reviewer: string; action: string; n: string }>(
       `SELECT reviewer, action, count(*)::text AS n

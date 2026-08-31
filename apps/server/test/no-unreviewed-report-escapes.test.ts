@@ -231,6 +231,41 @@ describe.each(STORES)('no unreviewed report escapes (%s)', (_name, databaseUrl) 
     expect(history[0]!.reasoning).toContain('bank transfer receipt');
   });
 
+  it('the public transparency figures name nobody and no report', async () => {
+    /*
+      The one public endpoint that reads *every* report rather than the
+      published ones.
+
+      It exists to publish the registry's own dismissal rate, which means it
+      touches rows no stranger may see the contents of. So it is asserted
+      against the same standard as everything else here: the description, the
+      reporter, the report id and every reviewer name must be absent from what
+      it returns, and the counts must still be right.
+    */
+    const res = await request(app.getHttpServer())
+      .get('/v1/registry/transparency')
+      .expect(200);
+
+    const body = JSON.stringify(res.body);
+    expect(body).not.toContain(SECRET);
+    expect(body).not.toContain('someone-who-must-not-be-named');
+    expect(body).not.toContain(reportId);
+    expect(body).not.toContain('unattributed');
+    expect(body).not.toContain(PHONE);
+
+    // And it is actually reporting, not returning an empty shell.
+    expect(res.body.received).toBeGreaterThan(0);
+    expect(Object.keys(res.body).sort()).toEqual([
+      'awaitingDecision',
+      'medianDaysToDecision',
+      'notUpheld',
+      'oldestAwaitingDays',
+      'received',
+      'since',
+      'upheld',
+    ]);
+  });
+
   it('the public lookup reports nothing upheld while the report is unreviewed', async () => {
     const res = await request(app.getHttpServer())
       .get('/v1/registry/lookup')

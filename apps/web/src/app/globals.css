@@ -612,3 +612,42 @@ hr {
   white-space: nowrap;
   border: 0;
 }
+
+/*
+  The transparency figures.
+
+  Four numbers side by side on a desktop, two by two on a phone — a single
+  column would make the received/upheld/dismissed relationship something you
+  have to scroll to see, and the relationship is the whole point of the page.
+*/
+.figures {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-4);
+  margin: var(--s-5) 0;
+}
+@media (min-width: 34rem) {
+  .figures {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.figure {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--s-4);
+  background: color-mix(in srgb, var(--surface-raised) 82%, transparent);
+}
+.figure p {
+  margin: 0;
+}
+.figure .count {
+  font-size: var(--t-2xl);
+  margin-bottom: var(--s-1);
+}
+.count.clear {
+  color: var(--clear);
+}
+.count.alarm {
+  color: var(--alarm);
+}

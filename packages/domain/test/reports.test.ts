@@ -9,6 +9,7 @@ import {
   replyDeadline,
   review,
   standing,
+  transparency,
   type Report,
   type ReportStatus,
 } from '../src/reports.ts';
@@ -245,5 +246,61 @@ test('retention', async (t) => {
       expiresAt: months(20, 24),
     };
     assert.equal(isPurgeable(row, new Date(months(20, 24).getTime() + 1)), true);
+  });
+});
+
+test('what the registry says about itself', async (t) => {
+  const decided = (over: Partial<Report>): Report =>
+    report({ status: 'upheld', publishedAt: days(9), ...over });
+
+  await t.test('counts what arrived, what was upheld and what was not', () => {
+    const t0 = transparency(
+      [
+        decided({}),
+        decided({ status: 'not_upheld', publishedAt: null, expiresAt: days(4) }),
+        decided({ status: 'insufficient_evidence', publishedAt: null, expiresAt: days(6) }),
+        report({}),
+      ],
+      days(30),
+      days(-1),
+    );
+    assert.equal(t0.received, 4);
+    assert.equal(t0.upheld, 1);
+    assert.equal(t0.notUpheld, 2);
+    assert.equal(t0.awaitingDecision, 1);
+  });
+
+  await t.test('reports a median rather than a mean, so one stalled case cannot hide the typical wait', () => {
+    const quick = [1, 2, 3].map((d) => decided({ publishedAt: days(d) }));
+    const stalled = decided({ publishedAt: days(200) });
+    const withStall = transparency([...quick, stalled], days(300), days(-1));
+
+    // Mean would be about 51 days. The median is the third of four.
+    assert.ok(withStall.medianDaysToDecision !== null);
+    assert.ok(withStall.medianDaysToDecision < 10, String(withStall.medianDaysToDecision));
+  });
+
+  await t.test('says null rather than zero when nothing has been decided', () => {
+    const none = transparency([report({})], days(3), days(-1));
+    assert.equal(none.medianDaysToDecision, null);
+  });
+
+  await t.test('carries no field that could name a person or a report', () => {
+    /*
+      The shape is the guarantee. A reviewer, a reporter or a report id cannot
+      be leaked by a later change to the endpoint, because there is nowhere in
+      the type to put one.
+    */
+    const shape = transparency([decided({})], days(30), days(-1));
+    const allowed = [
+      'since', 'received', 'upheld', 'notUpheld',
+      'awaitingDecision', 'medianDaysToDecision', 'oldestAwaitingDays',
+    ];
+    assert.deepEqual(Object.keys(shape).sort(), [...allowed].sort());
+  });
+
+  await t.test('ignores anything submitted before the window', () => {
+    const old = report({ submittedAt: days(-90) });
+    assert.equal(transparency([old], days(0), days(-30)).received, 0);
   });
 });

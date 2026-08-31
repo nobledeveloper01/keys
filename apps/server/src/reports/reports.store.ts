@@ -107,6 +107,14 @@ export abstract class ReportsStore {
   abstract record(entry: Decision): Promise<void> | void;
   abstract decisionsFor(reportId: string): Promise<readonly Decision[]> | readonly Decision[];
   abstract throughput(since: Date): Promise<Throughput> | Throughput;
+  /**
+   * Every report since a date, for the public transparency figures.
+   *
+   * Returns rows because `transparency()` in the domain does the counting —
+   * the alternative is five aggregate queries whose definitions of "decided"
+   * would drift from the one the product actually uses.
+   */
+  abstract since(when: Date): Promise<readonly StoredReport[]> | readonly StoredReport[];
   /** Whether this survives a restart. `/healthz` says so out loud. */
   abstract readonly durable: boolean;
 }
@@ -220,6 +228,12 @@ export class InMemoryReportsStore extends ReportsStore {
 
   decisionsFor(reportId: string): readonly Decision[] {
     return this.decisions.filter((d) => d.reportId === reportId);
+  }
+
+  since(when: Date): readonly StoredReport[] {
+    return [...this.rows.values()].filter(
+      (r) => r.submittedAt.getTime() >= when.getTime(),
+    );
   }
 
   throughput(since: Date): Throughput {

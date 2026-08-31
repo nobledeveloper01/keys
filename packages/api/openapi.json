@@ -32,6 +32,37 @@
         ]
       }
     },
+    "/v1/registry/transparency": {
+      "get": {
+        "operationId": "ReportsController_transparency",
+        "parameters": [
+          {
+            "name": "sinceDays",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransparencyResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "What the registry says about its own accuracy. Public, no account.",
+        "tags": [
+          "registry"
+        ]
+      }
+    },
     "/v1/registry/reports": {
       "post": {
         "operationId": "ReportsController_report",
@@ -391,6 +422,47 @@
           "mostRecent",
           "everyReportHadRightOfReply",
           "meaning"
+        ]
+      },
+      "TransparencyResponse": {
+        "type": "object",
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "received": {
+            "type": "number",
+            "description": "Reports submitted in the window."
+          },
+          "upheld": {
+            "type": "number"
+          },
+          "notUpheld": {
+            "type": "number",
+            "description": "Dismissed or found to have insufficient evidence. The number nobody in this market publishes."
+          },
+          "awaitingDecision": {
+            "type": "number"
+          },
+          "medianDaysToDecision": {
+            "type": "number",
+            "nullable": true,
+            "description": "Median, not mean — one stalled case must not hide the typical wait."
+          },
+          "oldestAwaitingDays": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "since",
+          "received",
+          "upheld",
+          "notUpheld",
+          "awaitingDecision",
+          "medianDaysToDecision",
+          "oldestAwaitingDays"
         ]
       },
       "SubmitReportBody": {

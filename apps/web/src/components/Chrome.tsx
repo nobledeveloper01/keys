@@ -56,7 +56,8 @@ export function Footer() {
       </p>
       <p className="footer-quiet">
         Nothing in the registry is published until a person reviews it, and the number
-        it names has seven days to answer first.
+        it names has seven days to answer first.{' '}
+        <Link href="/transparency">See how often we are wrong</Link>.
       </p>
     </footer>
   );

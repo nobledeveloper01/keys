@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/registry/transparency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What the registry says about its own accuracy. Public, no account. */
+        get: operations["ReportsController_transparency"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/registry/reports": {
         parameters: {
             query?: never;
@@ -175,6 +192,19 @@ export interface components {
             /** @description Plain words for the reader. Zero upheld is not a clean bill of health. */
             meaning: string;
         };
+        TransparencyResponse: {
+            /** Format: date-time */
+            since: string;
+            /** @description Reports submitted in the window. */
+            received: number;
+            upheld: number;
+            /** @description Dismissed or found to have insufficient evidence. The number nobody in this market publishes. */
+            notUpheld: number;
+            awaitingDecision: number;
+            /** @description Median, not mean — one stalled case must not hide the typical wait. */
+            medianDaysToDecision: number | null;
+            oldestAwaitingDays: number | null;
+        };
         SubmitReportBody: {
             /** @example +2348012345678 */
             reportedPhone: string;
@@ -285,6 +315,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LookupResponse"];
+                };
+            };
+        };
+    };
+    ReportsController_transparency: {
+        parameters: {
+            query: {
+                sinceDays: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransparencyResponse"];
                 };
             };
         };

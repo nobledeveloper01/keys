@@ -15,12 +15,18 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { REPORT_CATEGORIES, isReportCategory, standing } from '@keys/domain';
+import {
+  REPORT_CATEGORIES,
+  isReportCategory,
+  standing,
+  transparency as computeTransparency,
+} from '@keys/domain';
 
 import {
   LookupResponse,
   ReportAcceptedResponse,
   SubmitReportBody,
+  TransparencyResponse,
 } from './reports.dto';
 import { ReportsStore } from './reports.store';
 
@@ -76,6 +82,33 @@ export class ReportsController {
           ? 'Nothing upheld against this number. That is not a guarantee: most scams are never reported.'
           : 'Each of these was reviewed by a person, and the reported party was given seven days to answer.',
     };
+  }
+
+  @Get('transparency')
+  @ApiOperation({
+    summary: 'What the registry says about its own accuracy. Public, no account.',
+  })
+  @ApiOkResponse({ type: TransparencyResponse })
+  async transparency(@Query('sinceDays') sinceDays?: string) {
+    /*
+      Public and unauthenticated, on purpose.
+
+      A registry that publishes accusations about named people and publishes
+      nothing about how often it is wrong is asking for a trust it has not
+      earned. The dismissal rate is the number nobody in this market publishes,
+      and it is the one that makes both failure modes visible: a registry that
+      upholds everything is a rumour mill, and one that upholds nothing is not
+      working.
+
+      Everything here is aggregate by construction — `Transparency` has no field
+      that could carry a reviewer, a reporter, a number or a report id, so a
+      later change to this endpoint cannot leak one.
+    */
+    const days = Number(sinceDays ?? 90);
+    const window = Number.isFinite(days) ? Math.min(Math.max(days, 1), 365) : 90;
+    const since = new Date(Date.now() - window * 86_400_000);
+
+    return computeTransparency(await this.store.since(since), new Date(), since);
   }
 
   @Post('reports')
