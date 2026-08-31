@@ -90,6 +90,27 @@ if [ -f PHASE ]; then
   fi
 fi
 
+# --- every document under docs/, not only the required ones ----------------
+#
+# The required list caught its own members and nothing else, so eight planning
+# documents — the PRD, the FRD, the technical design, the data model, the
+# delivery roadmap, the backend spec — sat untracked behind a `.gitignore`
+# allow-list for a whole phase, being edited and never committed.
+untracked_docs=""
+while IFS= read -r doc; do
+  [ -e "$doc" ] || continue
+  git ls-files --error-unmatch "$doc" >/dev/null 2>&1 || untracked_docs="$untracked_docs $doc"
+done < <(find docs -name '*.md' -not -path '*/node_modules/*' | sort)
+
+if [ -n "$untracked_docs" ]; then
+  for doc in $untracked_docs; do
+    red "$doc is present but not tracked by git — nobody outside this machine can read it"
+  done
+  fail=1
+else
+  ok "every document under docs/ is tracked, not just the required ones"
+fi
+
 for adr in docs/adr/[0-9]*.md; do
   [ -e "$adr" ] || continue
   for heading in '## Status' '## Context' '## Decision' '## Consequences'; do

@@ -1,18 +1,22 @@
-# Internal working documents stay local; the shipped ones are allow-listed.
+# Documents.
 #
-# This block is a trap and has already sprung once, on Grid: a document was
-# written, committed with a message saying so, and was not on GitHub for a day,
-# because it was not on the list and `git add` had nothing to add. Adding a
-# document here is half the job — `scripts/doc-check.sh` asserts each required
-# document is actually *tracked*, which is the half that catches it.
-docs/*
-!docs/00-PRODUCT-STATEMENT.md
-!docs/ROADMAP.md
-!docs/JOURNAL.md
-!docs/FEATURE-BACKLOG.md
-!docs/TOOLCHAIN.md
-!docs/adr/
-!docs/screenshots/
+# An allow-list, inverted.
+#
+# This was `docs/*` with a list of exceptions, and the exceptions fell behind:
+# the PRD, the FRD, the technical design, the data model, the delivery roadmap
+# and the backend spec sat on disk, invisible to git, for the whole of phase 1.
+# Edits to them looked saved and were never committed, because `git status`
+# says nothing about a file it has been told to ignore.
+#
+# That is the fourth time an allow-list has quietly swallowed something in this
+# codebase — the others were a required document, an ADR, and a screenshot
+# directory. So it is the other way round now: everything under `docs/` is
+# tracked, and the few things that genuinely should not be are named.
+#
+# `scripts/doc-check.sh` asserts that every `.md` under `docs/` is tracked, not
+# only the required ones. That is the half that catches the next one.
+docs/**/*.tmp
+docs/.DS_Store
 
 # OS / editors
 .DS_Store
