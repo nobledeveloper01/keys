@@ -50,6 +50,14 @@ export interface CaptureClaim {
  * `mockLocation` is inside the signature deliberately. A flag the client sends
  * beside the signature is a flag the client can flip; inside it, changing the
  * answer invalidates the whole capture.
+ *
+ * **The timestamp is canonicalised to millisecond precision**, because that is
+ * what `toISOString` emits. Anything signing this from outside JavaScript has
+ * to do the same: a client that sends microseconds signs one string while the
+ * server — which parses to a `Date` and formats again — verifies another, and
+ * the failure is a `bad_signature` on a capture that is entirely genuine. Six
+ * digits of precision cost half an hour the first time it happened, from a
+ * script written to exercise this very route.
  */
 export function claimMessage(claim: CaptureClaim): string {
   return [

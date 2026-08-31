@@ -51,6 +51,8 @@ export type DecisionMade =
   paths['/v1/review/{id}/decision']['post']['responses'][200]['content']['application/json'];
 export type AgentUnderReview =
   paths['/v1/agent-review']['get']['responses'][200]['content']['application/json'][number];
+export type DuplicatePair =
+  paths['/v1/duplicates']['get']['responses'][200]['content']['application/json'][number];
 export type ReviewMetrics =
   paths['/v1/review/metrics']['get']['responses'][200]['content']['application/json'];
 

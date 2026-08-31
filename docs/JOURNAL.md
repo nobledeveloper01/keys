@@ -6,6 +6,64 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — Three hardcoded answers
+
+**Did.** Closed the duplicate-match pipeline: a match opens a pair for review, a reviewer
+blocks the copy or allows both, and a block costs the copy its badge. Driven end to end
+through the real routes and the real console.
+
+### What surprised us
+
+**Three inputs to the Verified computation were constants I had written myself.**
+`bytesMatch: true`, `blockedDuplicate: false`, `captures: []`. Each had a comment saying a
+later slice would fill it in, and each one was the difference between computing an answer
+and asserting one:
+
+- `bytesMatch: true` meant the signature covered a SHA-256 of *something* and the server
+  never checked the something was what arrived. A stolen photograph submitted under a
+  genuine capture's paperwork passed all fifteen assertions.
+- `blockedDuplicate: false` meant a reviewer blocking an image changed nothing an agent
+  could see. The queue worked; the decision went nowhere.
+- `captures: []` meant an agent who had done everything right was told, for ever, to take a
+  photo in the app.
+
+None of the three would have been caught by a test, because every test was written against
+the same constant. What found them was wiring the thing they were standing in for.
+
+**A signature that was correct and failed anyway.** The demo script signed a timestamp with
+microsecond precision; the server parses to a `Date` and formats with `toISOString`, which
+emits milliseconds. One string signed, a different one verified, and a `bad_signature` on a
+capture that was entirely genuine. It cost half an hour, from a script written to exercise
+this very route — which is the best possible place to learn it, and it is in the domain
+docstring now for whatever signs this from outside JavaScript.
+
+**And a module cycle, avoided by inches.** `AgentsModule` needs the captures store, because
+a blocked image is one of the seven conditions. `CapturesModule` needs `AgentsModule`, for
+the guard that resolves an agent token. Two modules importing each other resolve one to
+`undefined` and fail as a null dereference in a route far from either file. The store is its
+own module now — one provider, no imports, so it cannot take part in a cycle.
+
+### Two asymmetries worth stating
+
+**A pair is stored unordered; the consequence is not.** One decision settles "may these two
+listings both use this picture" whichever way round it is asked. But `blocked` falls only on
+whoever uploaded second — blocking the listing that had the photograph first would punish
+the agent who was copied. Making `isBlocked` symmetric fails exactly one test.
+
+**A pending match costs nobody their badge.** Only a reviewer's `blocked` reaches the
+Verified computation. A listing losing its badge because nobody has got to the queue yet
+would make the badge a measure of reviewer throughput.
+
+### Still open, honestly
+
+`capture_on_site` stays unmet even for a listing with an accepted capture, because
+`provesPresence` needs a distance and nothing knows where a property *is*. The shape is
+fixed without claiming the condition is met, and there is a test asserting the capture
+arrives with `distanceM: null` — so this starts passing on its own the day listings carry
+coordinates, in phase 4.
+
+---
+
 ## 2026-08-31 — A whole module the gate could not see
 
 **Did.** Wired the perceptual hashing into the capture route: bytes verified against the

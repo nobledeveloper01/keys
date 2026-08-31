@@ -6,6 +6,7 @@ import * as request from 'supertest';
 import { CAPTURE_FRESHNESS_HOURS, claimMessage, type CaptureClaim } from '@keys/domain';
 
 import { AppModule } from '../src/app.module';
+import { CapturesStore } from '../src/captures/captures.store';
 
 /**
  * Phase 3's third exit gate.
@@ -333,6 +334,142 @@ describe('no injected upload is accepted', () => {
       wire(honest, deviceId, signWith(honest), poison),
     ).expect(201);
     expect(accepted.body.looksLikeListings).toEqual([]);
+  });
+
+  describe('what a reviewer does with a match', () => {
+    const REVIEWER = 'r'.repeat(48);
+
+    function asReviewer(path: string) {
+      return request(app.getHttpServer()).post(path).set('x-reviewer-token', REVIEWER);
+    }
+
+    it('puts the pair in a queue, once, however many photographs they share', async () => {
+      const shared = grid(31);
+      for (const listingId of ['listing-a', 'listing-b', 'listing-b']) {
+        const claim = claimFor({
+          listingId,
+          sha256: createHash('sha256').update(shared).digest('hex'),
+        });
+        await submit(wire(claim, deviceId, signWith(claim), shared)).expect(201);
+      }
+
+      const queue = await request(app.getHttpServer())
+        .get('/v1/duplicates')
+        .set('x-reviewer-token', REVIEWER)
+        .expect(200);
+
+      const pair = queue.body.filter(
+        (p: { listingId: string }) => p.listingId === 'listing-b',
+      );
+      // Uploaded twice, asked once. The question is about the two listings,
+      // not about each file.
+      expect(pair).toHaveLength(1);
+      expect(pair[0].matchedListingId).toBe('listing-a');
+      expect(pair[0].meaning).toMatch(/same file/i);
+    });
+
+    it('needs a reason, and refuses anything that is not a decision', async () => {
+      await asReviewer('/v1/duplicates/listing-b/listing-a')
+        .send({ decision: 'blocked', reasoning: 'dodgy' })
+        .expect(400);
+      await asReviewer('/v1/duplicates/listing-b/listing-a')
+        .send({ decision: 'maybe', reasoning: 'a perfectly long reason goes here' })
+        .expect(400);
+    });
+
+    it('is not open to somebody without a reviewer token', async () => {
+      await request(app.getHttpServer()).get('/v1/duplicates').expect(403);
+      await request(app.getHttpServer())
+        .post('/v1/duplicates/listing-b/listing-a')
+        .send({ decision: 'blocked', reasoning: 'a perfectly long reason goes here' })
+        .expect(403);
+    });
+
+    it('blocks the copy and not the listing that had the picture first', async () => {
+      const decided = await asReviewer('/v1/duplicates/listing-b/listing-a')
+        .send({
+          decision: 'blocked',
+          reasoning: 'Same file as listing-a, uploaded eight days later by a different agent.',
+        })
+        .expect(201);
+      expect(decided.body.decision).toBe('blocked');
+      expect(decided.body.by).toBe('unattributed');
+
+      const store = app.get(CapturesStore);
+      expect(await store.isBlocked('listing-b')).toBe(true);
+      // The agent who was copied keeps their listing. A pair is stored
+      // unordered so one decision settles it; the consequence is not
+      // symmetric.
+      expect(await store.isBlocked('listing-a')).toBe(false);
+    });
+
+    it('does not ask twice, and an upload cannot reset a block', async () => {
+      await asReviewer('/v1/duplicates/listing-b/listing-a')
+        .send({ decision: 'allowed', reasoning: 'Already decided, this must not go through.' })
+        .expect(404);
+
+      // Uploading the picture again must not reopen it either.
+      const shared = grid(31);
+      const claim = claimFor({
+        listingId: 'listing-b',
+        sha256: createHash('sha256').update(shared).digest('hex'),
+      });
+      await submit(wire(claim, deviceId, signWith(claim), shared)).expect(201);
+
+      const queue = await request(app.getHttpServer())
+        .get('/v1/duplicates')
+        .set('x-reviewer-token', REVIEWER)
+        .expect(200);
+      expect(
+        queue.body.filter((p: { listingId: string }) => p.listingId === 'listing-b'),
+      ).toHaveLength(0);
+
+      const store = app.get(CapturesStore);
+      expect(await store.isBlocked('listing-b')).toBe(true);
+    });
+
+    it('a pending match costs nobody their badge', async () => {
+      // Only a reviewer's `blocked` reaches the Verified computation. A
+      // listing must not lose its badge because somebody has not got to it.
+      const fresh = grid(77);
+      for (const listingId of ['listing-c', 'listing-d']) {
+        const claim = claimFor({
+          listingId,
+          sha256: createHash('sha256').update(fresh).digest('hex'),
+        });
+        await submit(wire(claim, deviceId, signWith(claim), fresh)).expect(201);
+      }
+      const store = app.get(CapturesStore);
+      expect(await store.isBlocked('listing-d')).toBe(false);
+    });
+  });
+
+  it('an accepted capture reaches the listing it was taken for', async () => {
+    /*
+      The Verified computation was handed `captures: []`, so an agent who had
+      done everything right was told for ever to take a photo in the app. The
+      list is real now — and `capture_on_site` still comes back unmet, because
+      proving a capture was taken *at the property* needs a property with
+      coordinates and nothing has one yet.
+
+      That is worth asserting rather than leaving: it fixes the shape without
+      claiming the condition is met, and it will start passing on its own the
+      day listings carry a location.
+    */
+    const store = app.get(CapturesStore);
+    const before = (await store.capturesFor('listing-reaches')).length;
+
+    const photo = grid(64);
+    const claim = claimFor({
+      listingId: 'listing-reaches',
+      sha256: createHash('sha256').update(photo).digest('hex'),
+    });
+    await submit(wire(claim, deviceId, signWith(claim), photo)).expect(201);
+
+    const after = await store.capturesFor('listing-reaches');
+    expect(after).toHaveLength(before + 1);
+    // Held with no distance, which is exactly why the condition stays unmet.
+    expect(after[0]!.distanceM).toBeNull();
   });
 
   it('refuses a device Keys has never seen', async () => {

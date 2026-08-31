@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { HashIndex, type Grey, type Match } from '@keys/domain';
+import { HashIndex, type DuplicateDecision, type Grey, type Match } from '@keys/domain';
 
 export interface Device {
   readonly id: string;
@@ -23,6 +23,25 @@ export interface StoredCapture {
   readonly durationSeconds: number | null;
   /** Listings whose images this one resembles. Empty is the ordinary case. */
   readonly looksLike: readonly Match[];
+}
+
+/**
+ * A match somebody has to look at.
+ *
+ * Keyed by the pair, not by the capture, because the question a reviewer
+ * answers is *may these two listings both use this picture* — and answering it
+ * once should settle it for every photograph the two share rather than
+ * arriving again with the next upload.
+ */
+export interface DuplicatePair {
+  readonly listingId: string;
+  readonly matchedListingId: string;
+  readonly distance: number;
+  readonly firstSeenAt: Date;
+  readonly decision: DuplicateDecision;
+  /** Who decided, and why. Null while it is pending. */
+  readonly reviewer: string | null;
+  readonly reasoning: string | null;
 }
 
 type Await<T> = Promise<T> | T;
@@ -65,6 +84,32 @@ export abstract class CapturesStore {
    * one added before being checked matches itself.
    */
   abstract indexAndMatch(listingId: string, image: Grey): Await<readonly Match[]>;
+
+  /** Open a pair for review, or leave an already-decided one alone. */
+  abstract openPairs(
+    listingId: string,
+    matches: readonly Match[],
+    now: Date,
+  ): Await<void>;
+
+  abstract pendingPairs(): Await<readonly DuplicatePair[]>;
+
+  abstract decidePair(input: {
+    listingId: string;
+    matchedListingId: string;
+    decision: Exclude<DuplicateDecision, 'pending'>;
+    reviewer: string;
+    reasoning: string;
+  }): Await<boolean>;
+
+  /**
+   * Whether a reviewer has blocked any image on this listing.
+   *
+   * The Verified computation reads this and nothing else about duplicates —
+   * `pending` is not `blocked`, and a listing must not lose its badge because
+   * somebody has not got to it yet.
+   */
+  abstract isBlocked(listingId: string): Await<boolean>;
 }
 
 @Injectable()
@@ -76,6 +121,8 @@ export class InMemoryCapturesStore extends CapturesStore {
   private readonly captures: StoredCapture[] = [];
 
   private readonly images = new HashIndex();
+
+  private readonly pairs = new Map<string, DuplicatePair>();
 
   private next = 0;
 
@@ -110,6 +157,70 @@ export class InMemoryCapturesStore extends CapturesStore {
 
   capturesFor(listingId: string) {
     return this.captures.filter((c) => c.listingId === listingId);
+  }
+
+  /** One key per unordered pair, so A→B and B→A are the same question. */
+  private static key(a: string, b: string): string {
+    return [a, b].sort().join('\u0000');
+  }
+
+  openPairs(listingId: string, matches: readonly Match[], now: Date) {
+    for (const match of matches) {
+      const key = InMemoryCapturesStore.key(listingId, match.id);
+      const existing = this.pairs.get(key);
+      // A decided pair stays decided. Re-opening it on the next upload would
+      // hand a reviewer the same question they already answered, and would let
+      // an agent reset a block by uploading the picture again.
+      if (existing) continue;
+      this.pairs.set(key, {
+        listingId,
+        matchedListingId: match.id,
+        distance: match.distance,
+        firstSeenAt: now,
+        decision: 'pending',
+        reviewer: null,
+        reasoning: null,
+      });
+    }
+  }
+
+  pendingPairs() {
+    return [...this.pairs.values()]
+      .filter((p) => p.decision === 'pending')
+      .sort((a, b) => a.distance - b.distance);
+  }
+
+  decidePair(input: {
+    listingId: string;
+    matchedListingId: string;
+    decision: Exclude<DuplicateDecision, 'pending'>;
+    reviewer: string;
+    reasoning: string;
+  }) {
+    const key = InMemoryCapturesStore.key(input.listingId, input.matchedListingId);
+    const pair = this.pairs.get(key);
+    if (!pair || pair.decision !== 'pending') return false;
+    this.pairs.set(key, {
+      ...pair,
+      decision: input.decision,
+      reviewer: input.reviewer,
+      reasoning: input.reasoning,
+    });
+    return true;
+  }
+
+  isBlocked(listingId: string) {
+    /*
+      Only the copy is blocked, not the original.
+
+      A pair is stored unordered so one decision settles the question, but the
+      consequence is not symmetric: `listingId` is whoever uploaded second, and
+      blocking the listing that had the picture first would punish the agent
+      who was copied.
+    */
+    return [...this.pairs.values()].some(
+      (p) => p.decision === 'blocked' && p.listingId === listingId,
+    );
   }
 
   indexAndMatch(listingId: string, image: Grey) {

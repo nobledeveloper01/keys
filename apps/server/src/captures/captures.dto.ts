@@ -61,3 +61,28 @@ export class CaptureRefusedResponse {
   @ApiProperty({ type: [String], description: 'Listings this image resembles.' })
   looksLikeListings!: string[];
 }
+
+export class DuplicatePairView {
+  @ApiProperty({ description: 'The listing that uploaded the picture second.' })
+  listingId!: string;
+
+  @ApiProperty({ description: 'The listing that already had it.' })
+  matchedListingId!: string;
+
+  @ApiProperty({ description: 'Differing bits, out of 64. Zero is the same file.' })
+  distance!: number;
+
+  @ApiProperty({ format: 'date-time' })
+  firstSeenAt!: string;
+
+  @ApiProperty({ description: 'What the distance means, in words a reviewer can act on.' })
+  meaning!: string;
+}
+
+export class DuplicateDecisionBody {
+  @ApiProperty({ enum: ['blocked', 'allowed'] })
+  decision!: string;
+
+  @ApiProperty({ minLength: 20, description: 'Mandatory. This is the audit record.' })
+  reasoning!: string;
+}

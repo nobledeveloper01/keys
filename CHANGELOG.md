@@ -30,10 +30,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   unpublishes everything they have, everywhere, at once. Landlords' phone
   numbers are not shown.
 - Tier sentences in Hausa, Yoruba and Igbo alongside English.
-- **Duplicate detection.** An accepted capture is perceptually hashed and
-  matched against every image Keys holds. A match opens a review; it never
-  blocks a listing on its own, because the same photograph legitimately appears
-  on two listings when an agency changes hands or a flat is re-let.
+- **Duplicate detection, end to end.** An accepted capture is perceptually
+  hashed and matched against every image Keys holds. A match opens a pair in a
+  reviewer's queue — asked once, however many photographs the two listings
+  share — and blocking the copy costs it the Verified badge. Nothing is blocked
+  on arithmetic: the same photograph legitimately appears on two listings when
+  an agency changes hands or a flat is re-let. Only the copy is penalised; the
+  agent who was copied keeps their listing.
 - **The agent screens on the phone**, behind a two-tab bottom bar: open an
   account, ask a landlord, draft, publish, and see which of the seven Verified
   conditions each listing still needs. Every sentence in four languages,

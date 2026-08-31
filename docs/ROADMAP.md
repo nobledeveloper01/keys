@@ -188,9 +188,12 @@ none of them can wait for launch.*
    threshold of 10; the two most similar different rooms are 21 apart. Both margins are
    asserted, not just the pass.
 
-   **Wired into the capture route.** An accepted capture is hashed, matched against every
-   image Keys holds, and indexed — after acceptance, never before, so a refused upload
-   cannot poison the index. A listing is never matched against its own earlier photographs.
+   **Wired end to end.** An accepted capture is hashed, matched against every image Keys
+   holds, and indexed — after acceptance, never before, so a refused upload cannot poison
+   the index. A listing is never matched against its own earlier photographs. A match opens
+   a pair in the reviewer's queue at `/v1/duplicates`, asked once per pair rather than once
+   per file; blocking the copy feeds `blockedDuplicate` and costs it the badge, and the
+   listing that had the picture first is untouched.
 
    **What it does not catch, written down rather than excused:** a horizontal flip, which
    inverts every column comparison. There is a test asserting it is missed, so the hole

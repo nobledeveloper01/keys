@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 
 import { AgentsModule } from '../agents/agents.module';
+import { CapturesStoreModule } from './captures-store.module';
 import { CapturesController } from './captures.controller';
-import { CapturesStore, InMemoryCapturesStore } from './captures.store';
+import { DuplicatesController } from './duplicates.controller';
 
 /**
  * One door, behind the agent guard.
@@ -14,8 +15,7 @@ import { CapturesStore, InMemoryCapturesStore } from './captures.store';
  * common.
  */
 @Module({
-  imports: [AgentsModule],
-  controllers: [CapturesController],
-  providers: [{ provide: CapturesStore, useClass: InMemoryCapturesStore }],
+  imports: [AgentsModule, CapturesStoreModule],
+  controllers: [CapturesController, DuplicatesController],
 })
 export class CapturesModule {}

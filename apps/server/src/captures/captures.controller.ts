@@ -181,6 +181,7 @@ export class CapturesController {
     const looksLike: readonly Match[] = image
       ? await this.store.indexAndMatch(claim.listingId, image)
       : [];
+    if (looksLike.length > 0) await this.store.openPairs(claim.listingId, looksLike, now);
 
     await this.store.record({
       id: randomUUID(),

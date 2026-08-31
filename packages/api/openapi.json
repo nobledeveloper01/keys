@@ -824,6 +824,83 @@
           "captures"
         ]
       }
+    },
+    "/v1/duplicates": {
+      "get": {
+        "operationId": "DuplicatesController_queue",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DuplicatePairView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "reviewer-token": []
+          }
+        ],
+        "summary": "Image matches waiting for a person. Closest first.",
+        "tags": [
+          "review"
+        ]
+      }
+    },
+    "/v1/duplicates/{listingId}/{matchedListingId}": {
+      "post": {
+        "operationId": "DuplicatesController_decide",
+        "parameters": [
+          {
+            "name": "listingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "matchedListingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuplicateDecisionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What was decided."
+          }
+        },
+        "security": [
+          {
+            "reviewer-token": []
+          }
+        ],
+        "summary": "Block the copy, or allow both. Needs a reason either way.",
+        "tags": [
+          "review"
+        ]
+      }
     }
   },
   "info": {
@@ -1743,6 +1820,59 @@
           "meaning",
           "duplicates",
           "looksLikeListings"
+        ]
+      },
+      "DuplicatePairView": {
+        "type": "object",
+        "properties": {
+          "listingId": {
+            "type": "string",
+            "description": "The listing that uploaded the picture second."
+          },
+          "matchedListingId": {
+            "type": "string",
+            "description": "The listing that already had it."
+          },
+          "distance": {
+            "type": "number",
+            "description": "Differing bits, out of 64. Zero is the same file."
+          },
+          "firstSeenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "meaning": {
+            "type": "string",
+            "description": "What the distance means, in words a reviewer can act on."
+          }
+        },
+        "required": [
+          "listingId",
+          "matchedListingId",
+          "distance",
+          "firstSeenAt",
+          "meaning"
+        ]
+      },
+      "DuplicateDecisionBody": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "blocked",
+              "allowed"
+            ]
+          },
+          "reasoning": {
+            "type": "string",
+            "minLength": 20,
+            "description": "Mandatory. This is the audit record."
+          }
+        },
+        "required": [
+          "decision",
+          "reasoning"
         ]
       }
     }

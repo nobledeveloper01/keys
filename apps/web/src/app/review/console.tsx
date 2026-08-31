@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import type { AgentUnderReview, ReviewItem, ReviewMetrics } from '@keys/api';
+import type { AgentUnderReview, DuplicatePair, ReviewItem, ReviewMetrics } from '@keys/api';
 
 import { categoryWords } from '../../categories';
 
@@ -52,6 +52,7 @@ export function Console() {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [agents, setAgents] = useState<AgentUnderReview[]>([]);
+  const [duplicates, setDuplicates] = useState<DuplicatePair[]>([]);
   const [open, setOpen] = useState<(QueueItem & { history?: HistoryEntry[] }) | null>(null);
 
   /*
@@ -93,14 +94,16 @@ export function Console() {
   const refresh = useCallback(async (t: string) => {
     setProblem(null);
     try {
-      const [q, m, a] = await Promise.all([
+      const [q, m, a, d] = await Promise.all([
         call<{ reports: QueueItem[] }>(t, '/v1/review/queue'),
         call<Metrics>(t, '/v1/review/metrics'),
         call<AgentUnderReview[]>(t, '/v1/agent-review'),
+        call<DuplicatePair[]>(t, '/v1/duplicates'),
       ]);
       setQueue(q.reports);
       setMetrics(m);
       setAgents(a);
+      setDuplicates(d);
       setSignedIn(true);
       try {
         sessionStorage.setItem('keys.reviewer', t);
@@ -227,6 +230,13 @@ export function Console() {
         </button>
       ))}
 
+      <Duplicates
+        pairs={duplicates}
+        token={token}
+        onChanged={() => void refresh(token)}
+        onProblem={setProblem}
+      />
+
       <Agents
         agents={agents}
         token={token}
@@ -240,6 +250,112 @@ export function Console() {
         </p>
       )}
     </main>
+  );
+}
+
+/**
+ * Images that appear on two listings.
+ *
+ * Above the agents and below the reports, which is the order of how fast each
+ * one goes stale: a report has a reply window closing on somebody's public
+ * accusation, a duplicate is a listing collecting inspection fees today, and
+ * the agent list is a list.
+ *
+ * Both buttons demand a reason, and the labels say what each one does rather
+ * than *blocked* and *allowed* — a reviewer choosing between two adjectives is
+ * a reviewer guessing at consequences.
+ */
+function Duplicates({
+  pairs,
+  token,
+  onChanged,
+  onProblem,
+}: {
+  pairs: DuplicatePair[];
+  token: string;
+  onChanged: () => void;
+  onProblem: (message: string) => void;
+}) {
+  const [reasons, setReasons] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState<string | null>(null);
+
+  if (pairs.length === 0) {
+    return (
+      <>
+        <h2>Duplicate images</h2>
+        <p className="quiet">Nothing waiting. A match here is a listing using somebody else&rsquo;s photographs.</p>
+      </>
+    );
+  }
+
+  function decide(pair: DuplicatePair, decision: 'blocked' | 'allowed') {
+    const key = `${pair.listingId}/${pair.matchedListingId}`;
+    setBusy(key);
+    void call(token, `/v1/duplicates/${key}`, 'POST', {
+      decision,
+      reasoning: reasons[key] ?? '',
+    })
+      .then(() => {
+        setReasons((was) => ({ ...was, [key]: '' }));
+        onChanged();
+      })
+      .catch((e: unknown) => onProblem(e instanceof Error ? e.message : 'That did not work.'))
+      .finally(() => setBusy(null));
+  }
+
+  return (
+    <>
+      <h2>Duplicate images</h2>
+      <p className="small quiet">
+        The same photograph on two listings is the cheapest scam in this market. It is
+        also what an agency changing hands looks like, so nothing is blocked until you
+        say so.
+      </p>
+
+      <ul className="listings">
+        {pairs.map((pair) => {
+          const key = `${pair.listingId}/${pair.matchedListingId}`;
+          return (
+            <li key={key}>
+              <p>
+                <strong>{pair.meaning}</strong>
+              </p>
+              <p className="small quiet">
+                {pair.listingId} used a picture already on {pair.matchedListingId}
+                {' · '}
+                {pair.distance === 0 ? 'identical' : `${pair.distance} of 64 bits differ`}
+                {' · '}
+                seen {new Date(pair.firstSeenAt).toLocaleDateString('en-NG', {
+                  day: 'numeric',
+                  month: 'long',
+                })}
+              </p>
+
+              <label htmlFor={`why-${key}`}>Why you decided that</label>
+              <textarea
+                id={`why-${key}`}
+                value={reasons[key] ?? ''}
+                onChange={(event) =>
+                  setReasons((was) => ({ ...was, [key]: event.target.value }))
+                }
+              />
+
+              <button type="button" disabled={busy === key} onClick={() => decide(pair, 'blocked')}>
+                {busy === key ? 'Saving…' : `Take ${pair.listingId} down`}
+              </button>{' '}
+              <button
+                type="button"
+                className="linkish"
+                disabled={busy === key}
+                onClick={() => decide(pair, 'allowed')}
+              >
+                Both may use it
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </>
   );
 }
 

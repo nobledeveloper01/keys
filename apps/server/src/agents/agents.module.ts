@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { CapturesStoreModule } from '../captures/captures-store.module';
 import { ReportsModule } from '../reports/reports.module';
 import { AgentReviewController } from './agent-review.controller';
 import { AgentsController } from './agents.controller';
@@ -20,9 +21,15 @@ import { PostgresAgentsStore } from './agents.postgres';
  * `ReportsModule` is imported because an upheld scam report costs an agent the
  * `established` badge. That is one import rather than a copied count, so the
  * registry and the ladder cannot disagree about what has been upheld.
+ *
+ * `CapturesStoreModule` — the store alone, not `CapturesModule` — because a
+ * blocked image is one of the seven Verified conditions, and `CapturesModule`
+ * imports this one for the agent guard. Two modules importing each other
+ * resolve to `undefined` somewhere and fail as a null dereference in a route
+ * far from either file.
  */
 @Module({
-  imports: [ReportsModule],
+  imports: [ReportsModule, CapturesStoreModule],
   controllers: [AgentsController, AuthorityController, AgentReviewController],
   providers: [
     Outbox,

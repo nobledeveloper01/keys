@@ -47,6 +47,7 @@ import {
   LandlordVouchesForTooMany,
   type StoredAgent,
 } from './agents.store';
+import { CapturesStore, type StoredCapture } from '../captures/captures.store';
 import { Outbox } from './outbox';
 
 /**
@@ -75,6 +76,7 @@ export class AgentsController {
     private readonly store: AgentsStore,
     private readonly reports: ReportsStore,
     private readonly outbox: Outbox,
+    private readonly captures: CapturesStore,
   ) {}
 
   /**
@@ -322,6 +324,15 @@ export class AgentsController {
     const now = new Date();
     const listings = await this.store.listingsOf(agent.id);
     const evidence = await this.store.evidenceFor(agent.id);
+
+    // Asked per listing rather than assumed false, which is what it was. A
+    // reviewer blocking an image had no effect on anything an agent could see.
+    const blocked = new Set<string>();
+    const captured = new Map<string, readonly StoredCapture[]>();
+    for (const listing of listings) {
+      if (await this.captures.isBlocked(listing.id)) blocked.add(listing.id);
+      captured.set(listing.id, await this.captures.capturesFor(listing.id));
+    }
     const upheld = await this.reports.publishedForHash(agent.phoneHash, now);
     const tier = tierOf(
       evidence,
@@ -343,8 +354,31 @@ export class AgentsController {
       const inputs: ListingEvidence = {
         agentTier: tier,
         authorityLive: mayList(evidence, l.propertyId, now),
-        captures: [],
-        blockedDuplicate: false,
+        /*
+          The captures this listing actually has.
+
+          `[]` was here, which meant an agent who had done everything right saw
+          "take at least one photo in the Keys app" for ever. Verified is
+          computed from evidence; passing an empty list is not computing it, it
+          is asserting the answer.
+
+          `provesPresence` still needs a distance, and nothing yet knows where
+          a property *is* — so a capture arrives with `distanceM: null` and the
+          condition stays unmet. That is the honest state: an accepted capture
+          proves the Keys camera took it, and proving it was taken at the
+          property needs a property with coordinates, which phase 4 brings.
+        */
+        captures: (captured.get(l.id) ?? []).map((c) => ({
+          kind: c.kind,
+          // Anything the store holds passed signature verification to get
+          // there — that is the only door — so these are true by construction
+          // rather than by a flag somebody set.
+          capturedInApp: true,
+          signatureValid: true,
+          distanceM: c.distanceM,
+          durationSeconds: c.durationSeconds,
+        })),
+        blockedDuplicate: blocked.has(l.id),
         lastConfirmedAt: null,
         upheldReports: upheld.length,
       };
