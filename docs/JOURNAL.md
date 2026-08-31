@@ -6,6 +6,63 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — A black screen with no way out
+
+**Did.** Forced expiry, and the camera. Phase 3's scope is now built except for object
+storage.
+
+### What surprised us
+
+**A fourth hardcoded input.** `lastConfirmedAt: null` had been sitting in the Verified
+computation alongside the three found yesterday, with the same shape of comment saying a
+later slice would fill it in. A listing's confirmation date is now its own, and the
+tempting shortcut — defaulting it to the publication date — is refused by a test, because
+that would hand every listing a free fortnight of Verified and make the first confirmation
+the one nobody ever does.
+
+**The camera trapped the agent on a black screen, and only a simulator could find it.** The
+capture controller discovered the missing camera in `viewDidLoad` and called its completion
+there, which ran `dismiss` while the presentation was still animating. Nothing dismissed.
+No cancel button had been laid out yet either, because the guard returned before that line.
+
+On a phone this path never runs, so this is a bug that only exists where it is hardest to
+notice you should look. The rule it produced: **do not present a screen you already know
+will fail.** Whatever can be checked before presenting is checked before presenting, and the
+late failure — the camera existed a moment ago and does not now — is deferred to the next
+run loop so there is something to dismiss.
+
+**And then the clean refusal was a red error overlay.** `capture()` rejects for four
+ordinary reasons — no camera, cancelled, no location, the photo failed — and every one is a
+sentence to show, not an exception. An uncaught rejection puts a redbox in front of somebody
+standing in a flat trying to photograph it.
+
+**The React Native template shipped an empty `NSLocationWhenInUseUsageDescription`.** It had
+been in `Info.plist` since the project was created, and iOS terminates an app that requests
+location with an empty string. Nothing had requested location before, so nothing had
+crashed. The build warned about it the moment a real one was added beside it — two keys, the
+empty one winning.
+
+### The rule that keeps falling out of this
+
+Twice now a pure function has had to be moved out from beside a native import — the
+SHA-256, then the base64 decoder. A file whose first line is
+`TurboModuleRegistry.getEnforcing` cannot be imported by a test at all, because that call
+runs at *import* time rather than at first use. Both are their own modules now, and both are
+held to Node's output across the padding and block boundaries where hand-written versions go
+wrong.
+
+### What is not verified, and cannot be here
+
+A simulator has no camera. Every path except the photograph itself has been exercised — the
+refusal, the permission prompt, the enclave signature, the hash, the upload. R11 is somebody
+standing at a property with a phone, and it is in the ledger rather than assumed.
+
+There is no gallery picker and there will not be one. The signature's whole claim is that
+the bytes came out of this camera; a picker beside it would be a hole with a button on it,
+advertised by the app itself.
+
+---
+
 ## 2026-08-31 — The curve was chosen by the enclave, not by me
 
 **Did.** The signing module: a P-256 key generated inside the Secure Enclave, signing there,
