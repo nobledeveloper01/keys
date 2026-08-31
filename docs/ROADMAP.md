@@ -186,10 +186,21 @@ none of them can wait for launch.*
    inverts every column comparison. There is a test asserting it is missed, so the hole
    cannot be forgotten. Indexing both orientations doubles the index and is a decision to
    take deliberately.
-3. ⏳ **An injected upload that did not pass through in-app capture is rejected** by
-   signature verification. The domain rule is written and tested — `provesPresence` refuses
-   anything not captured in-app, with an invalid signature, or with no location at all — but
-   nothing signs anything yet. Needs the capture TurboModule.
+3. ✅ **An injected upload that did not pass through in-app capture is rejected** by
+   signature verification. Real Ed25519, fifteen assertions: no signature at all (the
+   gallery case), a key the attacker generated, a genuine signature over different
+   coordinates, a genuine signature over a different photograph, the same signed capture
+   twice, a stale one, an unknown device, another agent's device with that device's own real
+   signature, and a malformed signature that must not 500 a route anybody with an agent
+   token can probe.
+
+   The location, the timestamp and the mocked-location flag are **inside** the signed
+   message, so a modified client cannot change any of them — signing as mocked and sending
+   as real is refused as a bad signature rather than laundered.
+
+   **Not yet:** the phone side. The key lives in the secure element and the TurboModule that
+   generates it does not exist, so nothing signs anything outside the tests. The server will
+   refuse everything until it does, which is the correct direction to be incomplete in.
 
 ## Phase 4 — Search & Discovery (Weeks 20–23)
 Postgres FTS + PostGIS search, filters with Verified defaulting on, map search, ranking in the

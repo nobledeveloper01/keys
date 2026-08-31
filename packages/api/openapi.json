@@ -757,6 +757,73 @@
           "review"
         ]
       }
+    },
+    "/v1/captures/devices": {
+      "post": {
+        "operationId": "CapturesController_registerDevice",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDeviceBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The device id to sign captures with."
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Register this phone's public key. Once per device.",
+        "tags": [
+          "captures"
+        ]
+      }
+    },
+    "/v1/captures": {
+      "post": {
+        "operationId": "CapturesController_submit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptureBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptureRefusedResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Submit a signed capture. Unsigned uploads are refused.",
+        "tags": [
+          "captures"
+        ]
+      }
     }
   },
   "info": {
@@ -1544,6 +1611,115 @@
           "upheldReports",
           "publishedListings",
           "evidence"
+        ]
+      },
+      "RegisterDeviceBody": {
+        "type": "object",
+        "properties": {
+          "publicKey": {
+            "type": "string",
+            "description": "The device's Ed25519 public key, SPKI DER, base64."
+          }
+        },
+        "required": [
+          "publicKey"
+        ]
+      },
+      "CaptureBody": {
+        "type": "object",
+        "properties": {
+          "deviceId": {
+            "type": "string"
+          },
+          "listingId": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "description": "SHA-256 of the media bytes, lower-case hex."
+          },
+          "capturedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "Once per capture. A reused one is refused."
+          },
+          "mockLocation": {
+            "type": "boolean",
+            "description": "What the OS said about the location. Signed, so it cannot be flipped."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "photo",
+              "video"
+            ]
+          },
+          "durationSeconds": {
+            "type": "number",
+            "nullable": true
+          },
+          "signature": {
+            "type": "string",
+            "description": "Ed25519 over the canonical claim, base64."
+          }
+        },
+        "required": [
+          "deviceId",
+          "listingId",
+          "sha256",
+          "capturedAt",
+          "latitude",
+          "longitude",
+          "nonce",
+          "mockLocation",
+          "kind",
+          "durationSeconds",
+          "signature"
+        ]
+      },
+      "CaptureRefusedResponse": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean"
+          },
+          "refusals": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "unknown_device",
+                "not_this_agents_device",
+                "bad_signature",
+                "bytes_do_not_match",
+                "replayed",
+                "stale",
+                "from_the_future",
+                "mock_location"
+              ]
+            }
+          },
+          "meaning": {
+            "description": "One sentence per refusal, written for the agent.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "accepted",
+          "refusals",
+          "meaning"
         ]
       }
     }

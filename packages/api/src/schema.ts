@@ -364,6 +364,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/captures/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register this phone's public key. Once per device. */
+        post: operations["CapturesController_registerDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/captures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit a signed capture. Unsigned uploads are refused. */
+        post: operations["CapturesController_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -596,6 +630,35 @@ export interface components {
             upheldReports: number;
             publishedListings: number;
             evidence: components["schemas"]["AttestationView"][];
+        };
+        RegisterDeviceBody: {
+            /** @description The device's Ed25519 public key, SPKI DER, base64. */
+            publicKey: string;
+        };
+        CaptureBody: {
+            deviceId: string;
+            listingId: string;
+            /** @description SHA-256 of the media bytes, lower-case hex. */
+            sha256: string;
+            /** Format: date-time */
+            capturedAt: string;
+            latitude: number;
+            longitude: number;
+            /** @description Once per capture. A reused one is refused. */
+            nonce: string;
+            /** @description What the OS said about the location. Signed, so it cannot be flipped. */
+            mockLocation: boolean;
+            /** @enum {string} */
+            kind: "photo" | "video";
+            durationSeconds: number | null;
+            /** @description Ed25519 over the canonical claim, base64. */
+            signature: string;
+        };
+        CaptureRefusedResponse: {
+            accepted: boolean;
+            refusals: ("unknown_device" | "not_this_agents_device" | "bad_signature" | "bytes_do_not_match" | "replayed" | "stale" | "from_the_future" | "mock_location")[];
+            /** @description One sentence per refusal, written for the agent. */
+            meaning: string[];
         };
     };
     responses: never;
@@ -1112,6 +1175,51 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    CapturesController_registerDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDeviceBody"];
+            };
+        };
+        responses: {
+            /** @description The device id to sign captures with. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CapturesController_submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptureBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaptureRefusedResponse"];
+                };
             };
         };
     };
