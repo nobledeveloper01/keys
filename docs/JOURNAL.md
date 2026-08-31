@@ -6,6 +6,45 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — The masthead was recruiting on the reply page
+
+**Did.** Report and reply, at 375 points wide, both flows driven end to end
+against Postgres.
+
+### What surprised us
+
+**The worst thing on those pages was not a layout bug.** The masthead carries
+one link — *Report a number* — on every page, including the one somebody reaches
+from an SMS saying they have just been reported. A one-tap route to reporting
+whoever they suspect, at the moment they are angriest, put there by us.
+
+The product's own copy, two pages away, says "a report made to damage a
+competitor is the thing this registry exists to be worth nothing to". The
+seven-day window, the human review, the evidence requirement — all of it is
+built to make a revenge report worthless. And then the chrome offered one.
+
+Nothing catches that. It is not a contrast failure, a broken layout, or an
+inaccessible control. It is a correct component in a context where it means
+something different, and the only way to find it was to open the page as the
+person who receives it.
+
+**Fixing the error state took two goes, and both failures were measurable.**
+The first put the scroll in `requestAnimationFrame`, which runs before React has
+committed the state that renders the message — `scrollY` stayed at 0 and
+`activeElement` was `body`. The second focused the field before scrolling, and
+`focus()` cancels an in-flight smooth scroll: the field sat ten points above the
+viewport with the cursor in it and the page never moved.
+
+Both looked plausible in the diff. Neither survived being measured, which is the
+argument for measuring rather than screenshotting: a screenshot of a page that
+did not scroll looks exactly like a screenshot of a page that had no reason to.
+
+**Every page had the home page's title.** Somebody answering an accusation about
+themselves had *check a number before you pay* in their tab and their browser
+history, and the URL — which carries a capability — was indexable.
+
+---
+
 ## 2026-08-31 — The riskiest button was the biggest because its label was longest
 
 **Did.** Checked the review console at 375 points wide, which is a width nobody

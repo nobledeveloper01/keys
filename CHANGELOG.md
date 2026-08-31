@@ -151,6 +151,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **The masthead offered "Report a number" on the reply page** — to somebody who
+  arrived from an SMS telling them they had just been reported. A one-tap route
+  to reporting whoever they suspect, at the moment they are angriest, is an
+  invitation to retaliate, and a registry of revenge reports is the failure the
+  whole review process exists to prevent. The link is still on the home page; it
+  is not put in front of them there.
+- **A refused report moved nothing on the page.** The message rendered at the
+  bottom of the form, so on a phone — where the submit button is already below
+  the fold — pressing send appeared to do nothing at all. The cursor now lands
+  in the field that is wrong and the page scrolls to it, and the confirmation is
+  scrolled to on success for the same reason.
+- Every page inherited the home page's title, so somebody answering an
+  accusation about themselves had *check a number before you pay* in their tab
+  and their browser history. `/reply` has its own title and is not indexed — the
+  URL carries a capability and has no business in a search index.
+- `normalise` moved out of `lookup.ts`, which also builds the API client from
+  `KEYS_API_URL`. Importing it into a browser component would have pulled a
+  server-only module, and a variable Next does not inline for the client, into
+  the bundle to get one regular expression.
+
 - **The review console's most consequential button was its most prominent, by
   accident.** The three decisions were a wrapping flex row, so on a phone the
   longest label — *Uphold — publish this* — took a full row above the other two

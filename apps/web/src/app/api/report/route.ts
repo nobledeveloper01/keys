@@ -4,7 +4,7 @@ import { ApiError } from '@keys/api';
 import { isReportCategory } from '@keys/domain';
 
 import { api } from '../../../lookup';
-import { normalise } from '../../../lookup';
+import { normalise } from '../../../phone';
 
 /** Same reasoning as the reply proxy: the browser never learns the API's address. */
 export async function POST(request: Request) {

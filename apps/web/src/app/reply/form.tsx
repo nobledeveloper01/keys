@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * The one interactive thing on the page.
@@ -14,9 +14,41 @@ export function ReplyForm({ token }: { token: string }) {
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
   const [problem, setProblem] = useState<string | null>(null);
 
+  // Same reasoning as the report form: a refusal that renders below the fold
+  // and moves nothing looks exactly like a button that did not work.
+  const alert = useRef<HTMLParagraphElement>(null);
+  const confirmation = useRef<HTMLDivElement>(null);
+
+  function show(message: string) {
+    setProblem(message);
+    setState('failed');
+  }
+
+  // After commit, not inside `requestAnimationFrame` — see the report form for
+  // what that measured.
+  useEffect(() => {
+    if (problem !== null) {
+      alert.current?.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+  }, [problem]);
+
+  /*
+    Bring the confirmation into view.
+
+    The form is replaced in place, several screens below a preamble the reader
+    has already read. Without this, pressing send on a phone shortens the page
+    under your thumb and leaves you looking at the same paragraph you were
+    looking at before — with no way to tell whether anything happened.
+  */
+  useEffect(() => {
+    if (state === 'sent') {
+      confirmation.current?.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+  }, [state]);
+
   if (state === 'sent') {
     return (
-      <div className="verdict clear">
+      <div className="verdict clear" ref={confirmation}>
         <p>
           <strong>Your answer is on the record.</strong>
         </p>
@@ -40,14 +72,12 @@ export function ReplyForm({ token }: { token: string }) {
       if (!response.ok) {
         const body: unknown = await response.json().catch(() => null);
         const shape = body as { detail?: string; message?: string } | null;
-        setProblem(shape?.detail ?? shape?.message ?? 'That did not send. Try again.');
-        setState('failed');
+        show(shape?.detail ?? shape?.message ?? 'That did not send. Try again.');
         return;
       }
       setState('sent');
     } catch {
-      setProblem('That did not send. Check your connection and try again.');
-      setState('failed');
+      show('That did not send. Check your connection and try again.');
     }
   }
 
@@ -68,7 +98,7 @@ export function ReplyForm({ token }: { token: string }) {
       />
       </div>
       {problem && (
-        <p className="error" role="alert">
+        <p className="error" role="alert" ref={alert}>
           {problem}
         </p>
       )}

@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { Keyhole } from './Keyhole';
 
@@ -11,6 +14,22 @@ import { Keyhole } from './Keyhole';
  * way to tell whose service had just accused them of something.
  */
 export function Masthead() {
+  const path = usePathname();
+
+  /*
+    Not on the reply page.
+
+    The masthead's only offer is "Report a number", and the person reading
+    `/reply` arrived from an SMS telling them they have been reported. Offering
+    them a one-tap way to report somebody else, on that page, at that moment,
+    is an invitation to retaliate — and a registry full of revenge reports is
+    the failure this product spends its whole review process avoiding.
+
+    They can still reach it from the home page. It is just not put in front of
+    them here.
+  */
+  const offerReporting = path !== '/reply';
+
   return (
     <header className="masthead">
       <Link href="/" className="brand" aria-label="Keys — home">
@@ -19,9 +38,11 @@ export function Masthead() {
         </span>
         <span className="brand-word">Keys</span>
       </Link>
-      <nav className="masthead-nav">
-        <Link href="/report">Report a number</Link>
-      </nav>
+      {offerReporting ? (
+        <nav className="masthead-nav">
+          <Link href="/report">Report a number</Link>
+        </nav>
+      ) : null}
     </header>
   );
 }

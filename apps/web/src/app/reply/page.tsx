@@ -5,6 +5,19 @@ import { categoryWords } from '../../categories';
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = {
+  /*
+    Its own title, and not indexed.
+
+    Every page inherited the home page's "check a number before you pay", so
+    somebody answering an accusation about themselves had that in their tab and
+    their history. The URL carries a capability, too — it has no business in a
+    search index.
+  */
+  title: 'Answer a report — Keys',
+  robots: { index: false, follow: false },
+};
+
 /**
  * The page the reported party lands on, from a link in an SMS.
  *
