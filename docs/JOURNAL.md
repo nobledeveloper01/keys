@@ -6,6 +6,63 @@ changelog with worse formatting.
 
 ---
 
+## 2026-08-31 — Signing the claim, not the file
+
+**Did.** Phase 3's third gate: Ed25519 verification of every capture, and fifteen
+assertions that an upload which did not come out of the Keys camera is refused.
+
+### What surprised us
+
+**The interesting attack is not an unsigned upload.** That one is obvious and fails
+immediately. The one worth building for is a *genuine* signature over *different values*:
+the agent really did take a photograph, on a real registered device, with a real key — and
+submits it claiming a different flat. Signature real, device real, only the coordinates
+changed.
+
+It fails because the coordinates are inside the signed message. That is the whole design
+decision, and it generalises: the timestamp is in there, and so is the operating system's
+mocked-location flag. Signing as mocked and sending as real is refused as a *bad
+signature*, not laundered into a real capture — a flag sent beside a signature is a flag
+the client can flip.
+
+**The nonce has to be spent before anything is decided.** Claiming it only on success
+leaves it spendable after any other failure, and a valid signature plus a reusable nonce is
+a replay waiting to happen. It costs an honest agent a retry after a genuine error, which
+is much the cheaper mistake. Moving the claim to the success path fails exactly one test,
+which is how it should be.
+
+**The refusal body was invisible to our own client.** Nest returns a plain object as the
+response body, so the refusals were there — and `@keys/api` reads `detail` for every refusal
+in this product. A caller that had not been specially taught about `meaning` would have
+shown its own generic fallback and told the agent nothing. `detail` is now the sentences,
+joined.
+
+### Decisions worth recording
+
+**Twelve hours of freshness, not five minutes.** An agent photographs three flats in a
+morning on a phone with no data and uploads that evening. Refusing that pushes them towards
+the workaround this mechanism exists to prevent. What the window is really for is bounding
+how long the nonce store has to remember.
+
+**There is no `updateKey`.** A device's public key is written once at registration and no
+method replaces it. An attacker who can rotate a key can sign anything as that device, so
+the absence is the security property rather than an unfinished feature. A lost phone is a
+new device.
+
+**A signature proves the path, not the subject.** It proves the bytes came out of the Keys
+camera on this agent's device at a stated place and time. It does not prove they were
+photographing their own flat — a camera can be pointed at a printout. That is what
+perceptual hashing is for, and keeping the two defences separate is what stops either one
+being asked to do a job it cannot.
+
+### Still open
+
+The phone side. The key belongs in the secure element and the TurboModule that generates it
+does not exist, so nothing signs anything outside the tests. The server refuses everything
+until it does, which is the correct direction to be incomplete in.
+
+---
+
 ## 2026-08-31 — The corpus was testing the fixture
 
 **Did.** Phase 3's first two gates: the seven-condition Verified rule, exhaustive rather
