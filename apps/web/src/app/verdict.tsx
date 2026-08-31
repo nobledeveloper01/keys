@@ -115,6 +115,12 @@ export async function Verdict({ phone }: { phone: string }) {
                 : `${agent.confirmedProperties} properties a landlord confirmed`}
             </p>
           )}
+          {/*
+            Said out loud when there is a warning above. Ordering alone was
+            doing this work, and ordering is not enough for somebody who scrolls
+            to the name they recognise.
+          */}
+          {!clean && <p className="small">Being checked is not an answer to what is above.</p>}
         </div>
       )}
     </div>

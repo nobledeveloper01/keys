@@ -253,7 +253,11 @@ export function tierSentence(tier: Tier): string {
     case 'identity':
       return 'Their ID was checked against a live photo of their face.';
     case 'authority':
-      return 'A landlord confirmed they may let this property.';
+      // Not "this property". These sentences are read on a number lookup,
+      // where no property is on the screen at all, and a sentence that points
+      // at something the reader cannot see is a sentence they will supply
+      // their own answer to.
+      return 'A landlord has confirmed a property they may let.';
     case 'established':
       return 'Landlords have confirmed them on several properties over months, with nothing upheld against them.';
   }

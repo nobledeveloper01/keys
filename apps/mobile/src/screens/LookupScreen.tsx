@@ -142,7 +142,9 @@ export function LookupScreen({
         and the order on the screen has to say which of the two matters more.
         A confirmation panel above a warning would read as a rebuttal of it.
       */}
-      {phone !== null && answer !== null && agent !== null && <Verified agent={agent} />}
+      {phone !== null && answer !== null && agent !== null && (
+        <Verified agent={agent} reported={answer.upheldReports > 0} />
+      )}
 
       {/*
         No empty state before the first search.
@@ -249,15 +251,21 @@ function Answer({ answer, phone }: { answer: Lookup; phone: string }) {
  * checked*, so a tenant reading it could go and check the same thing. The tier
  * word itself never appears on the screen.
  */
-function Verified({ agent }: { agent: AgentProfile }) {
+function Verified({ agent, reported }: { agent: AgentProfile; reported: boolean }) {
   const { t } = useLanguage();
-  const colours = useColours();
 
   return (
-    <Glass
-      tone={{ line: colours.clear, wash: colours.clearWash }}
-      style={styles.card}
-    >
+    /*
+      Neutral, not green — and this was green until it was seen on a screen.
+
+      Two status-coloured cards stacked read as two verdicts, and the second one
+      being the same green as a clean result made the confirmation look like a
+      second all-clear. Worse the other way round: a green panel under a red
+      one is a rebuttal in colour, which is the exact thing the ordering here
+      exists to prevent. The status colour belongs to the warning. This is the
+      quieter thing underneath it.
+    */
+    <Glass style={styles.card}>
       <Text variant="label" tone="secondary">
         {t('verified_agent')}
       </Text>
@@ -269,8 +277,23 @@ function Verified({ agent }: { agent: AgentProfile }) {
       <Text variant="body">{t(tierPhrase(agent.tier))}</Text>
 
       {agent.confirmedProperties > 0 && (
-        <Text variant="body" tone="secondary" style={styles.category}>
-          {`${agent.confirmedProperties}  ${t('properties_confirmed')}`}
+        <Text variant="label" tone="secondary" style={styles.confirmed}>
+          {`${agent.confirmedProperties} ${t('properties_confirmed')}`}
+        </Text>
+      )}
+
+      {/*
+        Said out loud when there is a warning above.
+
+        Ordering alone was doing this work — the red card is first and larger —
+        and ordering is not enough for somebody who scrolls to the name they
+        recognise. Being checked by Keys is a fact about a document and a
+        landlord's phone; it is not a rebuttal of a report a person upheld, and
+        the panel has to say so where it could be mistaken for one.
+      */}
+      {reported && (
+        <Text variant="body" style={styles.confirmed}>
+          {t('checked_is_not_a_defence')}
         </Text>
       )}
     </Glass>
@@ -280,6 +303,7 @@ function Verified({ agent }: { agent: AgentProfile }) {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   checkedLabel: { marginTop: space.md },
+  confirmed: { marginTop: space.sm },
   page: { padding: space.lg, paddingTop: space.xl, gap: space.sm, flexGrow: 1 },
   title: { marginTop: space.lg },
   lede: { marginBottom: space.md },

@@ -105,7 +105,8 @@ export type Phrase =
   | 'tier_unverified'
   | 'tier_identity'
   | 'tier_authority'
-  | 'tier_established';
+  | 'tier_established'
+  | 'checked_is_not_a_defence';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -144,8 +145,9 @@ export const EN: Readonly<Record<Phrase, string>> = {
   properties_confirmed: "properties a landlord confirmed",
   tier_unverified: "Nothing about this person has been checked.",
   tier_identity: "Their ID was checked against a live photo of their face.",
-  tier_authority: "A landlord confirmed they may let this property.",
+  tier_authority: "A landlord has confirmed a property they may let.",
   tier_established: "Landlords have confirmed them on several properties over months, with nothing upheld against them.",
+  checked_is_not_a_defence: "Being checked is not an answer to what is above.",
   waiting_to_send: "waiting to send",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Any format. 0803…, +234 803…, or 803….",
@@ -205,8 +207,9 @@ export const HA: Readonly<Record<Phrase, string>> = {
   properties_confirmed: "wurare da mai gida ya tabbatar",
   tier_unverified: "Ba a duba kome game da wannan mutumin ba.",
   tier_identity: "An duba katin shaidarsa da hoton fuskarsa kai tsaye.",
-  tier_authority: "Mai gida ya tabbatar da cewa yana da izinin haya wannan wurin.",
+  tier_authority: "Mai gida ya tabbatar da wurin da yake da izinin haya.",
   tier_established: "Masu gidaje sun tabbatar da shi a wurare da dama cikin watanni, kuma ba a tabbatar da wani rahoto a kansa ba.",
+  checked_is_not_a_defence: "Dubawar da aka yi ba amsa ba ce ga abin da ke sama.",
   waiting_to_send: "na jiran aikawa",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Kowace sura. 0803…, +234 803…, ko 803….",
@@ -266,8 +269,9 @@ export const YO: Readonly<Record<Phrase, string>> = {
   properties_confirmed: "ilé tí onílé fọwọ́ sí",
   tier_unverified: "A kò ṣàyẹ̀wò ohunkóhun nípa ẹni yìí.",
   tier_identity: "A fi fọ́tò ojú rẹ̀ tààrà ṣàyẹ̀wò káàdì ìdánimọ̀ rẹ̀.",
-  tier_authority: "Onílé fọwọ́ sí i pé ó lè yá ilé yìí.",
+  tier_authority: "Onílé ti fọwọ́ sí ilé kan tí ó lè yá.",
   tier_established: "Àwọn onílé ti fọwọ́ sí i ní ilé púpọ̀ fún ọ̀pọ̀ oṣù, kò sì sí ẹ̀sùn tí a gbà lòdì sí i.",
+  checked_is_not_a_defence: "Ṣíṣàyẹ̀wò kì í ṣe ìdáhùn sí ohun tí ó wà lókè.",
   waiting_to_send: "ń dúró láti lọ",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ìrísí èyíkéyìí. 0803…, +234 803…, tàbí 803….",
@@ -327,8 +331,9 @@ export const IG: Readonly<Record<Phrase, string>> = {
   properties_confirmed: "ụlọ onye nwe ụlọ kwadoro",
   tier_unverified: "Ọ dịghị ihe e nyochara banyere onye a.",
   tier_identity: "E ji foto ihu ya nyochaa kaadị njirimara ya.",
-  tier_authority: "Onye nwe ụlọ kwadoro na ọ nwere ike ịgbazinye ụlọ a.",
+  tier_authority: "Onye nwe ụlọ akwadowo otu ụlọ ọ nwere ike ịgbazinye.",
   tier_established: "Ndị nwe ụlọ akwadowo ya n'ọtụtụ ụlọ kemgbe ọtụtụ ọnwa, ọ dịghịkwa mkpesa a kwadoro megide ya.",
+  checked_is_not_a_defence: "Nyocha abụghị azịza nye ihe dị n'elu.",
   waiting_to_send: "na-echere izipu",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ụdị ọ bụla. 0803…, +234 803…, ma ọ bụ 803….",
