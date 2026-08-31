@@ -6,7 +6,7 @@ import { AgentReviewController } from './agent-review.controller';
 import { AgentsController } from './agents.controller';
 import { AgentsStore, InMemoryAgentsStore } from './agents.store';
 import { AuthorityController } from './authority.controller';
-import { Outbox } from './outbox';
+import { OutboxModule } from '../outbox/outbox.module';
 import { PostgresAgentsStore } from './agents.postgres';
 
 /**
@@ -29,10 +29,9 @@ import { PostgresAgentsStore } from './agents.postgres';
  * far from either file.
  */
 @Module({
-  imports: [ReportsModule, CapturesStoreModule],
+  imports: [ReportsModule, CapturesStoreModule, OutboxModule],
   controllers: [AgentsController, AuthorityController, AgentReviewController],
   providers: [
-    Outbox,
     {
       provide: AgentsStore,
       useFactory: (): AgentsStore => {

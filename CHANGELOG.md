@@ -37,6 +37,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   on arithmetic: the same photograph legitimately appears on two listings when
   an agency changes hands or a flat is re-let. Only the copy is penalised; the
   agent who was copied keeps their listing.
+- **Answering a report, in the app.** A link in the text message opens Keys
+  straight on the reply screen — no tabs, no sign-in, because holding the
+  texted token is the only proof of control over a number that this product
+  accepts. It is an https link, so somebody without the app gets the web page
+  instead of a link that does nothing.
+- **The right of reply is actually sent.** Phase 1 built the token, the route
+  and the page, and nothing that delivered any of it: "seven days to answer"
+  was a sentence in the copy and a column in a database. A report now queues a
+  text to the reported number with their link in it.
 - **Reporting a number, from the app.** This was web-only for two phases: a
   tenant could look a number up on their phone, get scammed that afternoon, and
   have nowhere in the app to say so. It is reached from the answer card, with

@@ -48,18 +48,8 @@ import {
   type StoredAgent,
 } from './agents.store';
 import { CapturesStore, type StoredCapture } from '../captures/captures.store';
-import { Outbox } from './outbox';
-
-/**
- * Where the texted link points.
- *
- * The public site rather than the API, because what is being sent is something
- * a person opens on a phone. Hardcoded for now and read from the environment
- * when there is more than one deployment; a link that silently points at a
- * developer's laptop would be worse than no link at all, so it is a constant
- * somebody has to change on purpose.
- */
-const PUBLIC_SITE = 'https://keys.ng';
+import { authorityLink } from '../outbox/links';
+import { Outbox } from '../outbox/outbox';
 
 function properties(evidence: readonly Evidence[], now: Date): number {
   return new Set(
@@ -239,9 +229,9 @@ export class AgentsController {
         toPhoneHash: opened.challenge.landlordPhoneHash,
         body:
           `${agent.displayName} says they may let a property of yours on Keys. ` +
-          `If that is true, enter ${opened.code} at ${PUBLIC_SITE}/authority?c=` +
-          `${opened.challenge.id}. If not, ignore this — nothing changes unless ` +
-          'you enter it.',
+          `If that is true, enter ${opened.code} at ` +
+          `${authorityLink(opened.challenge.id)}. If not, ignore this — nothing ` +
+          'changes unless you enter it.',
       },
       now,
     );

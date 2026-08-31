@@ -20,8 +20,9 @@ import {
   ChallengeOpenedResponse,
   IdentityCheckBody,
 } from './agents.dto';
+import { authorityLink } from '../outbox/links';
 import { AgentsStore } from './agents.store';
-import { Outbox } from './outbox';
+import { Outbox } from '../outbox/outbox';
 import { VendorGuard } from './vendor.guard';
 
 /**
@@ -85,8 +86,8 @@ export class AuthorityController {
         body:
           'Someone asked to withdraw an agent\u2019s authority to let your property ' +
           `on Keys. If that was you, enter ${opened.code} at ` +
-          `https://keys.ng/authority?c=${opened.challenge.id}. If not, ignore this — ` +
-          'nothing changes unless you enter it.',
+          `${authorityLink(opened.challenge.id)}. If not, ignore this — nothing ` +
+          'changes unless you enter it.',
       },
       now,
     );

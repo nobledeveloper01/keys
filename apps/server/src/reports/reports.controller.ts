@@ -28,7 +28,9 @@ import {
   SubmitReportBody,
   TransparencyResponse,
 } from './reports.dto';
-import { ReportsStore } from './reports.store';
+import { replyLink } from '../outbox/links';
+import { Outbox } from '../outbox/outbox';
+import { ReportsStore, hashPhone } from './reports.store';
 
 /**
  * The scam registry's public face. No account, by design.
@@ -45,7 +47,10 @@ import { ReportsStore } from './reports.store';
 @ApiTags('registry')
 @Controller('v1/registry')
 export class ReportsController {
-  constructor(private readonly store: ReportsStore) {}
+  constructor(
+    private readonly store: ReportsStore,
+    private readonly outbox: Outbox,
+  ) {}
 
   @Get('lookup')
   @ApiOperation({
@@ -153,6 +158,31 @@ export class ReportsController {
       evidenceKeys: body.evidenceKeys ?? [],
       now: new Date(),
     });
+
+    /*
+      The right of reply, actually sent.
+
+      Phase 1 shipped a reply token, a route that accepts it, and a page that
+      uses it — and nothing anywhere that delivers it to the person being
+      accused. The right of reply this product promises in its own copy, on
+      every surface, has been a column in a database.
+
+      Queued rather than sent, because there is still no provider (R1). What
+      changes is that the message now exists and is addressed: when the
+      provider lands, this flow works rather than needing to be built.
+
+      The number is hashed here for the same reason as everywhere else — the
+      outbox holds a destination, not a directory of who has been reported.
+    */
+    this.outbox.queue(
+      {
+        toPhoneHash: hashPhone(body.reportedPhone.trim()),
+        body:
+          'Someone has reported this number to Keys. Nothing has been published ' +
+          `and nothing will be until a person reviews it. Your side: ${replyLink(row.replyToken)}`,
+      },
+      new Date(),
+    );
 
     /*
       What comes back carries no report content at all.

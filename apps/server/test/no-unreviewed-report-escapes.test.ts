@@ -3,7 +3,8 @@ import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
 
 import { AppModule } from '../src/app.module';
-import { ReportsStore } from '../src/reports/reports.store';
+import { Outbox } from '../src/outbox/outbox';
+import { ReportsStore, hashPhone } from '../src/reports/reports.store';
 
 /*
   Run against every store, not just the one that is easy to run against.
@@ -131,6 +132,59 @@ describe.each(STORES)('no unreviewed report escapes (%s)', (_name, databaseUrl) 
     await app.close();
     delete process.env.KEYS_REVIEWER_TOKEN;
     delete process.env.KEYS_DATABASE_URL;
+  });
+
+  it('texts the reported party their right of reply, and it is a link', async () => {
+    /*
+      The promise this product makes on every surface, actually kept.
+
+      Phase 1 built the token, the route that accepts it, and the page that
+      uses it — and nothing that delivers it. "Seven days to answer" was a
+      sentence in the copy and a column in a database; nobody was ever told.
+
+      Asserted through the outbox rather than through a provider, because there
+      is still no provider (R1). What this fixes is that the message exists and
+      is addressed to the right number.
+    */
+    const outbox = app.get(Outbox);
+    const before = outbox.depth;
+
+    const reportedPhone = '+2348012349999';
+    await request(app.getHttpServer())
+      .post('/v1/registry/reports')
+      .send({
+        reportedPhone,
+        category: 'no_show',
+        description: 'Took the appointment fee and never turned up, twice in one week.',
+      })
+      .expect(201);
+
+    expect(outbox.depth).toBe(before + 1);
+    const queued = outbox.pending()[outbox.depth - 1]!;
+
+    // Addressed to the number that was reported, hashed like everything else.
+    expect(queued.toPhoneHash).toBe(hashPhone(reportedPhone));
+    // And it carries a link they can open, not just a notification.
+    expect(queued.body).toContain('/reply?token=');
+    // Which says the thing that matters before it says anything else.
+    expect(queued.body).toMatch(/nothing has been published/i);
+  });
+
+  it('never puts a reply token in a response, only in the text', async () => {
+    // The token is the whole authorisation. A route that returns it turns the
+    // reporter — or anybody who can reach that route — into the reported party.
+    const outbox = app.get(Outbox);
+    const token = /token=([^\s]+)/.exec(outbox.pending().at(-1)?.body ?? '')?.[1];
+    expect(token).toBeTruthy();
+
+    for (const route of routesOf(app)) {
+      if (route.method !== 'GET') continue;
+      const response = await request(app.getHttpServer())
+        .get(route.path.replace(/:[A-Za-z]+/g, reportId))
+        .set('x-reviewer-token', TOKEN)
+        .query({ phone: PHONE });
+      expect(JSON.stringify(response.body)).not.toContain(token);
+    }
   });
 
   it('has routes to test, and knows how many', () => {

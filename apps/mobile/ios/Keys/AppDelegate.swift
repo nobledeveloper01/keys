@@ -2,7 +2,6 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
-import React_RCTLinking
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -35,6 +34,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   /*
     Two doors, and both have to be here.
+
+    `RCTLinkingManager` comes from `import React` — it lives inside the
+    prebuilt `React.framework` rather than in a Swift module of its own, and
+    `import React_RCTLinking` (which is what the pod is called) does not
+    resolve. That distinction cost a failed build.
 
     `openURL` handles the custom scheme, which is what a simulator can
     exercise. `continueUserActivity` handles a universal link — an https URL
