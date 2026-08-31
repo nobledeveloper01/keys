@@ -279,6 +279,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/agents/me/listings/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Say a listing is still available. Verified listings expire without this. */
+        post: operations["AgentsController_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/authority/withdrawal": {
         parameters: {
             query?: never;
@@ -615,6 +632,11 @@ export interface components {
             title: string;
             /** Format: date-time */
             publishedAt: string | null;
+            /**
+             * Format: date-time
+             * @description When somebody last said this is still available. Null means never.
+             */
+            confirmedAt: string | null;
             /** @description Which of the seven Verified conditions are unmet, and what to do. Empty means Verified. */
             stillNeeded: components["schemas"]["StillNeeded"][];
         };
@@ -1116,6 +1138,27 @@ export interface operations {
         };
     };
     AgentsController_publish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListingResponse"];
+                };
+            };
+        };
+    };
+    AgentsController_confirm: {
         parameters: {
             query?: never;
             header?: never;

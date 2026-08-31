@@ -166,6 +166,14 @@ export class ListingResponse {
   publishedAt!: string | null;
 
   @ApiProperty({
+    type: String,
+    nullable: true,
+    format: 'date-time',
+    description: 'When somebody last said this is still available. Null means never.',
+  })
+  confirmedAt!: string | null;
+
+  @ApiProperty({
     type: [StillNeeded],
     description: 'Which of the seven Verified conditions are unmet, and what to do. Empty means Verified.',
   })

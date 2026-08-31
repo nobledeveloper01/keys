@@ -226,6 +226,12 @@ none of them can wait for launch.*
    Ed25519 until the phone side was written; the server verifies ECDSA P-256 over SHA-256
    now, and refuses the old curve.
 
+   **Forced expiry is wired.** A published listing carries `last_confirmed_at`, an agent
+   confirms it from their own screen, and `recently_confirmed` reads the real date. It is
+   null until somebody confirms — publication is deliberately *not* treated as a
+   confirmation, because that would hand every listing a free fortnight and make the first
+   confirmation the one nobody ever does.
+
    **Not yet:** the camera. Captures are still built by hand in a development probe, so
    nothing photographs anything.
    Media arrives as a raw greyscale grid rather than a JPEG — the capture module will emit

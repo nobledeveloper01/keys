@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { Pool } from 'pg';
 import * as request from 'supertest';
 
-import { TIERS, tierOf } from '@keys/domain';
+import { CONFIRMATION_DAYS, TIERS, tierOf } from '@keys/domain';
 
 import { AppModule } from '../src/app.module';
 import { AgentsStore } from '../src/agents/agents.store';
@@ -690,6 +690,88 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
         .expect(200);
       expect(found.body.agentId).toBe(signedUp.body.agentId);
     }
+  });
+
+  describe('a listing that nobody confirms', () => {
+    let listing: string;
+
+    it('starts unconfirmed rather than assuming publication is a confirmation', async () => {
+      const draft = await request(app.getHttpServer())
+        .post('/v1/agents/me/listings')
+        .set('x-agent-token', token)
+        .send({ propertyId: 'flat-expiry', title: 'A flat that will go stale' })
+        .expect(201);
+      listing = draft.body.id;
+
+      const mine = await request(app.getHttpServer())
+        .get('/v1/agents/me/listings')
+        .set('x-agent-token', token)
+        .expect(200);
+      const it_ = mine.body.find((l: { id: string }) => l.id === listing);
+
+      /*
+        Never confirmed is not the same as confirmed today.
+
+        Defaulting `lastConfirmedAt` to the creation date is the obvious
+        convenience and it would hand every listing a free fortnight of
+        Verified — making the first confirmation the one nobody ever does, and
+        the whole mechanism a formality for listings that survive two weeks.
+      */
+      expect(it_.confirmedAt).toBeNull();
+      expect(it_.stillNeeded.map((n: { condition: string }) => n.condition)).toContain(
+        'recently_confirmed',
+      );
+    });
+
+    it('is confirmed by its own agent and nobody else', async () => {
+      const stranger = await request(app.getHttpServer())
+        .post('/v1/agents')
+        .send({ displayName: 'Not Their Listing', phone: '+2348077665544' })
+        .expect(201);
+
+      // The same answer as a listing that does not exist, so this route cannot
+      // be used to discover which ids are real.
+      await request(app.getHttpServer())
+        .post(`/v1/agents/me/listings/${listing}/confirm`)
+        .set('x-agent-token', stranger.body.token)
+        .expect(404);
+
+      await request(app.getHttpServer())
+        .post(`/v1/agents/me/listings/${listing}/confirm`)
+        .set('x-agent-token', token)
+        .expect(201);
+    });
+
+    it('stops needing confirmation once it has one', async () => {
+      const mine = await request(app.getHttpServer())
+        .get('/v1/agents/me/listings')
+        .set('x-agent-token', token)
+        .expect(200);
+      const it_ = mine.body.find((l: { id: string }) => l.id === listing);
+
+      expect(it_.confirmedAt).not.toBeNull();
+      expect(it_.stillNeeded.map((n: { condition: string }) => n.condition)).not.toContain(
+        'recently_confirmed',
+      );
+    });
+
+    it('needs it again once the fortnight has passed', async () => {
+      // Reached through the store rather than by waiting two weeks. The rule
+      // itself — inclusive at the edge, lapsed a second later — is covered
+      // exhaustively in the domain; this asserts the wiring carries a real
+      // date rather than a constant.
+      const stale = new Date(Date.now() - (CONFIRMATION_DAYS + 1) * 86_400_000);
+      await agents.confirmStillAvailable(listing, stale);
+
+      const mine = await request(app.getHttpServer())
+        .get('/v1/agents/me/listings')
+        .set('x-agent-token', token)
+        .expect(200);
+      const it_ = mine.body.find((l: { id: string }) => l.id === listing);
+      expect(it_.stillNeeded.map((n: { condition: string }) => n.condition)).toContain(
+        'recently_confirmed',
+      );
+    });
   });
 
   it('is not a reverse phone directory for accounts that verified nothing', async () => {

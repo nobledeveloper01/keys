@@ -168,7 +168,10 @@ export type Phrase =
   | 'already_answered'
   | 'reply_link_not_valid'
   | 'reply_link_help'
-  | 'you_have_until';
+  | 'you_have_until'
+  | 'still_available'
+  | 'confirmed_today'
+  | 'confirm_every_fortnight';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -260,6 +263,9 @@ export const EN: Readonly<Record<Phrase, string>> = {
   reply_link_not_valid: "That link is not valid",
   reply_link_help: "Open it from the text message rather than copying part of it. It is the only way we can tell it is you, and we would rather that than ask you to make an account.",
   you_have_until: "You have until",
+  still_available: "It is still available",
+  confirmed_today: "Confirmed. Tenants can rely on this for two weeks.",
+  confirm_every_fortnight: "Confirm this every fortnight, or it stops being Verified.",
   which_number_reported: "The number you are reporting",
   what_kind: "What kind of thing was it?",
   what_happened: "What happened",
@@ -384,6 +390,9 @@ export const HA: Readonly<Record<Phrase, string>> = {
   reply_link_not_valid: "Wannan hanyar ba ta aiki",
   reply_link_help: "Buɗe ta daga saƙon rubutu maimakon kwafin wani sashe. Ita ce kaɗai hanyar da za mu tabbatar da kai, mun fi so haka da neman ka buɗe asusu.",
   you_have_until: "Kana da lokaci har",
+  still_available: "Har yanzu yana nan",
+  confirmed_today: "An tabbatar. Masu haya za su iya dogara da wannan har mako biyu.",
+  confirm_every_fortnight: "Ka tabbatar da wannan kowane mako biyu, in ba haka ba za a daina tabbatar da shi.",
   which_number_reported: "Lambar da kake ba da rahoton ta",
   what_kind: "Wane irin abu ne?",
   what_happened: "Me ya faru",
@@ -508,6 +517,9 @@ export const YO: Readonly<Record<Phrase, string>> = {
   reply_link_not_valid: "Ọ̀nà yìí kò wúlò",
   reply_link_help: "Ṣí i láti inú ìránṣẹ́ náà dípò kí o da apá kan rẹ̀ kọ. Òun ni ọ̀nà kan ṣoṣo tí a fi lè mọ̀ pé ìwọ ni, a sì fẹ́ bẹ́ẹ̀ ju kí a ní kí o ṣí àkántì.",
   you_have_until: "O ní àkókò títí di",
+  still_available: "Ó ṣì wà",
+  confirmed_today: "A ti fọwọ́ sí i. Àwọn agbatọ́jú lè gbẹ́kẹ̀lé èyí fún ọ̀sẹ̀ méjì.",
+  confirm_every_fortnight: "Fọwọ́ sí èyí ní ọ̀sẹ̀ méjì méjì, bí bẹ́ẹ̀ kọ́ kì yóò jẹ́ èyí tí a fọwọ́ sí mọ́.",
   which_number_reported: "Nọ́mbà tí ò ń ròyìn",
   what_kind: "Irú ohun wo ni?",
   what_happened: "Ohun tí ó ṣẹlẹ̀",
@@ -632,6 +644,9 @@ export const IG: Readonly<Record<Phrase, string>> = {
   reply_link_not_valid: "Njikọ ahụ abaghị uru",
   reply_link_help: "Site na ozi ahụ mepee ya kama ịdepụta akụkụ ya. Ọ bụ naanị ụzọ anyị ga-esi mara na ọ bụ gị, anyị chọrọ nke ahụ karịa ịrịọ gị ka i mepee akaụntụ.",
   you_have_until: "Ị nwere oge ruo",
+  still_available: "Ọ ka dị",
+  confirmed_today: "Akwadoro ya. Ndị mgbazinye nwere ike ịdabere na nke a izu abụọ.",
+  confirm_every_fortnight: "Kwado nke a kwa izu abụọ, ma ọ bụghị ya ọ gaghị abụ nke akwadoro ọzọ.",
   which_number_reported: "Nọmba ị na-akọ",
   what_kind: "Ụdị ihe dị aṅaa ka ọ bụ?",
   what_happened: "Ihe merenụ",

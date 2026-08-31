@@ -253,6 +253,9 @@ export function client(options: ClientOptions) {
           body: { propertyId, title },
         }),
 
+      confirmStillAvailable: (id: string) =>
+        send<Listing>(options, 'POST', `/v1/agents/me/listings/${id}/confirm`),
+
       publish: (id: string) =>
         send<Listing>(options, 'POST', `/v1/agents/me/listings/${id}/publish`),
 

@@ -304,6 +304,32 @@ export class AgentsController {
     };
   }
 
+  @Post('me/listings/:id/confirm')
+  @UseGuards(AgentGuard)
+  @ApiSecurity('agent-token')
+  @ApiOperation({ summary: 'Say a listing is still available. Verified listings expire without this.' })
+  @ApiOkResponse({ type: ListingResponse })
+  async confirm(@Req() request: RequestWithAgent, @Param('id') id: string) {
+    const agent = request.agent!;
+    const listing = await this.store.listing(id);
+    /*
+      The same answer for another agent's listing as for one that does not
+      exist. Distinguishing them turns this route into a way to discover which
+      listing ids are real, from any account.
+    */
+    if (!listing || listing.agentId !== agent.id) throw new NotFoundException('No such listing.');
+
+    await this.store.confirmStillAvailable(id, new Date());
+    const after = await this.store.listing(id);
+    return {
+      id,
+      propertyId: listing.propertyId,
+      title: listing.title,
+      publishedAt: after?.publishedAt?.toISOString() ?? null,
+      stillNeeded: [],
+    };
+  }
+
   @Get('me/listings')
   @UseGuards(AgentGuard)
   @ApiSecurity('agent-token')
@@ -369,7 +395,9 @@ export class AgentsController {
           durationSeconds: c.durationSeconds,
         })),
         blockedDuplicate: blocked.has(l.id),
-        lastConfirmedAt: null,
+        // The listing's own record, not null. This was the fourth hardcoded
+        // input to a computation whose whole value is that it is computed.
+        lastConfirmedAt: l.lastConfirmedAt,
         upheldReports: upheld.length,
       };
 
@@ -378,6 +406,7 @@ export class AgentsController {
         propertyId: l.propertyId,
         title: l.title,
         publishedAt: l.publishedAt?.toISOString() ?? null,
+        confirmedAt: l.lastConfirmedAt?.toISOString() ?? null,
         stillNeeded: unmetConditions(inputs, now).map((condition) => ({
           condition,
           whatToDo: whatToDo(condition),

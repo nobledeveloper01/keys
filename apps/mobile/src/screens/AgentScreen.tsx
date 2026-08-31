@@ -385,6 +385,42 @@ function Listings({
               </>
             )}
 
+            {/*
+              The confirmation, on published listings only.
+
+              A draft nobody can see does not go stale, and asking an agent to
+              keep confirming something private is asking for a habit they will
+              form and then apply without reading — which is exactly what makes
+              a confirmation worthless.
+            */}
+            {listing.publishedAt !== null && (
+              <>
+                <Text variant="label" tone="secondary" style={styles.row}>
+                  {t('confirm_every_fortnight')}
+                </Text>
+                <Button
+                  label={t('still_available')}
+                  disabled={busy === `confirm-${listing.id}`}
+                  onPress={() => {
+                    setBusy(`confirm-${listing.id}`);
+                    setProblem(null);
+                    void attempt(() =>
+                      client({ baseUrl, agentToken: token }).agent.confirmStillAvailable(
+                        listing.id,
+                      ),
+                    ).then((result) => {
+                      setBusy(null);
+                      if (result.ok) onDone(t('confirmed_today'));
+                      else
+                        refuse(
+                          result.failure.kind === 'refused' ? result.failure.detail : null,
+                        );
+                    });
+                  }}
+                />
+              </>
+            )}
+
             {listing.publishedAt === null ? (
               <>
                 <Text variant="label" tone="secondary" style={styles.row}>

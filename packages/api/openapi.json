@@ -615,6 +615,42 @@
         ]
       }
     },
+    "/v1/agents/me/listings/{id}/confirm": {
+      "post": {
+        "operationId": "AgentsController_confirm",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Say a listing is still available. Verified listings expire without this.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
     "/v1/authority/withdrawal": {
       "post": {
         "operationId": "AuthorityController_askToWithdraw",
@@ -1522,6 +1558,12 @@
             "nullable": true,
             "format": "date-time"
           },
+          "confirmedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When somebody last said this is still available. Null means never."
+          },
           "stillNeeded": {
             "description": "Which of the seven Verified conditions are unmet, and what to do. Empty means Verified.",
             "type": "array",
@@ -1535,6 +1577,7 @@
           "propertyId",
           "title",
           "publishedAt",
+          "confirmedAt",
           "stillNeeded"
         ]
       },

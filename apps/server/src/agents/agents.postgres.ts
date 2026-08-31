@@ -67,9 +67,11 @@ interface ListingRow {
   property_id: string;
   title: string;
   published_at: Date | null;
+  last_confirmed_at: Date | null;
 }
 
-const LISTING_COLUMNS = 'id, agent_id, property_id, title, published_at';
+const LISTING_COLUMNS =
+  'id, agent_id, property_id, title, published_at, last_confirmed_at';
 
 const EVIDENCE_COLUMNS = `
   agent_id, kind, attestor_kind, attestor_vendor, attestor_reference,
@@ -464,6 +466,7 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
       propertyId: input.propertyId,
       title: input.title,
       publishedAt: null,
+      lastConfirmedAt: null,
     };
     await this.pool.query(
       `INSERT INTO listings (id, agent_id, property_id, title, created_at)
@@ -480,6 +483,7 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
       propertyId: row.property_id,
       title: row.title,
       publishedAt: row.published_at,
+      lastConfirmedAt: row.last_confirmed_at,
     };
   }
 
@@ -513,6 +517,15 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     if (!mayList(evidence, listing.propertyId, now)) return;
 
     await this.pool.query('UPDATE listings SET published_at = $1 WHERE id = $2', [now, id]);
+  }
+
+  async confirmStillAvailable(id: string, now: Date) {
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return false;
+    const result = await this.pool.query(
+      'UPDATE listings SET last_confirmed_at = $1 WHERE id = $2',
+      [now, id],
+    );
+    return (result.rowCount ?? 0) > 0;
   }
 
   async publishedListings() {

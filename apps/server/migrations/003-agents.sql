@@ -84,3 +84,11 @@ CREATE TABLE IF NOT EXISTS listings (
 
 CREATE INDEX IF NOT EXISTS listings_agent ON listings (agent_id);
 CREATE INDEX IF NOT EXISTS listings_property ON listings (property_id);
+
+-- When somebody last said a listing is still available.
+--
+-- Nullable, and deliberately not defaulted to `created_at`. A listing that has
+-- never been confirmed has never been confirmed; treating publication as a
+-- confirmation would hand every listing a free fortnight of Verified and make
+-- the first confirmation the one nobody ever does.
+ALTER TABLE listings ADD COLUMN IF NOT EXISTS last_confirmed_at TIMESTAMPTZ;

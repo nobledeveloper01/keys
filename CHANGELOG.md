@@ -37,6 +37,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   on arithmetic: the same photograph legitimately appears on two listings when
   an agency changes hands or a flat is re-let. Only the copy is penalised; the
   agent who was copied keeps their listing.
+- **Verified listings expire.** An agent says a listing is still available from
+  their own screen, and it stops being Verified a fortnight later if nobody
+  does. Being shown a flat that was let weeks ago is the most common complaint
+  in this market; the cost falls on the agent, which is the point.
 - **The phone signs its own captures.** A P-256 key generated inside the Secure
   Enclave, which cannot be exported by anything including Keys itself. What the
   signature proves is the path the bytes took — the Keys camera, on this

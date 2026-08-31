@@ -25,6 +25,15 @@ export interface Listing {
   readonly propertyId: string;
   readonly title: string;
   readonly publishedAt: Date | null;
+  /**
+   * When somebody last said this is still available.
+   *
+   * Null until they do, and *not* defaulted to the creation date. A listing
+   * that has never been confirmed has never been confirmed; treating "I
+   * published it" as "it is still available" would give every listing a free
+   * fortnight and make the first confirmation the one nobody ever does.
+   */
+  readonly lastConfirmedAt: Date | null;
 }
 
 /**
@@ -186,6 +195,16 @@ export abstract class AgentsStore {
   abstract listingsOf(agentId: string): Await<readonly Listing[]>;
   abstract listing(id: string): Await<Listing | null>;
   abstract publishListing(id: string, now: Date): Await<void>;
+
+  /**
+   * Record that a listing is still available.
+   *
+   * The agent's own claim, not a reviewer's, and that is the point: it is
+   * cheap to make and it expires. What it buys is that a flat let three weeks
+   * ago stops being Verified without anybody having to notice — which is the
+   * single most common complaint in this market.
+   */
+  abstract confirmStillAvailable(id: string, now: Date): Await<boolean>;
   abstract publishedListings(): Await<readonly Listing[]>;
 }
 
@@ -421,6 +440,7 @@ export class InMemoryAgentsStore extends AgentsStore {
       propertyId: input.propertyId,
       title: input.title,
       publishedAt: null,
+      lastConfirmedAt: null,
     };
     this.listings.set(listing.id, listing);
     return listing;
@@ -450,6 +470,13 @@ export class InMemoryAgentsStore extends AgentsStore {
     const evidence = this.evidenceFor(listing.agentId);
     if (!mayList(evidence, listing.propertyId, now)) return;
     this.listings.set(id, { ...listing, publishedAt: now });
+  }
+
+  confirmStillAvailable(id: string, now: Date) {
+    const listing = this.listings.get(id);
+    if (!listing) return false;
+    this.listings.set(id, { ...listing, lastConfirmedAt: now });
+    return true;
   }
 
   publishedListings() {
