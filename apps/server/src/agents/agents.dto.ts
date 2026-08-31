@@ -184,6 +184,11 @@ export class ListingResponse {
   confirmedAt!: string | null;
 
   @ApiProperty({
+    description: 'Whether the property has coordinates. Captures cannot prove presence without them.',
+  })
+  placed!: boolean;
+
+  @ApiProperty({
     type: [StillNeeded],
     description: 'Which of the seven Verified conditions are unmet, and what to do. Empty means Verified.',
   })

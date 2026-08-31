@@ -615,6 +615,42 @@
         ]
       }
     },
+    "/v1/agents/me/listings/{id}/place": {
+      "post": {
+        "operationId": "AgentsController_place",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Record where a property is, from standing at it. Once.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
     "/v1/agents/me/listings/{id}/confirm": {
       "post": {
         "operationId": "AgentsController_confirm",
@@ -1575,6 +1611,10 @@
             "format": "date-time",
             "description": "When somebody last said this is still available. Null means never."
           },
+          "placed": {
+            "type": "boolean",
+            "description": "Whether the property has coordinates. Captures cannot prove presence without them."
+          },
           "stillNeeded": {
             "description": "Which of the seven Verified conditions are unmet, and what to do. Empty means Verified.",
             "type": "array",
@@ -1589,6 +1629,7 @@
           "title",
           "publishedAt",
           "confirmedAt",
+          "placed",
           "stillNeeded"
         ]
       },

@@ -542,6 +542,23 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     await this.pool.query('UPDATE listings SET published_at = $1 WHERE id = $2', [now, id]);
   }
 
+  async placeListing(input: { id: string; latitude: number; longitude: number }) {
+    if (!/^[0-9a-f-]{36}$/i.test(input.id)) return false;
+    /*
+      `WHERE latitude IS NULL` rather than a read-then-write.
+
+      Two requests racing would both see an unplaced listing and both write;
+      here the second updates nothing and says so. It is also the rule from the
+      interface written where a psql session cannot go around it.
+    */
+    const result = await this.pool.query(
+      `UPDATE listings SET latitude = $1, longitude = $2
+        WHERE id = $3 AND latitude IS NULL AND longitude IS NULL`,
+      [input.latitude, input.longitude, input.id],
+    );
+    return (result.rowCount ?? 0) > 0;
+  }
+
   async confirmStillAvailable(id: string, now: Date) {
     if (!/^[0-9a-f-]{36}$/i.test(id)) return false;
     const result = await this.pool.query(

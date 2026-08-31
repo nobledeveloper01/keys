@@ -253,6 +253,11 @@ export function client(options: ClientOptions) {
           body: { propertyId, title },
         }),
 
+      place: (id: string, latitude: number, longitude: number) =>
+        send<Listing>(options, 'POST', `/v1/agents/me/listings/${id}/place`, {
+          body: { latitude, longitude },
+        }),
+
       confirmStillAvailable: (id: string) =>
         send<Listing>(options, 'POST', `/v1/agents/me/listings/${id}/confirm`),
 

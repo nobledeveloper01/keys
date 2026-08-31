@@ -4,6 +4,10 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { attempt, client, type AgentProfile, type Listing } from '@keys/api';
 import { conditionPhrase, tierPhrase } from '@keys/domain';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import KeysCapture from '../native/NativeKeysCapture';
+import { captureFor, deviceIdFor } from '../state/capture';
 import { Button } from '../components/Button';
 import { Field } from '../components/Field';
 import { Glass } from '../components/Glass';
@@ -332,6 +336,24 @@ function Listings({
     setProblem(detail ?? t('no_signal_saved_here'));
   }
 
+  /**
+   * The device id, fetched once and remembered.
+   *
+   * Registration is idempotent on this phone's key, so asking again is safe —
+   * but it is a round trip an agent standing in a flat on a bad connection
+   * should not pay for every photograph.
+   */
+  async function device(): Promise<string | null> {
+    const remembered = await AsyncStorage.getItem('keys.device.id').catch(() => null);
+    const answer = await deviceIdFor(baseUrl, token, remembered);
+    if ('why' in answer) {
+      refuse(answer.why);
+      return null;
+    }
+    if (!remembered) await AsyncStorage.setItem('keys.device.id', answer.deviceId).catch(() => {});
+    return answer.deviceId;
+  }
+
   return (
     <View style={styles.section}>
       <Text variant="title">{t('your_listings')}</Text>
@@ -393,6 +415,95 @@ function Listings({
               form and then apply without reading — which is exactly what makes
               a confirmation worthless.
             */}
+            {/*
+              Placing comes before photographing, and the screen says so.
+
+              A capture taken against a listing with no coordinates is a real
+              photograph that proves nothing about where, and an agent who
+              takes six of them before finding that out has walked a flat for
+              nothing. The camera buttons do not appear until the property has
+              a location.
+            */}
+            {!listing.placed ? (
+              <>
+                <Text variant="body" tone="secondary" style={styles.row}>
+                  {t('mark_where_this_is_help')}
+                </Text>
+                <Button
+                  label={t('mark_where_this_is')}
+                  disabled={busy === `place-${listing.id}`}
+                  onPress={() => {
+                    setBusy(`place-${listing.id}`);
+                    setProblem(null);
+                    void (async () => {
+                      try {
+                        const here = await KeysCapture.whereAmI();
+                        const result = await attempt(() =>
+                          client({ baseUrl, agentToken: token }).agent.place(
+                            listing.id,
+                            here.latitude,
+                            here.longitude,
+                          ),
+                        );
+                        setBusy(null);
+                        if (result.ok) onDone(t('property_placed'));
+                        else
+                          refuse(
+                            result.failure.kind === 'refused' ? result.failure.detail : null,
+                          );
+                      } catch (error) {
+                        setBusy(null);
+                        refuse(error instanceof Error ? error.message : null);
+                      }
+                    })();
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <Button
+                  label={t('take_a_photo')}
+                  quiet
+                  disabled={busy === `photo-${listing.id}`}
+                  onPress={() => {
+                    setBusy(`photo-${listing.id}`);
+                    setProblem(null);
+                    void (async () => {
+                      const id = await device();
+                      if (id === null) {
+                        setBusy(null);
+                        return;
+                      }
+                      const result = await captureFor(baseUrl, token, listing.id, 'photo', id);
+                      setBusy(null);
+                      if (result.ok) onDone(t('capture_accepted'));
+                      else refuse(result.why);
+                    })();
+                  }}
+                />
+                <Button
+                  label={t('record_a_walkthrough')}
+                  quiet
+                  disabled={busy === `video-${listing.id}`}
+                  onPress={() => {
+                    setBusy(`video-${listing.id}`);
+                    setProblem(null);
+                    void (async () => {
+                      const id = await device();
+                      if (id === null) {
+                        setBusy(null);
+                        return;
+                      }
+                      const result = await captureFor(baseUrl, token, listing.id, 'video', id);
+                      setBusy(null);
+                      if (result.ok) onDone(t('capture_accepted'));
+                      else refuse(result.why);
+                    })();
+                  }}
+                />
+              </>
+            )}
+
             {listing.publishedAt !== null && (
               <>
                 <Text variant="label" tone="secondary" style={styles.row}>

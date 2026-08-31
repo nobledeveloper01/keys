@@ -171,7 +171,14 @@ export type Phrase =
   | 'you_have_until'
   | 'still_available'
   | 'confirmed_today'
-  | 'confirm_every_fortnight';
+  | 'confirm_every_fortnight'
+  | 'mark_where_this_is'
+  | 'mark_where_this_is_help'
+  | 'property_placed'
+  | 'take_a_photo'
+  | 'record_a_walkthrough'
+  | 'capture_accepted'
+  | 'place_it_first';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -266,6 +273,13 @@ export const EN: Readonly<Record<Phrase, string>> = {
   still_available: "It is still available",
   confirmed_today: "Confirmed. Tenants can rely on this for two weeks.",
   confirm_every_fortnight: "Confirm this every fortnight, or it stops being Verified.",
+  mark_where_this_is: "Mark where this property is",
+  mark_where_this_is_help: "Do this standing at the property. It is recorded once and cannot be moved afterwards, because moving it would change what your photos prove.",
+  property_placed: "Marked. Photos taken here will now count.",
+  take_a_photo: "Take a photo here",
+  record_a_walkthrough: "Record a walkthrough here",
+  capture_accepted: "Accepted.",
+  place_it_first: "Mark where the property is first, or photos cannot prove where they were taken.",
   which_number_reported: "The number you are reporting",
   what_kind: "What kind of thing was it?",
   what_happened: "What happened",
@@ -393,6 +407,13 @@ export const HA: Readonly<Record<Phrase, string>> = {
   still_available: "Har yanzu yana nan",
   confirmed_today: "An tabbatar. Masu haya za su iya dogara da wannan har mako biyu.",
   confirm_every_fortnight: "Ka tabbatar da wannan kowane mako biyu, in ba haka ba za a daina tabbatar da shi.",
+  mark_where_this_is: "Yi alama inda wannan wurin yake",
+  mark_where_this_is_help: "Ka yi wannan kana tsaye a wurin. Ana rubuta shi sau ɗaya kuma ba za a iya matsar da shi ba, domin matsar da shi zai canza abin da hotunanka ke tabbatarwa.",
+  property_placed: "An yi alama. Hotunan da aka ɗauka a nan yanzu za su ƙidaya.",
+  take_a_photo: "Ɗauki hoto a nan",
+  record_a_walkthrough: "Ɗauki bidiyon zagayawa a nan",
+  capture_accepted: "An karɓa.",
+  place_it_first: "Ka fara yin alama inda wurin yake, in ba haka ba hotuna ba za su tabbatar da inda aka ɗauke su ba.",
   which_number_reported: "Lambar da kake ba da rahoton ta",
   what_kind: "Wane irin abu ne?",
   what_happened: "Me ya faru",
@@ -520,6 +541,13 @@ export const YO: Readonly<Record<Phrase, string>> = {
   still_available: "Ó ṣì wà",
   confirmed_today: "A ti fọwọ́ sí i. Àwọn agbatọ́jú lè gbẹ́kẹ̀lé èyí fún ọ̀sẹ̀ méjì.",
   confirm_every_fortnight: "Fọwọ́ sí èyí ní ọ̀sẹ̀ méjì méjì, bí bẹ́ẹ̀ kọ́ kì yóò jẹ́ èyí tí a fọwọ́ sí mọ́.",
+  mark_where_this_is: "Sàmi ibi tí ilé yìí wà",
+  mark_where_this_is_help: "Ṣe èyí nígbà tí o dúró ní ibẹ̀. A kọ ọ́ sílẹ̀ lẹ́ẹ̀kan, a kò sì lè gbé e lọ, nítorí gbígbé e yóò yí ohun tí àwọn fọ́tò rẹ fi hàn padà.",
+  property_placed: "A ti sàmì sí i. Àwọn fọ́tò tí a yà níbí yóò ka báyìí.",
+  take_a_photo: "Ya fọ́tò níbí",
+  record_a_walkthrough: "Ya fídíò ìrìn àyíká níbí",
+  capture_accepted: "A ti gbà á.",
+  place_it_first: "Sàmi ibi tí ilé náà wà ní àkọ́kọ́, bí bẹ́ẹ̀ kọ́ àwọn fọ́tò kò lè fi ibi tí a ti yà wọ́n hàn.",
   which_number_reported: "Nọ́mbà tí ò ń ròyìn",
   what_kind: "Irú ohun wo ni?",
   what_happened: "Ohun tí ó ṣẹlẹ̀",
@@ -647,6 +675,13 @@ export const IG: Readonly<Record<Phrase, string>> = {
   still_available: "Ọ ka dị",
   confirmed_today: "Akwadoro ya. Ndị mgbazinye nwere ike ịdabere na nke a izu abụọ.",
   confirm_every_fortnight: "Kwado nke a kwa izu abụọ, ma ọ bụghị ya ọ gaghị abụ nke akwadoro ọzọ.",
+  mark_where_this_is: "Debe ebe ụlọ a dị",
+  mark_where_this_is_help: "Mee nke a ka ị guzo n'ebe ahụ. A na-edekọ ya otu ugboro, a pụghịkwa ịkwaga ya, n'ihi na ịkwaga ya ga-agbanwe ihe foto gị na-egosi.",
+  property_placed: "Edeela ya. Foto ndị a sere ebe a ga-agụ ugbu a.",
+  take_a_photo: "Sere foto ebe a",
+  record_a_walkthrough: "Dekọọ vidiyo njegharị ebe a",
+  capture_accepted: "Anabatala ya.",
+  place_it_first: "Buru ụzọ debe ebe ụlọ ahụ dị, ma ọ bụghị ya foto agaghị egosi ebe e sere ha.",
   which_number_reported: "Nọmba ị na-akọ",
   what_kind: "Ụdị ihe dị aṅaa ka ọ bụ?",
   what_happened: "Ihe merenụ",

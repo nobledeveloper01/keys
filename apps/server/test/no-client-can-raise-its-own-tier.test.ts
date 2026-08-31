@@ -774,6 +774,86 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
     });
   });
 
+  describe('where a property is', () => {
+    let listing: string;
+
+    it('is recorded once, by the agent standing at it', async () => {
+      const draft = await request(app.getHttpServer())
+        .post('/v1/agents/me/listings')
+        .set('x-agent-token', token)
+        .send({ propertyId: 'flat-to-place', title: 'A flat that needs placing' })
+        .expect(201);
+      listing = draft.body.id;
+
+      const before = await request(app.getHttpServer())
+        .get('/v1/agents/me/listings')
+        .set('x-agent-token', token)
+        .expect(200);
+      expect(before.body.find((l: { id: string }) => l.id === listing).placed).toBe(false);
+
+      await request(app.getHttpServer())
+        .post(`/v1/agents/me/listings/${listing}/place`)
+        .set('x-agent-token', token)
+        .send({ latitude: 6.5095, longitude: 3.3711 })
+        .expect(201);
+
+      const after = await request(app.getHttpServer())
+        .get('/v1/agents/me/listings')
+        .set('x-agent-token', token)
+        .expect(200);
+      expect(after.body.find((l: { id: string }) => l.id === listing).placed).toBe(true);
+    });
+
+    it('cannot be moved afterwards', async () => {
+      /*
+        Moving a property re-answers `capture_on_site` for every capture
+        already taken against it — which is a way to make a photograph from
+        the next neighbourhood count by dragging the flat towards it. A genuine
+        mistake is a new listing.
+      */
+      await request(app.getHttpServer())
+        .post(`/v1/agents/me/listings/${listing}/place`)
+        .set('x-agent-token', token)
+        .send({ latitude: 6.5027, longitude: 3.355 })
+        .expect(403);
+    });
+
+    it('refuses null island, and anything that is not a place', async () => {
+      const draft = await request(app.getHttpServer())
+        .post('/v1/agents/me/listings')
+        .set('x-agent-token', token)
+        .send({ propertyId: 'flat-nowhere', title: 'Nowhere in particular' })
+        .expect(201);
+
+      // 0,0 is in the Gulf of Guinea and is what an uninitialised location
+      // looks like — the one wrong answer that looks plausible here.
+      for (const point of [
+        { latitude: 0, longitude: 0 },
+        { latitude: 91, longitude: 3 },
+        {},
+      ]) {
+        await request(app.getHttpServer())
+          .post(`/v1/agents/me/listings/${draft.body.id}/place`)
+          .set('x-agent-token', token)
+          .send(point)
+          .expect(400);
+      }
+    });
+
+    it("is not somebody else's to set", async () => {
+      const stranger = await request(app.getHttpServer())
+        .post('/v1/agents')
+        .send({ displayName: 'Placing What Is Not Theirs', phone: '+2348099001122' })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post(`/v1/agents/me/listings/${listing}/place`)
+        .set('x-agent-token', stranger.body.token)
+        .send({ latitude: 6.5, longitude: 3.4 })
+        .expect(404);
+    });
+  });
+
   it('is not a reverse phone directory for accounts that verified nothing', async () => {
     const phone = '+2348044444444';
     const signedUp = await request(app.getHttpServer())

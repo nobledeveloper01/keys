@@ -40,6 +40,21 @@ export interface Spec extends TurboModule {
      */
     durationSeconds?: number;
   }>;
+
+  /**
+   * Where the phone is now, once.
+   *
+   * Separate from `capture` because marking where a property *is* and
+   * photographing it are different acts. Deriving the property's location from
+   * its first capture would be circular — the capture would be proving itself.
+   */
+  whereAmI(): Promise<{
+    latitude: number;
+    longitude: number;
+    mockLocation: boolean;
+    /** Metres. A property marked from a poor fix fails captures taken inside it. */
+    accuracyM: number;
+  }>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('KeysCapture');

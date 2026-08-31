@@ -177,7 +177,7 @@ function Shell() {
             />
           ))}
         {tab === 'account' && <AgentScreen baseUrl={API_URL} />}
-        {tab === 'settings' && <SettingsScreen baseUrl={API_URL} />}
+        {tab === 'settings' && <SettingsScreen />}
       </View>
 
       {/*

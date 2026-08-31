@@ -218,6 +218,20 @@ export abstract class AgentsStore {
    * single most common complaint in this market.
    */
   abstract confirmStillAvailable(id: string, now: Date): Await<boolean>;
+
+  /**
+   * Record where a property is.
+   *
+   * Set once, from the agent standing at it. Not editable afterwards through
+   * this route: moving a property's coordinates would re-answer
+   * `capture_on_site` for every capture already taken against it, which is a
+   * way to make an off-site photograph count by dragging the flat to it.
+   */
+  abstract placeListing(input: {
+    id: string;
+    latitude: number;
+    longitude: number;
+  }): Await<boolean>;
   abstract publishedListings(): Await<readonly Listing[]>;
 }
 
@@ -487,6 +501,19 @@ export class InMemoryAgentsStore extends AgentsStore {
     const evidence = this.evidenceFor(listing.agentId);
     if (!mayList(evidence, listing.propertyId, now)) return;
     this.listings.set(id, { ...listing, publishedAt: now });
+  }
+
+  placeListing(input: { id: string; latitude: number; longitude: number }) {
+    const listing = this.listings.get(input.id);
+    if (!listing) return false;
+    // Already placed stays placed. See the interface for why.
+    if (listing.latitude !== null && listing.longitude !== null) return false;
+    this.listings.set(input.id, {
+      ...listing,
+      latitude: input.latitude,
+      longitude: input.longitude,
+    });
+    return true;
   }
 
   confirmStillAvailable(id: string, now: Date) {

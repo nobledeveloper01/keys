@@ -2,16 +2,11 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { LANGUAGES, type Language } from '@keys/domain';
 
-import { Button } from '../components/Button';
 import { Choice } from '../components/Choice';
 import { Text } from '../components/Text';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { space } from '../design/tokens';
-import { useState } from 'react';
-
-import { probeCapture } from '../state/captureProbe';
 import { useLanguage } from '../state/language';
-import { useSession } from '../state/session';
 import { LANGUAGE_NAMES } from '../state/languageNames';
 
 
@@ -30,10 +25,8 @@ import { LANGUAGE_NAMES } from '../state/languageNames';
  * between a shop owner and their nephew is one phone with two readers, and a
  * choice made once on installation is not a setting.
  */
-export function SettingsScreen({ baseUrl }: { baseUrl: string }) {
+export function SettingsScreen() {
   const { t, language, setLanguage } = useLanguage();
-  const { token } = useSession();
-  const [key, setKey] = useState<string | null>(null);
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
@@ -55,40 +48,6 @@ export function SettingsScreen({ baseUrl }: { baseUrl: string }) {
         onChoose={(id) => setLanguage(id as Language)}
       />
 
-      {/*
-        A development affordance, and it says so.
-
-        untranslated-check: English on purpose. This is a developer control for
-        proving the signing module reaches the enclave and the server accepts
-        what it produces; it never ships to an agent, and translating it would
-        be translating a diagnostic.
-      */}
-      {__DEV__ && (
-        <>
-          <Text variant="title" style={styles.heading}>
-            Device key
-          </Text>
-          <Button
-            label="Sign a photo with this phone"
-            disabled={token === null}
-            onPress={() => {
-              void probeCapture(baseUrl, token, 'photo').then(setKey);
-            }}
-          />
-          <Button
-            label="Sign a walkthrough with this phone"
-            disabled={token === null}
-            onPress={() => {
-              void probeCapture(baseUrl, token, 'video').then(setKey);
-            }}
-          />
-          {key !== null && (
-            <Text variant="body" style={styles.heading}>
-              {key}
-            </Text>
-          )}
-        </>
-      )}
     </ScrollView>
   );
 }

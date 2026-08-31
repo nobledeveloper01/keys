@@ -32,10 +32,36 @@ import UIKit
  */
 @objc(KeysCapture)
 final class KeysCapture: NSObject {
+  /**
+   Where the phone is now, once.
+
+   Separate from `capture` because setting a property's location and
+   photographing it are different acts. An agent marks where a flat *is* while
+   standing in it; the photographs are then checked against that. Deriving the
+   property's location from the first capture instead would be circular — the
+   capture would be proving itself.
+   */
+  @objc(whereAmI:rejecter:)
+  func whereAmI(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    DispatchQueue.main.async {
+      self.whereabouts = Whereabouts { [weak self] result in
+        self?.whereabouts = nil
+        switch result {
+        case let .success(payload): resolve(payload)
+        case let .failure(error): reject("keys_location", error.what, nil)
+        }
+      }
+    }
+  }
+
   @objc static func requiresMainQueueSetup() -> Bool { true }
 
   private var pending: (resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock)?
   private var controller: CaptureController?
+  private var whereabouts: Whereabouts?
 
   @objc(capture:resolver:rejecter:)
   func capture(
@@ -101,6 +127,68 @@ final class KeysCapture: NSObject {
 /// What went wrong, in words the app can show an agent.
 struct CaptureFailure: Error {
   let what: String
+}
+
+/**
+ One location fix, then done.
+
+ Holds itself alive through the delegate callback — a `CLLocationManager`
+ whose delegate has been deallocated reports nothing, silently, and the
+ promise never settles. That is the failure mode this shape exists to avoid.
+ */
+private final class Whereabouts: NSObject, CLLocationManagerDelegate {
+  private let manager = CLLocationManager()
+  private let finished: (Result<[String: Any], CaptureFailure>) -> Void
+  private var settled = false
+
+  init(finished: @escaping (Result<[String: Any], CaptureFailure>) -> Void) {
+    self.finished = finished
+    super.init()
+    manager.delegate = self
+    manager.desiredAccuracy = kCLLocationAccuracyBest
+    manager.requestWhenInUseAuthorization()
+    manager.requestLocation()
+
+    // A fix can take a while indoors and can never arrive at all. Twenty
+    // seconds, then a sentence, rather than a spinner somebody watches until
+    // they close the app.
+    DispatchQueue.main.asyncAfter(deadline: .now() + 20) { [weak self] in
+      self?.settle(.failure(CaptureFailure(
+        what: "Keys could not get a location. Step outside or near a window and try again."
+      )))
+    }
+  }
+
+  private func settle(_ result: Result<[String: Any], CaptureFailure>) {
+    guard !settled else { return }
+    settled = true
+    manager.stopUpdatingLocation()
+    finished(result)
+  }
+
+  func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    guard let location = locations.last else { return }
+    let mocked: Bool
+    if #available(iOS 15.0, *) {
+      mocked = location.sourceInformation?.isSimulatedBySoftware ?? false
+    } else {
+      mocked = false
+    }
+    settle(.success([
+      "latitude": location.coordinate.latitude,
+      "longitude": location.coordinate.longitude,
+      "mockLocation": mocked,
+      // How good the fix is. A property marked from a fix accurate to 300 m is
+      // a property somebody will fail `capture_on_site` at while standing in it.
+      "accuracyM": location.horizontalAccuracy,
+    ]))
+  }
+
+  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    settle(.failure(CaptureFailure(
+      what: "Keys could not get a location. Check that location is allowed for Keys."
+    )))
+  }
 }
 
 private final class CaptureController: UIViewController,

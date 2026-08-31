@@ -325,6 +325,48 @@ export class AgentsController {
     };
   }
 
+  @Post('me/listings/:id/place')
+  @UseGuards(AgentGuard)
+  @ApiSecurity('agent-token')
+  @ApiOperation({ summary: 'Record where a property is, from standing at it. Once.' })
+  @ApiOkResponse({ type: ListingResponse })
+  async place(
+    @Req() request: RequestWithAgent,
+    @Param('id') id: string,
+    @Body() body: { latitude?: number; longitude?: number },
+  ) {
+    const agent = request.agent!;
+    const listing = await this.store.listing(id);
+    if (!listing || listing.agentId !== agent.id) throw new NotFoundException('No such listing.');
+
+    const point = { latitude: Number(body?.latitude), longitude: Number(body?.longitude) };
+    if (!isPlausiblePoint(point)) throw new BadRequestException('That is not a place.');
+
+    const placed = await this.store.placeListing({ id, ...point });
+    if (!placed) {
+      /*
+        Refused rather than overwritten.
+
+        Moving a property's coordinates re-answers `capture_on_site` for every
+        capture already taken against it — which is a way to make a photograph
+        from the next neighbourhood count by dragging the flat towards it. A
+        genuine mistake is a new listing, which costs an agent a minute and
+        costs nobody their evidence.
+      */
+      throw new ForbiddenException(
+        'This property already has a location. Draft it again if that is wrong.',
+      );
+    }
+    return {
+      id,
+      propertyId: listing.propertyId,
+      title: listing.title,
+      publishedAt: listing.publishedAt?.toISOString() ?? null,
+      confirmedAt: listing.lastConfirmedAt?.toISOString() ?? null,
+      stillNeeded: [],
+    };
+  }
+
   @Post('me/listings/:id/confirm')
   @UseGuards(AgentGuard)
   @ApiSecurity('agent-token')
@@ -442,6 +484,7 @@ export class AgentsController {
         title: l.title,
         publishedAt: l.publishedAt?.toISOString() ?? null,
         confirmedAt: l.lastConfirmedAt?.toISOString() ?? null,
+        placed: l.latitude !== null && l.longitude !== null,
         stillNeeded: unmetConditions(inputs, now).map((condition) => ({
           condition,
           whatToDo: whatToDo(condition),

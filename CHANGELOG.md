@@ -41,6 +41,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Agents photograph a listing from their own screen.** Mark where the
+  property is while standing at it — recorded once, and not movable, because
+  moving it would change what every photo already taken there proves — then
+  take a photo or record a walkthrough. The camera actions do not appear until
+  the property has a location, so nobody walks a flat taking photographs that
+  cannot count.
 - **A capture can now prove it was taken at the property.** Listings carry
   coordinates, and `capture_on_site` measures the real distance — a condition
   that had been unsatisfiable on every listing since it was written, because
