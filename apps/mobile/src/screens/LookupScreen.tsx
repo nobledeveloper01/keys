@@ -276,7 +276,13 @@ function Verified({ agent, reported }: { agent: AgentProfile; reported: boolean 
       </Text>
       <Text variant="body">{t(tierPhrase(agent.tier))}</Text>
 
-      {agent.confirmedProperties > 0 && (
+      {/* One is a different sentence — see the agent screen for why. */}
+      {agent.confirmedProperties === 1 && (
+        <Text variant="label" tone="secondary" style={styles.confirmed}>
+          {t('one_property_confirmed')}
+        </Text>
+      )}
+      {agent.confirmedProperties > 1 && (
         <Text variant="label" tone="secondary" style={styles.confirmed}>
           {`${agent.confirmedProperties} ${t('properties_confirmed')}`}
         </Text>

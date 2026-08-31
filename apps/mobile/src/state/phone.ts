@@ -1,21 +1,12 @@
 /**
- * Normalises what a person types into what the registry stores.
+ * Re-exported from the domain, where it now lives.
  *
- * People write 0803, +234 803, 234-803 and 0803 123 4567 for the same number,
- * and a registry that treats those as four numbers answers "nothing found"
- * four times about a number it holds — which on this product is not an empty
- * result, it is a false all-clear.
+ * This file held its own copy, byte-identical to the web's, on the argument
+ * that how Nigerians write a phone number is not a rule about reports. That
+ * held until the server started hashing phone numbers too and had no copy at
+ * all — see `packages/domain/src/phone.ts` for what that cost.
  *
- * The web surface has the same function, and it is deliberately not shared
- * through `@keys/domain`: this is a fact about how Nigerians write phone
- * numbers into a text field, not a rule about reports, and the domain package
- * is the one place in this codebase that must not fill up with everything.
+ * Kept as a re-export rather than deleted because every screen imports
+ * `../state/phone`, and a rename across the app buys nothing.
  */
-export function normalise(input: string): string | null {
-  const digits = input.replace(/[^\d+]/g, '');
-  if (digits.startsWith('+234') && digits.length === 14) return digits;
-  if (digits.startsWith('234') && digits.length === 13) return `+${digits}`;
-  if (digits.startsWith('0') && digits.length === 11) return `+234${digits.slice(1)}`;
-  if (/^[789]\d{9}$/.test(digits)) return `+234${digits}`;
-  return null;
-}
+export { normalise } from '@keys/domain';

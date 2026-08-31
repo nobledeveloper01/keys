@@ -1,7 +1,13 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 
-import { isPurgeable, replyDeadline, type Report, type ReportCategory } from '@keys/domain';
+import {
+  canonicalPhone,
+  isPurgeable,
+  replyDeadline,
+  type Report,
+  type ReportCategory,
+} from '@keys/domain';
 
 /**
  * Where reports live.
@@ -34,9 +40,18 @@ export interface StoredReport extends Report {
   readonly replyToken: string;
 }
 
-/** A phone number is stored hashed. The registry answers about numbers it is asked; it does not hold a list of them to be stolen. */
-export function hashPhone(e164: string): string {
-  return createHash('sha256').update(e164).digest('hex');
+/**
+ * A phone number is stored hashed. The registry answers about numbers it is
+ * asked; it does not hold a list of them to be stolen.
+ *
+ * Normalised first, and that is not tidiness. Agent sign-up hashed the raw
+ * typed string while tenant lookup hashed the E.164 form, so one number had
+ * two hashes and a verified agent was invisible to anybody searching for them.
+ * Doing it here rather than at each call site means no future caller can
+ * reintroduce it.
+ */
+export function hashPhone(input: string): string {
+  return createHash('sha256').update(canonicalPhone(input)).digest('hex');
 }
 
 export interface AddReport {

@@ -144,12 +144,18 @@ cascade in one transaction; agent profiles, public by id and by phone; the agent
 on the web, with an httpOnly session; the landlord's page; and the agent list in the review
 console with the identity withdrawal.
 
+**On the app as well as the web.** The agent screens landed on the phone with a two-tab
+bottom bar — Check and Account. Navigation was deferred to phase 4 on the grounds that a
+tree drawn before its screens exist is a guess; that stopped being true once there was a
+screen a tenant uses and a screen an agent uses, and they are not steps in a flow. It is
+`useState`, not a library: the moment there is a second thing to go *back* to — listing
+pages reached from search, in phase 4 — it becomes a router.
+
 **What is not:** the liveness and ID TurboModule, which needs a KYC vendor nobody has
 chosen — R6. Agents can open an account and draft listings, and cannot climb past
-`unverified`, which the agent page says plainly rather than offering a step that cannot
-help. The agent's screens are on the web only; the app gets them when the router lands in
-phase 4, and building one now would mean guessing the shape of a navigation tree before the
-screens in it exist.
+`unverified`, which both surfaces say plainly rather than offering a step that cannot help.
+The agent's session on the phone is in `AsyncStorage` rather than the Keychain — R8, and a
+hard blocker on any real agent account.
 
 ## Phase 3 — Listing Integrity (Weeks 14–19) — **the technical core** · **current**
 Geotagged in-app capture with device signing, mock-location detection, video capture and

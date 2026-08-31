@@ -106,7 +106,43 @@ export type Phrase =
   | 'tier_identity'
   | 'tier_authority'
   | 'tier_established'
-  | 'checked_is_not_a_defence';
+  | 'checked_is_not_a_defence'
+  | 'your_account'
+  | 'account_proves_nothing'
+  | 'your_name_label'
+  | 'your_number_label'
+  | 'open_an_account'
+  | 'what_tenants_see'
+  | 'ask_a_landlord'
+  | 'ask_a_landlord_help'
+  | 'which_property'
+  | 'landlord_number'
+  | 'ask_them'
+  | 'your_listings'
+  | 'no_listings_yet'
+  | 'draft_another'
+  | 'what_you_are_letting'
+  | 'save_draft'
+  | 'publish_listing'
+  | 'draft_private'
+  | 'not_verified_yet'
+  | 'listing_verified'
+  | 'id_check_not_available'
+  | 'sign_out'
+  | 'tab_check'
+  | 'tab_account'
+  | 'text_queued'
+  | 'drafted'
+  | 'published_now'
+  | 'session_ended'
+  | 'condition_agent_identity'
+  | 'condition_landlord_authority'
+  | 'condition_capture_on_site'
+  | 'condition_walkthrough_video'
+  | 'condition_not_a_known_duplicate'
+  | 'condition_recently_confirmed'
+  | 'condition_nothing_upheld'
+  | 'one_property_confirmed';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -148,6 +184,42 @@ export const EN: Readonly<Record<Phrase, string>> = {
   tier_authority: "A landlord has confirmed a property they may let.",
   tier_established: "Landlords have confirmed them on several properties over months, with nothing upheld against them.",
   checked_is_not_a_defence: "Being checked is not an answer to what is above.",
+  your_account: "Your account",
+  account_proves_nothing: "An account is a name and a number. It proves nothing on its own, and we would rather say that here than after you have signed up.",
+  your_name_label: "Your name, as tenants will see it",
+  your_number_label: "Your business number",
+  open_an_account: "Open an account",
+  what_tenants_see: "What a tenant sees when they check your number",
+  ask_a_landlord: "Ask a landlord to confirm you",
+  ask_a_landlord_help: "We text them a code. Nothing changes unless they enter it. Use their own number, not a second number of yours — we check, and we refuse.",
+  which_property: "Which property",
+  landlord_number: "The landlord's number",
+  ask_them: "Ask them",
+  your_listings: "Your listings",
+  no_listings_yet: "Nothing yet. You can draft a listing before a landlord confirms you. You just cannot publish it until they have.",
+  draft_another: "Draft another",
+  what_you_are_letting: "What you are letting",
+  save_draft: "Save draft",
+  publish_listing: "Publish",
+  draft_private: "Draft. Nobody can see this.",
+  not_verified_yet: "Not Verified yet. Still needed:",
+  listing_verified: "Verified.",
+  id_check_not_available: "Your ID has not been checked, and you cannot do that part here yet. Everything else rests on it, so a landlord confirming you changes nothing until it is done. We will ask you for it here when we are ready.",
+  sign_out: "Sign out on this phone",
+  tab_check: "Check",
+  tab_account: "Account",
+  text_queued: "We have queued a text to that landlord. Nothing changes until they enter the code.",
+  drafted: "Drafted. It is private until you publish it.",
+  published_now: "Published. Tenants can see it now.",
+  session_ended: "That session has ended. Open an account again on this phone.",
+  condition_agent_identity: "Complete your ID check. Everything else rests on it.",
+  condition_landlord_authority: "Ask the landlord to confirm you may let this property. They get a code by text.",
+  condition_capture_on_site: "Take at least one photo in the Keys app, standing at the property. Photos from your gallery do not count.",
+  condition_walkthrough_video: "Record a walkthrough of at least thirty seconds in the app, at the property.",
+  condition_not_a_known_duplicate: "One of these images is already on a listing we blocked. Replace it with your own.",
+  condition_recently_confirmed: "Confirm the property is still available. Verified listings are confirmed every fortnight.",
+  condition_nothing_upheld: "A report against this listing or against you was upheld. That has to be resolved first.",
+  one_property_confirmed: "One property a landlord confirmed",
   waiting_to_send: "waiting to send",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Any format. 0803…, +234 803…, or 803….",
@@ -210,6 +282,42 @@ export const HA: Readonly<Record<Phrase, string>> = {
   tier_authority: "Mai gida ya tabbatar da wurin da yake da izinin haya.",
   tier_established: "Masu gidaje sun tabbatar da shi a wurare da dama cikin watanni, kuma ba a tabbatar da wani rahoto a kansa ba.",
   checked_is_not_a_defence: "Dubawar da aka yi ba amsa ba ce ga abin da ke sama.",
+  your_account: "Asusunka",
+  account_proves_nothing: "Asusu suna ne da lamba kawai. Ba ya tabbatar da kome shi kaɗai, kuma mun fi so mu faɗa maka yanzu da bayan ka yi rajista.",
+  your_name_label: "Sunanka, kamar yadda masu haya za su gani",
+  your_number_label: "Lambar kasuwancinka",
+  open_an_account: "Buɗe asusu",
+  what_tenants_see: "Abin da mai haya ke gani idan ya duba lambarka",
+  ask_a_landlord: "Ka roƙi mai gida ya tabbatar da kai",
+  ask_a_landlord_help: "Muna aika masa lamba ta saƙo. Ba abin da ke sauyawa sai ya shigar da ita. Yi amfani da lambarsa, ba wata lambarka ba — muna duba, kuma muna ƙi.",
+  which_property: "Wane wuri",
+  landlord_number: "Lambar mai gida",
+  ask_them: "Ka roƙe shi",
+  your_listings: "Tallace-tallacenka",
+  no_listings_yet: "Babu kome tukuna. Za ka iya shirya talla kafin mai gida ya tabbatar da kai. Sai dai ba za ka iya buga shi ba sai ya tabbatar.",
+  draft_another: "Shirya wani",
+  what_you_are_letting: "Abin da kake hayarwa",
+  save_draft: "Ajiye shirin",
+  publish_listing: "Buga",
+  draft_private: "Shiri. Babu wanda ke ganin wannan.",
+  not_verified_yet: "Ba a tabbatar ba tukuna. Ana buƙatar:",
+  listing_verified: "An tabbatar.",
+  id_check_not_available: "Ba a duba katin shaidarka ba, kuma ba za ka iya yin wannan a nan tukuna ba. Duk sauran suna kan sa, don haka tabbatarwar mai gida ba ta canza kome sai an gama shi. Za mu nema maka shi a nan idan mun shirya.",
+  sign_out: "Fita daga wannan wayar",
+  tab_check: "Duba",
+  tab_account: "Asusu",
+  text_queued: "Mun jera saƙo zuwa ga mai gidan. Ba abin da ke sauyawa sai ya shigar da lambar.",
+  drafted: "An shirya. Yana boye har sai ka buga shi.",
+  published_now: "An buga. Masu haya na iya ganin sa yanzu.",
+  session_ended: "Wannan zaman ya ƙare. Sake buɗe asusu a wannan wayar.",
+  condition_agent_identity: "Kammala duba katin shaidarka. Duk sauran suna kan sa.",
+  condition_landlord_authority: "Ka roƙi mai gida ya tabbatar da cewa kana da izinin haya wannan wurin. Zai samu lamba ta saƙo.",
+  condition_capture_on_site: "Ɗauki aƙalla hoto ɗaya a cikin manhajar Keys, kana tsaye a wurin. Hotunan da ke wayarka ba sa ƙidaya.",
+  condition_walkthrough_video: "Ɗauki bidiyon zagayawa na aƙalla daƙiƙa talatin a cikin manhajar, a wurin.",
+  condition_not_a_known_duplicate: "Ɗaya daga cikin waɗannan hotunan yana kan talla da muka hana. Sauya shi da naka.",
+  condition_recently_confirmed: "Tabbatar da cewa wurin yana nan. Ana tabbatar da tallace-tallacen da aka tabbatar kowane mako biyu.",
+  condition_nothing_upheld: "An tabbatar da rahoto kan wannan tallar ko kanka. Dole a warware shi tukuna.",
+  one_property_confirmed: "Wuri ɗaya da mai gida ya tabbatar",
   waiting_to_send: "na jiran aikawa",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Kowace sura. 0803…, +234 803…, ko 803….",
@@ -272,6 +380,42 @@ export const YO: Readonly<Record<Phrase, string>> = {
   tier_authority: "Onílé ti fọwọ́ sí ilé kan tí ó lè yá.",
   tier_established: "Àwọn onílé ti fọwọ́ sí i ní ilé púpọ̀ fún ọ̀pọ̀ oṣù, kò sì sí ẹ̀sùn tí a gbà lòdì sí i.",
   checked_is_not_a_defence: "Ṣíṣàyẹ̀wò kì í ṣe ìdáhùn sí ohun tí ó wà lókè.",
+  your_account: "Àkántì rẹ",
+  account_proves_nothing: "Àkántì jẹ́ orúkọ àti nọ́mbà. Kò fi ohunkóhun hàn fúnra rẹ̀, a sì fẹ́ sọ èyí fún ọ nísinsìnyí ju lẹ́yìn tí o ti forúkọ sílẹ̀.",
+  your_name_label: "Orúkọ rẹ, gẹ́gẹ́ bí àwọn agbatọ́jú yóò ti rí i",
+  your_number_label: "Nọ́mbà iṣẹ́ rẹ",
+  open_an_account: "Ṣí àkántì",
+  what_tenants_see: "Ohun tí agbatọ́jú rí nígbà tí ó bá ṣàyẹ̀wò nọ́mbà rẹ",
+  ask_a_landlord: "Béèrè lọ́wọ́ onílé kí ó fọwọ́ sí ọ",
+  ask_a_landlord_help: "A ó fi kóòdù ránṣẹ́ sí i. Kò sí ohun tí ó ń yípadà àyàfi tí ó bá tẹ̀ ẹ́. Lo nọ́mbà tirẹ̀, kì í ṣe nọ́mbà kejì tìrẹ — a ń ṣàyẹ̀wò, a sì ń kọ̀.",
+  which_property: "Ilé wo",
+  landlord_number: "Nọ́mbà onílé",
+  ask_them: "Béèrè lọ́wọ́ rẹ̀",
+  your_listings: "Àwọn ìpolówó rẹ",
+  no_listings_yet: "Kò sí nǹkan kan síbẹ̀. O lè kọ ìpolówó kí onílé tó fọwọ́ sí ọ. Ṣùgbọ́n o kò lè tẹ̀ ẹ́ jáde títí tí ó fi ṣe bẹ́ẹ̀.",
+  draft_another: "Kọ òmíràn",
+  what_you_are_letting: "Ohun tí ò ń yá",
+  save_draft: "Pa àkọsílẹ̀ mọ́",
+  publish_listing: "Tẹ̀ jáde",
+  draft_private: "Àkọsílẹ̀. Kò sí ẹni tí ó lè rí èyí.",
+  not_verified_yet: "A kò tíì fọwọ́ sí i. Ó ṣì nílò:",
+  listing_verified: "A ti fọwọ́ sí i.",
+  id_check_not_available: "A kò tíì ṣàyẹ̀wò káàdì ìdánimọ̀ rẹ, o kò sì lè ṣe apá yìí níbí síbẹ̀. Gbogbo ìyókù dúró lé e, torí náà onílé fọwọ́ sí ọ kò yí ohunkóhun padà títí tí a ó fi ṣe é. A ó béèrè rẹ̀ lọ́wọ́ rẹ níbí nígbà tí a bá ṣetán.",
+  sign_out: "Jáde ní fóònù yìí",
+  tab_check: "Ṣàyẹ̀wò",
+  tab_account: "Àkántì",
+  text_queued: "A ti tò ìránṣẹ́ sí onílé náà. Kò sí ohun tí ó yí padà títí tí ó fi tẹ kóòdù náà.",
+  drafted: "A ti kọ ọ́ sílẹ̀. Ó pamọ́ títí tí ìwọ yóò fi tẹ̀ ẹ́ jáde.",
+  published_now: "A ti tẹ̀ ẹ́ jáde. Àwọn agbatọ́jú lè rí i nísinsìnyí.",
+  session_ended: "Àkókò yìí ti parí. Ṣí àkántì lẹ́ẹ̀kansí ní fóònù yìí.",
+  condition_agent_identity: "Parí ìṣàyẹ̀wò káàdì ìdánimọ̀ rẹ. Gbogbo ìyókù dúró lé e.",
+  condition_landlord_authority: "Béèrè lọ́wọ́ onílé kí ó fọwọ́ sí i pé o lè yá ilé yìí. Yóò gba kóòdù nípa ìránṣẹ́.",
+  condition_capture_on_site: "Ya ó kéré tán fọ́tò kan nínú app Keys, tí o dúró ní ibẹ̀. Àwọn fọ́tò inú fóònù rẹ kò ka.",
+  condition_walkthrough_video: "Ya fídíò ìrìn àyíká tí ó kéré tán ìṣẹ́jú-àáyá ọgbọ̀n nínú app náà, ní ibẹ̀.",
+  condition_not_a_known_duplicate: "Ọ̀kan nínú àwọn àwòrán wọ̀nyí wà lórí ìpolówó tí a dí. Fi tìrẹ rọ́pò rẹ̀.",
+  condition_recently_confirmed: "Fọwọ́ sí i pé ilé náà ṣì wà. A ń fọwọ́ sí àwọn ìpolówó tí a ti fọwọ́ sí ní ọ̀sẹ̀ méjì méjì.",
+  condition_nothing_upheld: "A gba ẹ̀sùn kan lòdì sí ìpolówó yìí tàbí lòdì sí ọ. Ó gbọ́dọ̀ yanjú kí ó tó ṣeé ṣe.",
+  one_property_confirmed: "Ilé kan tí onílé fọwọ́ sí",
   waiting_to_send: "ń dúró láti lọ",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ìrísí èyíkéyìí. 0803…, +234 803…, tàbí 803….",
@@ -334,6 +478,42 @@ export const IG: Readonly<Record<Phrase, string>> = {
   tier_authority: "Onye nwe ụlọ akwadowo otu ụlọ ọ nwere ike ịgbazinye.",
   tier_established: "Ndị nwe ụlọ akwadowo ya n'ọtụtụ ụlọ kemgbe ọtụtụ ọnwa, ọ dịghịkwa mkpesa a kwadoro megide ya.",
   checked_is_not_a_defence: "Nyocha abụghị azịza nye ihe dị n'elu.",
+  your_account: "Akaụntụ gị",
+  account_proves_nothing: "Akaụntụ bụ aha na nọmba. Ọ naghị egosi ihe ọ bụla n'onwe ya, anyị chọrọ ikwu ya ugbu a karịa mgbe ị debanyesịrị aha.",
+  your_name_label: "Aha gị, dịka ndị mgbazinye ga-ahụ ya",
+  your_number_label: "Nọmba azụmahịa gị",
+  open_an_account: "Meghee akaụntụ",
+  what_tenants_see: "Ihe onye mgbazinye na-ahụ mgbe ọ nyochara nọmba gị",
+  ask_a_landlord: "Rịọ onye nwe ụlọ ka ọ kwado gị",
+  ask_a_landlord_help: "Anyị na-ezigara ya koodu na ozi. Ọ dịghị ihe na-agbanwe ma ọ bụghị na o tinye ya. Jiri nọmba nke ya, ọ bụghị nọmba nke abụọ gị — anyị na-enyocha, anyị na-ajụkwa.",
+  which_property: "Ụlọ ole",
+  landlord_number: "Nọmba onye nwe ụlọ",
+  ask_them: "Rịọ ya",
+  your_listings: "Mgbasa ozi gị",
+  no_listings_yet: "Ọ dịghị ihe ugbu a. Ị nwere ike ide mgbasa ozi tupu onye nwe ụlọ akwado gị. Naanị na ị gaghị ebipụta ya ruo mgbe o mere.",
+  draft_another: "Dee ọzọ",
+  what_you_are_letting: "Ihe ị na-agbazinye",
+  save_draft: "Chekwaa ederede",
+  publish_listing: "Bipụta",
+  draft_private: "Ederede. Ọ dịghị onye na-ahụ nke a.",
+  not_verified_yet: "Akwadobeghị ya. Ka chọrọ:",
+  listing_verified: "Akwadoro ya.",
+  id_check_not_available: "Enyochabeghị kaadị njirimara gị, ị gaghịkwa eme akụkụ ahụ ebe a ugbu a. Ihe niile ndị ọzọ dabere na ya, ya mere na onye nwe ụlọ ịkwado gị anaghị agbanwe ihe ọ bụla ruo mgbe emechara ya. Anyị ga-arịọ gị ya ebe a mgbe anyị dịla njikere.",
+  sign_out: "Pụọ na ekwentị a",
+  tab_check: "Nyochaa",
+  tab_account: "Akaụntụ",
+  text_queued: "Anyị ehaziela ozi ka e zigara onye nwe ụlọ ahụ. Ọ dịghị ihe na-agbanwe ruo mgbe o tinyere koodu ahụ.",
+  drafted: "Edeela ya. Ọ na-ezo ezo ruo mgbe ị bipụtara ya.",
+  published_now: "E bipụtala ya. Ndị mgbazinye nwere ike ịhụ ya ugbu a.",
+  session_ended: "Oge a agwụla. Meghee akaụntụ ọzọ na ekwentị a.",
+  condition_agent_identity: "Mezue nyocha kaadị njirimara gị. Ihe niile ndị ọzọ dabere na ya.",
+  condition_landlord_authority: "Rịọ onye nwe ụlọ ka ọ kwado na ị nwere ike ịgbazinye ụlọ a. Ọ ga-enweta koodu na ozi.",
+  condition_capture_on_site: "Sere opekempe otu foto n'ime app Keys, ka ị guzo n'ebe ahụ. Foto ndị dị na ekwentị gị anaghị agụ.",
+  condition_walkthrough_video: "Dekọọ vidiyo njegharị nke opekempe sekọnd iri atọ n'ime app ahụ, n'ebe ahụ.",
+  condition_not_a_known_duplicate: "Otu n'ime foto ndị a dị na mgbasa ozi anyị gbochiri. Jiri nke gị dochie ya.",
+  condition_recently_confirmed: "Kwado na ụlọ ahụ ka dị. A na-akwado mgbasa ozi akwadoro kwa izu abụọ.",
+  condition_nothing_upheld: "A kwadoro mkpesa megide mgbasa ozi a ma ọ bụ megide gị. A ga-edozi ya tupu nke a emee.",
+  one_property_confirmed: "Otu ụlọ onye nwe ụlọ kwadoro",
   waiting_to_send: "na-echere izipu",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ụdị ọ bụla. 0803…, +234 803…, ma ọ bụ 803….",
@@ -397,6 +577,21 @@ export function categoryPhrase(category: ReportCategory): Phrase {
  */
 export function tierPhrase(tier: string): Phrase {
   return `tier_${tier}` as Phrase;
+}
+
+/**
+ * The sentence for an unmet Verified condition, in the reader's language.
+ *
+ * `whatToDo` in `listings.ts` returns English and belongs to the API — it is
+ * what the OpenAPI document carries for a caller that is not this app. The app
+ * uses this, because an agent in Kano being told what to fix in English is
+ * being told nothing.
+ *
+ * The two are held to each other by a test, so the server and the phone cannot
+ * come to describe different conditions.
+ */
+export function conditionPhrase(condition: string): Phrase {
+  return `condition_${condition}` as Phrase;
 }
 
 export function isLanguage(value: unknown): value is Language {

@@ -658,6 +658,40 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
       .expect(404);
   });
 
+  it('finds an agent however the number was written, at sign-up or at lookup', async () => {
+    /*
+      One number, one hash — and this went wrong in exactly the place nothing
+      was looking.
+
+      Agent sign-up hashed the raw typed string; the tenant lookup hashed the
+      E.164 form. An agent who signed up as `08099887766` was invisible to
+      anybody searching `+2348099887766`, with the tier correct, the evidence
+      correct, and the panel simply absent. `hashPhone` normalises now, so this
+      asserts the property rather than the fix.
+    */
+    const local = '08066554433';
+    const international = '+2348066554433';
+    const spaced = '0806 655 4433';
+
+    const signedUp = await request(app.getHttpServer())
+      .post('/v1/agents')
+      .send({ displayName: 'Written Four Ways', phone: local })
+      .expect(201);
+    await request(app.getHttpServer())
+      .post('/v1/authority/identity')
+      .set('x-kyc-token', KYC)
+      .send({ agentId: signedUp.body.agentId, vendor: 'smile-id', reference: 'ref-ways' })
+      .expect(201);
+
+    for (const written of [local, international, spaced]) {
+      const found = await request(app.getHttpServer())
+        .get('/v1/agents')
+        .query({ phone: written })
+        .expect(200);
+      expect(found.body.agentId).toBe(signedUp.body.agentId);
+    }
+  });
+
   it('is not a reverse phone directory for accounts that verified nothing', async () => {
     const phone = '+2348044444444';
     const signedUp = await request(app.getHttpServer())

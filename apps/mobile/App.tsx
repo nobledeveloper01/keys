@@ -4,8 +4,11 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import { Ambient } from './src/components/Ambient';
 import { Splash } from './src/components/Splash';
+import { Tabs, type Tab } from './src/components/Tabs';
 import { useColours, useTheme, ThemeProvider } from './src/design/theme';
 import { LanguageProvider, useLanguage } from './src/state/language';
+import { SessionProvider } from './src/state/session';
+import { AgentScreen } from './src/screens/AgentScreen';
 import { LanguageScreen } from './src/screens/LanguageScreen';
 import { LookupScreen } from './src/screens/LookupScreen';
 
@@ -34,15 +37,36 @@ const API_URL = __DEV__
 /**
  * Where the app is, in one place.
  *
- * No navigation library yet — there is one screen behind one gate, and a
- * router for that is a dependency carrying no weight. It arrives in phase 4
- * with the tabs, and putting it in now would mean guessing the shape of a
- * navigation tree before any of the screens in it exist.
+ * Still no navigation library. There are two destinations and they are not
+ * steps in a flow, so what is needed is which of two screens is showing —
+ * which is a `useState`, not a dependency with a navigator, a stack, a param
+ * list and a linking config.
+ *
+ * That will stop being true. Phase 4 brings listing pages reached from search
+ * results, and a back stack you can push onto is exactly what a library is
+ * for; the moment there is a second thing to go *back* to, this becomes a
+ * router. Writing one now would be building the general case from a sample of
+ * two.
  */
+/*
+  Everything but the bottom.
+
+  The tab bar reads the home-indicator inset itself and pads for it, so leaving
+  the bottom edge here as well applied it twice: the bar sat above a strip of
+  bare background with the ambient gradient showing through, which reads as the
+  bar having come loose. This app has made the double-inset mistake once
+  before, between `SafeAreaView` and a screen header, and it cost 94 points of
+  dead space at the top.
+
+  Whichever element paints to the edge owns the inset. Here that is the bar.
+*/
+const SIDES = ['top', 'left', 'right'] as const;
+
 function Shell() {
-  const { chosen, ready } = useLanguage();
+  const { chosen, ready, t } = useLanguage();
   const [splashDone, setSplashDone] = useState(false);
   const [picked, setPicked] = useState(false);
+  const [tab, setTab] = useState('check');
 
   /*
     What the screen has just found out, lifted to the shell.
@@ -61,15 +85,50 @@ function Shell() {
     return <Splash ready={ready} onDone={() => setSplashDone(true)} />;
   }
 
-  return (
-    <SafeAreaView style={[styles.root, { backgroundColor: colours.surface }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      <Ambient tone={verdict} />
-      {chosen || picked ? (
-        <LookupScreen baseUrl={API_URL} onVerdict={setVerdict} />
-      ) : (
+  const tabs: readonly Tab[] = [
+    { id: 'check', label: t('tab_check'), icon: 'search' },
+    { id: 'account', label: t('tab_account'), icon: 'shield' },
+  ];
+
+  /*
+    The language gate comes before the tabs, not inside them.
+
+    Somebody who has not chosen a language cannot read the tab labels, so
+    showing the bar underneath the picker would be furniture in a language they
+    may not speak.
+  */
+  if (!chosen && !picked) {
+    return (
+      <SafeAreaView
+        edges={SIDES}
+        style={[styles.root, { backgroundColor: colours.surface }]}
+      >
+        <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+        <Ambient />
         <LanguageScreen onDone={() => setPicked(true)} />
-      )}
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView edges={SIDES} style={[styles.root, { backgroundColor: colours.surface }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      {/*
+        The ambient light follows the lookup's verdict, and only the lookup's.
+        Tinting the agent's own screen red because a tenant's search found
+        something would be the room reacting to the wrong room.
+      */}
+      <Ambient tone={tab === 'check' ? verdict : undefined} />
+
+      <View style={styles.body}>
+        {tab === 'check' ? (
+          <LookupScreen baseUrl={API_URL} onVerdict={setVerdict} />
+        ) : (
+          <AgentScreen baseUrl={API_URL} />
+        )}
+      </View>
+
+      <Tabs tabs={tabs} active={tab} onChange={setTab} />
     </SafeAreaView>
   );
 }
@@ -79,9 +138,11 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <LanguageProvider>
-          <View style={styles.root}>
-            <Shell />
-          </View>
+          <SessionProvider>
+            <View style={styles.root}>
+              <Shell />
+            </View>
+          </SessionProvider>
         </LanguageProvider>
       </ThemeProvider>
     </SafeAreaProvider>
@@ -90,4 +151,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  // The screen takes the space the tab bar does not. Without this the bar
+  // floats over the bottom of a scroll view and eats the last row of content.
+  body: { flex: 1 },
 });

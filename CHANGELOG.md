@@ -30,6 +30,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   unpublishes everything they have, everywhere, at once. Landlords' phone
   numbers are not shown.
 - Tier sentences in Hausa, Yoruba and Igbo alongside English.
+- **The agent screens on the phone**, behind a two-tab bottom bar: open an
+  account, ask a landlord, draft, publish, and see which of the seven Verified
+  conditions each listing still needs. Every sentence in four languages,
+  including the seven conditions.
+- The agent is shown the exact words a tenant reads about them, in quotation
+  marks, rather than a badge or a score.
 
 ### Fixed
 
@@ -49,6 +55,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Revoking a forged ID left the agent's listings published under a landlord
   confirmation from the month before. Losing an identity now takes down
   everything that rested on it.
+- **An agent who signed up as `08099887766` was invisible to a tenant searching
+  `+2348099887766`.** Sign-up hashed the raw typed string; lookup hashed the
+  E.164 form. `normalise` now lives in `packages/domain` and `hashPhone` calls
+  it, so one number cannot have two hashes.
+- "1 properties a landlord confirmed" — the singular case, on both surfaces.
 
 - The scam registry: public lookup with no account, reporting with evidence, a
   reviewer-guarded review console, and right of reply by a texted capability.

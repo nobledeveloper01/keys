@@ -2,6 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { TIERS } from '../src/agents.ts';
+import { EN, conditionPhrase, say } from '../src/language.ts';
 import {
   CAPTURE_RADIUS_M,
   CONFIRMATION_DAYS,
@@ -186,6 +187,30 @@ describe('the agent behind it', () => {
         at,
         `${tier} disagreed`,
       );
+    }
+  });
+});
+
+describe('the server and the phone describe the same conditions', () => {
+  test('every condition has a phrase, and every condition phrase has a condition', () => {
+    /*
+      Two lists of sentences about the same seven things — `whatToDo` in
+      English for the API, and `condition_*` in four languages for the app —
+      and nothing but this test stops them describing different sets. Adding an
+      eighth condition and forgetting the phrase table would ship an app that
+      renders a missing key to somebody in Kano.
+    */
+    const phrases = Object.keys(EN).filter((key) => key.startsWith('condition_'));
+    assert.deepEqual(
+      phrases.sort(),
+      VERIFIED_CONDITIONS.map((c) => `condition_${c}`).sort(),
+    );
+
+    for (const condition of VERIFIED_CONDITIONS) {
+      assert.equal(conditionPhrase(condition), `condition_${condition}`);
+      // And the phrase resolves — `say` throws or returns undefined for a key
+      // no table holds, which is the failure this is standing in front of.
+      assert.equal(typeof say('en', conditionPhrase(condition)), 'string');
     }
   });
 });
