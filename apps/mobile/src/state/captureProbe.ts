@@ -1,11 +1,13 @@
 import { attempt, client } from '@keys/api';
 import { claimMessage, type CaptureClaim } from '@keys/domain';
 
+import KeysCapture from '../native/NativeKeysCapture';
 import KeysSigning from '../native/NativeKeysSigning';
+import { decodeBase64 } from './base64';
 import { sha256 } from './sha256';
 
 /**
- * Proves this phone can produce a capture the server accepts.
+ * Takes a photograph and sends it as a signed capture.
  *
  * A development control, and the only honest way to know the chain works:
  * enclave key → SPKI DER the server can parse → a claim string both sides
@@ -42,36 +44,42 @@ export async function probeCapture(
   if (!registered.ok) return `Could not register this device: ${describe(registered.failure)}`;
 
   /*
-    A grid this function builds, not a photograph.
+    The camera, and nowhere else.
 
-    The camera is not written yet. What is being proven here is the signing
-    chain, and a real photograph would prove the same thing while needing a
-    camera permission dialogue in the middle of a diagnostic.
+    `KeysCapture` presents the camera and returns the greyscale grid the hash
+    reads, with where it was taken. There is deliberately no branch here that
+    accepts a photograph from anywhere else: the signature's whole claim is
+    that the bytes came out of this camera, and an alternative path would be a
+    hole with a button on it.
   */
-  const width = 40;
-  const height = 32;
-  const pixels = new Uint8Array(width * height);
-  let state = 12345;
-  for (let i = 0; i < pixels.length; i += 1) {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    pixels[i] = state >>> 24;
+  /*
+    Caught, always.
+
+    `capture()` rejects for four ordinary reasons — no camera, the agent
+    cancelled, no location, the photo failed — and every one of them is a
+    sentence to show rather than an exception. An uncaught rejection here puts
+    a red error overlay in front of somebody standing in a flat trying to
+    photograph it.
+  */
+  let taken: Awaited<ReturnType<typeof KeysCapture.capture>>;
+  try {
+    taken = await KeysCapture.capture();
+  } catch (error) {
+    return error instanceof Error ? error.message : 'The camera did not open.';
   }
-  const grid = new Uint8Array(12 + pixels.length);
-  grid.set([...'KEYSGREY'].map((c) => c.charCodeAt(0)), 0);
-  grid[8] = width >> 8;
-  grid[9] = width & 0xff;
-  grid[10] = height >> 8;
-  grid[11] = height & 0xff;
-  grid.set(pixels, 12);
+  const grid = decodeBase64(taken.pixels);
 
   const claim: CaptureClaim = {
     sha256: sha256(grid),
     listingId: 'probe-listing',
-    capturedAt: new Date(),
-    latitude: 6.5244,
-    longitude: 3.3792,
+    // The camera's time and place, not this function's. A capture that says
+    // where the phone was when it uploaded rather than when it photographed
+    // is a capture that proves nothing about the property.
+    capturedAt: new Date(taken.capturedAt),
+    latitude: taken.latitude,
+    longitude: taken.longitude,
     nonce: `probe-${Date.now()}`,
-    mockLocation: false,
+    mockLocation: taken.mockLocation,
   };
 
   // `claimMessage` from the domain, which is the same function the server uses
@@ -92,7 +100,7 @@ export async function probeCapture(
       kind: 'photo',
       durationSeconds: null,
       signature,
-      pixels: base64(grid),
+      pixels: taken.pixels,
     }),
   );
 
@@ -104,19 +112,4 @@ export async function probeCapture(
 
 function describe(failure: { kind: string; detail?: string }): string {
   return failure.kind === 'refused' ? (failure.detail ?? 'refused') : 'could not reach Keys';
-}
-
-function base64(bytes: Uint8Array): string {
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  let out = '';
-  for (let i = 0; i < bytes.length; i += 3) {
-    const a = bytes[i]!;
-    const b = bytes[i + 1];
-    const c = bytes[i + 2];
-    const triple = (a << 16) | ((b ?? 0) << 8) | (c ?? 0);
-    out += alphabet[(triple >> 18) & 63]! + alphabet[(triple >> 12) & 63]!;
-    out += b === undefined ? '=' : alphabet[(triple >> 6) & 63]!;
-    out += c === undefined ? '=' : alphabet[triple & 63]!;
-  }
-  return out;
 }

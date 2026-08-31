@@ -232,8 +232,15 @@ none of them can wait for launch.*
    confirmation, because that would hand every listing a free fortnight and make the first
    confirmation the one nobody ever does.
 
-   **Not yet:** the camera. Captures are still built by hand in a development probe, so
-   nothing photographs anything.
+   **The camera is built.** `KeysCapture` presents AVFoundation, takes one photograph,
+   attaches CoreLocation's position and whether the OS thinks it was faked, and returns the
+   greyscale grid the hash reads. There is deliberately **no gallery picker** — the
+   signature's whole claim is that the bytes came out of this camera, so an alternative path
+   would be a hole with a button on it.
+
+   **Not verified:** a simulator has no camera. Everything except the photograph itself has
+   been exercised — the refusal, the permission prompt, the enclave signature, the hash, the
+   upload — and R11 carries the rest.
    Media arrives as a raw greyscale grid rather than a JPEG — the capture module will emit
    one alongside the encoded file, which keeps a native image decoder out of the server.
 

@@ -41,6 +41,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **In-app capture.** The camera opens inside Keys, records where the photo was
+  taken, and hands back what the hash reads. There is no gallery picker and
+  there will not be one.
 - **The phone signs its own captures.** A P-256 key generated inside the Secure
   Enclave, which cannot be exported by anything including Keys itself. What the
   signature proves is the path the bytes took — the Keys camera, on this

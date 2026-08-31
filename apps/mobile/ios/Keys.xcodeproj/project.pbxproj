@@ -10,6 +10,8 @@
 		0C80B921A6F3F58F76C31292 /* libPods-Keys.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-Keys.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		A1B2C3D40002000000000003 /* KeysCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40001000000000003 /* KeysCapture.swift */; };
+		A1B2C3D40002000000000004 /* KeysCapture.m in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40001000000000004 /* KeysCapture.m */; };
 		A1B2C3D40002000000000001 /* KeysSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40001000000000001 /* KeysSigning.swift */; };
 		A1B2C3D40002000000000002 /* KeysSigning.m in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40001000000000002 /* KeysSigning.m */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -25,6 +27,8 @@
 		5709B34CF0A7D63546082F79 /* Pods-Keys.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Keys.release.xcconfig"; path = "Target Support Files/Pods-Keys/Pods-Keys.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-Keys.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Keys.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Keys/AppDelegate.swift; sourceTree = "<group>"; };
+		A1B2C3D40001000000000003 /* KeysCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeysCapture.swift; path = Keys/KeysCapture.swift; sourceTree = "<group>"; };
+		A1B2C3D40001000000000004 /* KeysCapture.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = KeysCapture.m; path = Keys/KeysCapture.m; sourceTree = "<group>"; };
 		A1B2C3D40001000000000001 /* KeysSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeysSigning.swift; path = Keys/KeysSigning.swift; sourceTree = "<group>"; };
 		A1B2C3D40001000000000002 /* KeysSigning.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = KeysSigning.m; path = Keys/KeysSigning.m; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Keys/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -48,6 +52,8 @@
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				A1B2C3D40001000000000003 /* KeysCapture.swift */,
+				A1B2C3D40001000000000004 /* KeysCapture.m */,
 				A1B2C3D40001000000000001 /* KeysSigning.swift */,
 				A1B2C3D40001000000000002 /* KeysSigning.m */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -253,6 +259,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				A1B2C3D40002000000000003 /* KeysCapture.swift in Sources */,
+				A1B2C3D40002000000000004 /* KeysCapture.m in Sources */,
 				A1B2C3D40002000000000001 /* KeysSigning.swift in Sources */,
 				A1B2C3D40002000000000002 /* KeysSigning.m in Sources */,
 			);
