@@ -215,13 +215,43 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
       if (distinct.size > MAX_AGENTS_PER_LANDLORD) throw new LandlordVouchesForTooMany();
     }
 
+    return this.issue(
+      input.purpose,
+      input.agentId,
+      input.propertyId,
+      landlordPhoneHash,
+      input.now,
+    );
+  }
+
+  async openWithdrawal(input: { agentId: string; propertyId: string; now: Date }) {
+    if (!/^[0-9a-f-]{36}$/i.test(input.agentId)) return null;
+    const granted = await this.pool.query<{ attestor_phone_hash: string }>(
+      `SELECT attestor_phone_hash FROM agent_evidence
+        WHERE kind = 'authority' AND agent_id = $1 AND property_id = $2
+          AND revoked_at IS NULL AND attestor_phone_hash IS NOT NULL
+        ORDER BY id LIMIT 1`,
+      [input.agentId, input.propertyId],
+    );
+    const row = granted.rows[0];
+    if (!row) return null;
+    return this.issue('revoke', input.agentId, input.propertyId, row.attestor_phone_hash, input.now);
+  }
+
+  private async issue(
+    purpose: ChallengePurpose,
+    agentId: string,
+    propertyId: string,
+    landlordPhoneHash: string,
+    now: Date,
+  ) {
     const challenge: Challenge = {
       id: randomUUID(),
-      purpose: input.purpose,
-      agentId: input.agentId,
-      propertyId: input.propertyId,
+      purpose,
+      agentId,
+      propertyId,
       landlordPhoneHash,
-      expiresAt: new Date(input.now.getTime() + AUTHORITY_CODE_MINUTES * 60_000),
+      expiresAt: new Date(now.getTime() + AUTHORITY_CODE_MINUTES * 60_000),
     };
     const code = String(randomBytes(4).readUInt32BE(0) % 1_000_000).padStart(6, '0');
     await this.pool.query(

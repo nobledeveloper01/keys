@@ -124,6 +124,27 @@ export abstract class AgentsStore {
   }): Await<{ challenge: Challenge; code: string }>;
 
   /**
+   * Open a withdrawal challenge, to the number already on the record.
+   *
+   * Separate from `openChallenge` because it must not take a phone number from
+   * a caller. The grant flow can: the agent is signed in, and they are naming
+   * the landlord they claim to act for. The withdrawal flow cannot — it is
+   * reachable by anybody with a link, and a route that accepts both "whose
+   * authority to revoke" and "where to text the code" from the same stranger
+   * is a route that revokes a stranger's authority. The code goes to the phone
+   * that granted it, which is the only number that has any standing here.
+   *
+   * Returns null when no live authority exists for that pair, which is also
+   * the answer for an agent id that does not exist — a caller must not be able
+   * to tell those apart.
+   */
+  abstract openWithdrawal(input: {
+    agentId: string;
+    propertyId: string;
+    now: Date;
+  }): Await<{ challenge: Challenge; code: string } | null>;
+
+  /**
    * Answer a challenge. Grants or withdraws depending on its purpose, and on
    * a withdrawal unpublishes everything that stood on it in one transaction.
    * Returns the listing ids that went dark, or null if the answer was wrong.
@@ -258,13 +279,23 @@ export class InMemoryAgentsStore extends AgentsStore {
       if (vouchedFor.size > MAX_AGENTS_PER_LANDLORD) throw new LandlordVouchesForTooMany();
     }
 
+    return this.issue(input.purpose, input.agentId, input.propertyId, landlordPhoneHash, input.now);
+  }
+
+  private issue(
+    purpose: ChallengePurpose,
+    agentId: string,
+    propertyId: string,
+    landlordPhoneHash: string,
+    now: Date,
+  ) {
     const challenge: Challenge = {
       id: randomUUID(),
-      purpose: input.purpose,
-      agentId: input.agentId,
-      propertyId: input.propertyId,
+      purpose,
+      agentId,
+      propertyId,
       landlordPhoneHash,
-      expiresAt: new Date(input.now.getTime() + AUTHORITY_CODE_MINUTES * 60_000),
+      expiresAt: new Date(now.getTime() + AUTHORITY_CODE_MINUTES * 60_000),
     };
     const code = String(randomBytes(4).readUInt32BE(0) % 1_000_000).padStart(6, '0');
     this.challenges.set(challenge.id, {
@@ -274,6 +305,19 @@ export class InMemoryAgentsStore extends AgentsStore {
       used: false,
     });
     return { challenge, code };
+  }
+
+  openWithdrawal(input: { agentId: string; propertyId: string; now: Date }) {
+    const granted = this.evidence.find(
+      (e) =>
+        e.kind === 'authority' &&
+        e.agentId === input.agentId &&
+        e.propertyId === input.propertyId &&
+        e.revokedAt === null &&
+        e.attestor.kind === 'landlord',
+    );
+    if (!granted || granted.attestor.kind !== 'landlord') return null;
+    return this.issue('revoke', input.agentId, input.propertyId, granted.attestor.phoneHash, input.now);
   }
 
   answerChallenge(input: { challengeId: string; code: string; now: Date }) {

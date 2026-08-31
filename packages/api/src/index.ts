@@ -35,6 +35,10 @@ export type SubmitReply =
   paths['/v1/registry/reply']['post']['requestBody']['content']['application/json'];
 export type AgentProfile =
   paths['/v1/agents']['get']['responses'][200]['content']['application/json'];
+export type ChallengeAnswered =
+  paths['/v1/authority/confirm']['post']['responses'][200]['content']['application/json'];
+export type ChallengeOpened =
+  paths['/v1/authority/withdrawal']['post']['responses'][201]['content']['application/json'];
 export type ReviewItem =
   paths['/v1/review/{id}']['get']['responses'][200]['content']['application/json'];
 export type Decision =
@@ -189,6 +193,17 @@ export function client(options: ClientOptions) {
      */
     agentByPhone: (phone: string) =>
       send<AgentProfile>(options, 'GET', '/v1/agents', { query: { phone } }),
+
+    /** The landlord's two calls. No account, by design — see the controller. */
+    confirmAuthority: (challengeId: string, code: string) =>
+      send<ChallengeAnswered>(options, 'POST', '/v1/authority/confirm', {
+        body: { challengeId, code },
+      }),
+
+    askToWithdrawAuthority: (agentId: string, propertyId: string) =>
+      send<ChallengeOpened>(options, 'POST', '/v1/authority/withdrawal', {
+        body: { agentId, propertyId },
+      }),
 
     report: (body: SubmitReport) =>
       send<ReportAccepted>(options, 'POST', '/v1/registry/reports', { body }),

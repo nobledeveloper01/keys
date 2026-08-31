@@ -271,7 +271,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Ask for a code to withdraw an authority. Texted to the landlord. */
+        /** Ask for a code to withdraw an authority. Texted to the landlord who granted it. */
         post: operations["AuthorityController_askToWithdraw"];
         delete?: never;
         options?: never;

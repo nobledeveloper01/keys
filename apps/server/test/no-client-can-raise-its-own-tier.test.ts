@@ -7,7 +7,7 @@ import { TIERS, tierOf } from '@keys/domain';
 
 import { AppModule } from '../src/app.module';
 import { AgentsStore } from '../src/agents/agents.store';
-import { ReportsStore } from '../src/reports/reports.store';
+import { ReportsStore, hashPhone } from '../src/reports/reports.store';
 
 /*
   Run against every store, for the same reason phase 1's gate does: a suite
@@ -107,6 +107,31 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
   let token: string;
   let agentId: string;
   let listingId: string;
+
+  /*
+    Where a challenge was actually sent.
+
+    Read out of the store rather than out of a response, because the response
+    saying nothing about the destination is half of what is being tested. There
+    is no route that answers this and there must not be — a challenge is
+    addressed to a phone, and a route that reports which one is a route that
+    turns a challenge id into a lookup on somebody's landlord.
+  */
+  async function landlordHashOf(challengeId: string): Promise<string | undefined> {
+    if (databaseUrl) {
+      const pool = new Pool({ connectionString: databaseUrl });
+      const found = await pool.query<{ landlord_phone_hash: string }>(
+        'SELECT landlord_phone_hash FROM landlord_challenges WHERE id = $1',
+        [challengeId],
+      );
+      await pool.end();
+      return found.rows[0]?.landlord_phone_hash;
+    }
+    const internal = agents as unknown as {
+      challenges: Map<string, { landlordPhoneHash: string }>;
+    };
+    return internal.challenges.get(challengeId)?.landlordPhoneHash;
+  }
 
   beforeAll(async () => {
     process.env.KEYS_REVIEWER_TOKEN = REVIEWER;
@@ -531,6 +556,49 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
         .set('x-agent-token', token)
         .expect(403);
     }
+  });
+
+  it('texts the withdrawal code to the number that granted it, not to whoever asked', async () => {
+    const landlord = '+2348055555555';
+    const granted = await agents.openChallenge({
+      purpose: 'grant',
+      agentId,
+      propertyId: 'flat-8',
+      landlordPhone: landlord,
+      now: new Date(),
+    });
+    await request(app.getHttpServer())
+      .post('/v1/authority/confirm')
+      .send({ challengeId: granted.challenge.id, code: granted.code })
+      .expect(201);
+
+    // A stranger asks, and supplies their own number in every field a route
+    // like this might read one from.
+    const asked = await request(app.getHttpServer())
+      .post('/v1/authority/withdrawal')
+      .send({
+        agentId,
+        propertyId: 'flat-8',
+        landlordPhone: '+2348099990000',
+        phone: '+2348099990000',
+        to: '+2348099990000',
+      })
+      .expect(201);
+
+    // The challenge exists, and it is addressed to the landlord who granted
+    // the authority — not to the number in the request. Checked in the store,
+    // because the response deliberately says nothing about where it went.
+    expect(asked.body.challengeId).toBeTruthy();
+    const addressed = await landlordHashOf(asked.body.challengeId as string);
+    expect(addressed).toBe(hashPhone(landlord));
+    expect(addressed).not.toBe(hashPhone('+2348099990000'));
+
+    // And a pair with no live authority is refused, with the same answer a
+    // nonexistent agent gets.
+    await request(app.getHttpServer())
+      .post('/v1/authority/withdrawal')
+      .send({ agentId, propertyId: 'a-property-nobody-granted' })
+      .expect(404);
   });
 
   it('is not a reverse phone directory for accounts that verified nothing', async () => {

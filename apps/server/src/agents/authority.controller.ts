@@ -43,43 +43,49 @@ export class AuthorityController {
 
   @Post('withdrawal')
   @ApiOperation({
-    summary: 'Ask for a code to withdraw an authority. Texted to the landlord.',
+    summary: 'Ask for a code to withdraw an authority. Texted to the landlord who granted it.',
   })
   @ApiCreatedResponse({ type: ChallengeOpenedResponse })
-  async askToWithdraw(
-    @Body() body: { agentId?: string; propertyId?: string; landlordPhone?: string },
-  ) {
+  async askToWithdraw(@Body() body: { agentId?: string; propertyId?: string }) {
     const agentId = (body?.agentId ?? '').trim();
     const propertyId = (body?.propertyId ?? '').trim();
-    const landlordPhone = (body?.landlordPhone ?? '').trim();
-    if (!agentId || !propertyId || landlordPhone.length < 7) {
-      throw new BadRequestException('Name the agent, the property and your number.');
+    if (!agentId || !propertyId) {
+      throw new BadRequestException('Name the agent and the property.');
     }
 
     /*
-      Unauthenticated on purpose, and it is worth being explicit about why that
-      is safe. Opening this challenge does nothing except send a text to the
-      landlord's own number; the code arrives on their phone and nowhere else,
-      so the only thing a stranger can achieve by calling this route is causing
-      an unsolicited text. That makes rate limiting the real control here, and
-      it makes the alternative — requiring the landlord to prove who they are
-      before they may ask to prove who they are — plainly circular.
+      Unauthenticated, and it takes no phone number. Both halves matter.
+
+      Unauthenticated because the landlord has no account and requiring them to
+      prove who they are before they may ask to prove who they are is circular.
+      No phone number because the first draft took one, which meant a stranger
+      with the link could have the code sent to *their* number and revoke
+      somebody else's authority — the route would have been a revocation
+      endpoint with a confirmation step that confirmed nothing. The code goes to
+      the number that granted the authority, which is the only number with any
+      standing here.
+
+      What a stranger can still achieve is an unsolicited text to a landlord.
+      That makes rate limiting the real control, and it is a cost worth paying
+      for a withdrawal that works from a feature phone at ten at night.
     */
     const now = new Date();
-    const opened = await this.store.openChallenge({
-      purpose: 'revoke',
-      agentId,
-      propertyId,
-      landlordPhone,
-      now,
-    });
+    const opened = await this.store.openWithdrawal({ agentId, propertyId, now });
+
+    // The same answer whether the authority does not exist, the property does
+    // not, or the agent does not. Otherwise this route reports which pairs are
+    // real to anybody who asks.
+    if (!opened) {
+      throw new NotFoundException('No live authority matches that.');
+    }
 
     this.outbox.queue(
       {
         toPhoneHash: opened.challenge.landlordPhoneHash,
         body:
-          'Someone asked to withdraw an agent’s authority to let your property on ' +
-          `Keys. If that was you, enter ${opened.code}. If not, ignore this — ` +
+          'Someone asked to withdraw an agent\u2019s authority to let your property ' +
+          `on Keys. If that was you, enter ${opened.code} at ` +
+          `https://keys.ng/authority?c=${opened.challenge.id}. If not, ignore this — ` +
           'nothing changes unless you enter it.',
       },
       now,
@@ -90,8 +96,8 @@ export class AuthorityController {
       expiresAt: opened.challenge.expiresAt.toISOString(),
       delivered: false,
       whatHappensNext:
-        'We have queued a text to that number. Nothing changes until the code ' +
-        'from it is entered.',
+        'We have queued a text to the number that confirmed this agent. Nothing ' +
+        'changes until the code from it is entered.',
     };
   }
 
