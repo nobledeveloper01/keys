@@ -85,28 +85,28 @@ palette is verified by eye rather than by anything that runs.
 
 ---
 
-## Phase 1 — The Scam Registry (Weeks 4–8) — the wedge · **current**
+## Phase 1 — The Scam Registry (Weeks 4–8) — the wedge · **phase gate green**
 Public lookup with no account, reporting with evidence, **the human-review console**, right of
 reply with the 7-day window, publication gating, expiry and resolution.
 
 **Exit gates:**
-1. ✅ **Software — no unreviewed report is publicly retrievable by any query path.**
+1. ✅ **Phase gate — no unreviewed report is publicly retrievable by any query path.**
    `apps/server/test/no-unreviewed-report-escapes.test.ts` reads the routes out of the
    running router rather than naming them, so a route added later is covered on the day
    it is written. Proven to fail by removing the reviewer guard, leaking the reporter id,
    and adding a debug route that dumps the store. See [ADR 0002](adr/0002-nothing-is-published-until-a-person-upheld-it.md).
-2. ⏳ **Software — right-of-reply flow works end to end, including for reported parties
-   who have no Keys account.** The capability is generated, stored and honoured, and
+2. ⏳ **Release gate R1 — right-of-reply flow works end to end, including for reported
+   parties who have no Keys account.** The capability is generated, stored and honoured, and
    `/reply` on the web surface renders and posts against it. Nothing delivers the token
    yet. **Blocked on the SMS provider in phase 3.**
    See [ADR 0003](adr/0003-the-accused-answers-with-a-texted-capability-not-an-account.md).
-3. ⏳ **Human — review console throughput measured.** The console exists at
+3. ⏳ **Release gate R2 — review console throughput measured.** The console exists at
    `/review` on the web surface, every action names a reviewer and states a
    reason, and `GET /v1/review/metrics` reports decisions by reviewer alongside
    the queue depth and the age of the oldest waiting report. **The instrument is
    built; the number still needs a real reviewer working real reports.**
    See [ADR 0006](adr/0006-a-reviewer-is-not-an-answer-to-who-decided-this.md).
-4. ⏳ **Human — legal review of the report policy by a Nigerian lawyer.**
+4. ⏳ **Release gate R3 — legal review of the report policy by a Nigerian lawyer.**
    **Blocks public launch outright.** No test result substitutes for it.
 
 **Known limitations at the end of phase 1**
@@ -117,18 +117,23 @@ reply with the 7-day window, publication gating, expiry and resolution.
   between them. The bridge is `POST /v1/review/:id/evidence`, where a reviewer records
   what they saw and how it reached them. It is weaker than a file and the row says so:
   the key is prefixed `reviewer-attested:`. Phase 3 replaces it.
-- **The store is in memory.** Postgres and PostGIS land in phase 2; `/healthz` reports
-  `durable: false` so this cannot be mistaken for a deployment.
+- **PostGIS is not installed.** Postgres is; reports are durable and `/healthz` asks the
+  store rather than the environment. Nothing needs geospatial until listings in phase 3.
 - **No SMS.** See gate 2.
 
 **Launched publicly at the end of this phase**, standalone, with no listings at all.
 
-## Phase 2 — Agent Verification & Authority (Weeks 9–13)
+## Phase 2 — Agent Verification & Authority (Weeks 9–13) · **current**
 Liveness and ID TurboModule, tiers, agent profiles, authority upload and review, **landlord
 co-verification by OTP**, revocation cascade.
 
-**Exit gate:** tier gates enforced server-side and unbypassable from a modified client; revocation
-unpublishes dependent listings atomically.
+**Phase gate:** a tier is computed only from evidence the claimant cannot write, and no
+value a client sends can raise one — tested adversarially, through every route, the way
+phase 1's registry gate is. Revocation cascades in one transaction.
+
+**Release gates opened by this phase:** R4 (an Android build somebody has watched succeed)
+and R5 (dark mode reachable through a settings screen). Both are in
+[the ledger](RELEASE-GATES.md).
 
 ## Phase 3 — Listing Integrity (Weeks 14–19) — **the technical core**
 Geotagged in-app capture with device signing, mock-location detection, video capture and

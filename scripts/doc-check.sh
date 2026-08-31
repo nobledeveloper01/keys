@@ -90,6 +90,26 @@ if [ -f PHASE ]; then
   fi
 fi
 
+# --- release gates named in the roadmap exist in the ledger ----------------
+#
+# A release gate is work deferred past the next phase. Deferred work needs one
+# list somebody can read, or "we will do it before launch" is a sentiment rather
+# than a commitment. See ADR 0007.
+if [ -f docs/ROADMAP.md ] && [ -f docs/RELEASE-GATES.md ]; then
+  missing_gates=""
+  for gate in $(grep -oE 'Release gate R[0-9]+' docs/ROADMAP.md | grep -oE 'R[0-9]+' | sort -u); do
+    grep -qE "^\| $gate \|" docs/RELEASE-GATES.md || missing_gates="$missing_gates $gate"
+  done
+  if [ -n "$missing_gates" ]; then
+    for gate in $missing_gates; do
+      red "docs/ROADMAP.md names release gate $gate and docs/RELEASE-GATES.md does not list it"
+    done
+    fail=1
+  else
+    ok "every release gate the roadmap names is in the ledger"
+  fi
+fi
+
 # --- every document under docs/, not only the required ones ----------------
 #
 # The required list caught its own members and nothing else, so eight planning
