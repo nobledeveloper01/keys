@@ -9,9 +9,13 @@ import { useColours, useTheme, ThemeProvider } from './src/design/theme';
 import { useDeepLink } from './src/state/deepLink';
 import { LanguageProvider, useLanguage } from './src/state/language';
 import { SessionProvider } from './src/state/session';
+import { TenantProvider } from './src/state/tenant';
 import { AgentScreen } from './src/screens/AgentScreen';
 import { FindScreen } from './src/screens/FindScreen';
+import { ConversationScreen } from './src/screens/ConversationScreen';
 import { ListingScreen } from './src/screens/ListingScreen';
+import { MessagesScreen } from './src/screens/MessagesScreen';
+import { AskScreen } from './src/screens/AskScreen';
 import { LanguageScreen } from './src/screens/LanguageScreen';
 import { LookupScreen } from './src/screens/LookupScreen';
 import { ReplyScreen } from './src/screens/ReplyScreen';
@@ -101,6 +105,19 @@ function Shell() {
   const [openListing, setOpenListing] = useState<string | null>(null);
 
   /*
+    Which conversation is open inside the Messages tab, and which listing is
+    waiting on a tenant account.
+
+    Three `useState` stacks now, which is where a router stops being a
+    dependency I am avoiding and starts being one I am reimplementing badly.
+    Phase 6 replaces these; the point at which that became true is here, and
+    saying so is cheaper than pretending it is still two booleans.
+  */
+  const [openConversation, setOpenConversation] = useState<string | null>(null);
+  const [asking, setAsking] = useState<{ listingId: string } | null>(null);
+  const [openEnquiry, setOpenEnquiry] = useState<string | null>(null);
+
+  /*
     A link from a text message, which is not a destination anybody navigates to.
 
     It takes the whole screen, above the tabs, because somebody who has just
@@ -137,6 +154,15 @@ function Shell() {
     */
     { id: 'find', label: t('tab_find'), icon: 'pin' },
     { id: 'check', label: t('tab_check'), icon: 'search' },
+    /*
+      Messages third, between finding and your own account.
+
+      It is where a tenant goes back to something they already started, so it
+      belongs after the two tabs that start things and before the one that is
+      about being an agent. Five is the most a bottom bar can hold and this is
+      the fifth — anything after it has to replace something.
+    */
+    { id: 'messages', label: t('tab_messages'), icon: 'message' },
     { id: 'account', label: t('tab_account'), icon: 'shield' },
     { id: 'settings', label: t('tab_settings'), icon: 'auto' },
   ];
@@ -183,7 +209,26 @@ function Shell() {
 
       <View style={styles.body}>
         {tab === 'find' &&
-          (openListing === null ? (
+          (asking !== null ? (
+            <AskScreen
+              baseUrl={API_URL}
+              listingId={asking.listingId}
+              onBack={() => setAsking(null)}
+              /*
+                Straight into the thread, in the Messages tab.
+
+                Not back to the listing with a toast. Somebody who has just
+                asked a question is waiting for an answer, and the place that
+                answer will appear is the place to leave them.
+              */
+              onStarted={(id) => {
+                setAsking(null);
+                setOpenListing(null);
+                setOpenConversation(id);
+                setTab('messages');
+              }}
+            />
+          ) : openListing === null ? (
             <FindScreen baseUrl={API_URL} onOpen={setOpenListing} />
           ) : (
             <ListingScreen
@@ -200,6 +245,28 @@ function Shell() {
                 setOpenListing(null);
                 setTab('check');
               }}
+              /*
+                Asking about a place needs an account, and this is where a
+                tenant gets one — at the moment they have a reason to.
+
+                Somebody who already has a token goes straight to the thread.
+                Somebody who does not is asked for a name and a number *here*,
+                on a screen that names the flat they are asking about, rather
+                than at the door of the app where the request has no reason
+                attached to it.
+              */
+              onMessage={() => setAsking({ listingId: openListing })}
+            />
+          ))}
+        {tab === 'messages' &&
+          (openConversation === null ? (
+            <MessagesScreen baseUrl={API_URL} onOpen={setOpenConversation} />
+          ) : (
+            <ConversationScreen
+              baseUrl={API_URL}
+              id={openConversation}
+              as="tenant"
+              onBack={() => setOpenConversation(null)}
             />
           ))}
         {tab === 'check' &&
@@ -217,7 +284,24 @@ function Shell() {
               onCancel={() => setReporting(null)}
             />
           ))}
-        {tab === 'account' && <AgentScreen baseUrl={API_URL} />}
+        {tab === 'account' &&
+          (openEnquiry === null ? (
+            <AgentScreen baseUrl={API_URL} onOpenEnquiry={setOpenEnquiry} />
+          ) : (
+            /*
+              The same screen the tenant reads, from the other side.
+
+              Two screens would have been two copies of the thread and the
+              contact panel — the part that must never disagree about who may
+              see a number.
+            */
+            <ConversationScreen
+              baseUrl={API_URL}
+              id={openEnquiry}
+              as="agent"
+              onBack={() => setOpenEnquiry(null)}
+            />
+          ))}
         {tab === 'settings' && <SettingsScreen />}
       </View>
 
@@ -248,9 +332,11 @@ export default function App() {
       <ThemeProvider>
         <LanguageProvider>
           <SessionProvider>
-            <View style={styles.root}>
-              <Shell />
-            </View>
+            <TenantProvider>
+              <View style={styles.root}>
+                <Shell />
+              </View>
+            </TenantProvider>
           </SessionProvider>
         </LanguageProvider>
       </ThemeProvider>

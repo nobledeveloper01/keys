@@ -1340,6 +1340,41 @@
         ]
       }
     },
+    "/v1/agent/conversations/{id}": {
+      "get": {
+        "operationId": "MarketController_oneOfMine",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "tags": [
+          "market"
+        ]
+      }
+    },
     "/v1/agent/conversations/{id}/messages": {
       "post": {
         "operationId": "MarketController_replyAsAgent",

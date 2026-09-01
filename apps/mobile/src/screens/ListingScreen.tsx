@@ -31,11 +31,13 @@ export function ListingScreen({
   id,
   onBack,
   onCheckAgent,
+  onMessage,
 }: {
   baseUrl: string;
   id: string;
   onBack: () => void;
   onCheckAgent: () => void;
+  onMessage: () => void;
 }) {
   const { t, language } = useLanguage();
   const colours = useColours();
@@ -126,6 +128,15 @@ export function ListingScreen({
             <Text variant="body" style={styles.row}>
               {`“${listing.agentMeaning}”`}
             </Text>
+            {/*
+              Asking comes before checking.
+
+              Somebody reading this page wants to know whether they can see the
+              flat. Checking the agent's number is what you do when you already
+              have doubts — the quiet button, for the same reason Check is the
+              second tab rather than the first.
+            */}
+            <Button label={t('message_the_agent')} onPress={onMessage} />
             <Button label={t('check_this_agent')} onPress={onCheckAgent} quiet />
           </View>
         </>

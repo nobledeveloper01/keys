@@ -28,7 +28,13 @@ import { PropertyScreen } from './PropertyScreen';
  * chosen. Rather than hide that behind a step that would not help, the screen
  * says it.
  */
-export function AgentScreen({ baseUrl }: { baseUrl: string }) {
+export function AgentScreen({
+  baseUrl,
+  onOpenEnquiry,
+}: {
+  baseUrl: string;
+  onOpenEnquiry: (conversationId: string) => void;
+}) {
   const { t } = useLanguage();
   const { token, signIn, signOut } = useSession();
 
@@ -125,6 +131,7 @@ export function AgentScreen({ baseUrl }: { baseUrl: string }) {
         listing={open}
         onBack={() => setOpenId(null)}
         onChanged={again}
+        onOpenEnquiry={onOpenEnquiry}
       />
     );
   }

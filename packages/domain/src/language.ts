@@ -224,7 +224,50 @@ export type Phrase =
   | 'costs_not_stated'
   | 'costs_save'
   | 'costs_help'
-  | 'costs_saved';
+  | 'costs_saved'
+  | 'tab_messages'
+  | 'messages_lede'
+  | 'no_messages_yet'
+  | 'no_messages_yet_help'
+  | 'exchange_none'
+  | 'exchange_you_offered'
+  | 'exchange_they_offered'
+  | 'exchange_done'
+  | 'message_the_agent'
+  | 'ask_about_this_place'
+  | 'why_we_want_your_number'
+  | 'say_something'
+  | 'send'
+  | 'share_my_number'
+  | 'share_my_number_help'
+  | 'take_my_number_back'
+  | 'their_number'
+  | 'ask_to_see_it'
+  | 'waiting_on_the_agent'
+  | 'they_agreed_to_show_it'
+  | 'they_declined'
+  | 'inspection_fee_is'
+  | 'inspection_free'
+  | 'what_happened_when_you_went'
+  | 'outcome_did_not_exist'
+  | 'outcome_agent_did_not_show'
+  | 'outcome_asked_for_more_money'
+  | 'outcome_as_described'
+  | 'outcome_not_for_me'
+  | 'how_much_were_you_asked'
+  | 'tell_us'
+  | 'your_name'
+  | 'your_number'
+  | 'start_messaging'
+  | 'enquiries'
+  | 'no_enquiries'
+  | 'reply_to_them'
+  | 'they_want_to_see_it'
+  | 'what_will_you_charge'
+  | 'agree_to_show'
+  | 'decline'
+  | 'outcome_recorded'
+  | 'number_shared';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -372,6 +415,49 @@ export const EN: Readonly<Record<Phrase, string>> = {
   costs_save: "Save the costs",
   costs_help: "Everything a tenant pays before they get keys. Put 0 where there is nothing to pay.",
   costs_saved: "Costs saved",
+  tab_messages: "Messages",
+  messages_lede: "Agents you have asked about a place.",
+  no_messages_yet: "No messages yet",
+  no_messages_yet_help: "Open a listing and ask the agent about it. Keys keeps your number back until you both agree to swap.",
+  exchange_none: "No numbers shared",
+  exchange_you_offered: "You shared yours",
+  exchange_they_offered: "They shared theirs",
+  exchange_done: "Numbers shared",
+  message_the_agent: "Ask about this place",
+  ask_about_this_place: "Ask about this place",
+  why_we_want_your_number: "Keys keeps this to itself. The agent does not see it — if you want them to have it, you choose that later, inside the conversation.",
+  say_something: "Say something",
+  send: "Send",
+  share_my_number: "Share my number",
+  share_my_number_help: "They will only see it if they share theirs. You can take it back until then.",
+  take_my_number_back: "Take my number back",
+  their_number: "Their number",
+  ask_to_see_it: "Ask to see it",
+  waiting_on_the_agent: "Waiting for the agent",
+  they_agreed_to_show_it: "They agreed to show it",
+  they_declined: "They cannot show it",
+  inspection_fee_is: "To see it they will charge",
+  inspection_free: "They will show it for nothing",
+  what_happened_when_you_went: "What happened when you went?",
+  outcome_did_not_exist: "There was nothing there",
+  outcome_agent_did_not_show: "Nobody came",
+  outcome_asked_for_more_money: "They asked for more money",
+  outcome_as_described: "It was as described",
+  outcome_not_for_me: "It was not for me",
+  how_much_were_you_asked: "How much were you asked for?",
+  tell_us: "Tell Keys",
+  your_name: "Your name",
+  your_number: "Your number",
+  start_messaging: "Start messaging",
+  enquiries: "Enquiries",
+  no_enquiries: "Nobody has asked about your places yet.",
+  reply_to_them: "Reply",
+  they_want_to_see_it: "They want to see it",
+  what_will_you_charge: "What will you charge to show it?",
+  agree_to_show: "Agree to show it",
+  decline: "Cannot show it",
+  outcome_recorded: "Thank you. That is recorded.",
+  number_shared: "Numbers shared",
   which_number_reported: "The number you are reporting",
   what_kind: "What kind of thing was it?",
   what_happened: "What happened",
@@ -552,6 +638,49 @@ export const HA: Readonly<Record<Phrase, string>> = {
   costs_save: "Ajiye kuɗaɗen",
   costs_help: "Duk abin da mai haya zai biya kafin ya samu makullai. Sanya 0 inda babu biya.",
   costs_saved: "An ajiye kuɗaɗen",
+  tab_messages: "Saƙonni",
+  messages_lede: "Dillalan da ka tambaya game da wuri.",
+  no_messages_yet: "Babu saƙonni tukuna",
+  no_messages_yet_help: "Buɗe talla ka tambayi dillali. Keys yana riƙe lambarka har sai ku duka kun yarda ku musanya.",
+  exchange_none: "Ba a raba lambobi ba",
+  exchange_you_offered: "Ka raba naka",
+  exchange_they_offered: "Sun raba nasu",
+  exchange_done: "An raba lambobi",
+  message_the_agent: "Tambaya game da wannan wurin",
+  ask_about_this_place: "Tambaya game da wannan wurin",
+  why_we_want_your_number: "Keys yana riƙe wannan da kansa. Dillali ba ya ganin sa — idan kana son su same shi, za ka zaɓa daga baya, cikin tattaunawar.",
+  say_something: "Ka faɗi wani abu",
+  send: "Aika",
+  share_my_number: "Raba lambata",
+  share_my_number_help: "Za su gan ta ne kawai idan sun raba tasu. Kana iya dawo da ita kafin haka.",
+  take_my_number_back: "Dawo da lambata",
+  their_number: "Lambar su",
+  ask_to_see_it: "Nemi ka gan shi",
+  waiting_on_the_agent: "Ana jiran dillali",
+  they_agreed_to_show_it: "Sun yarda su nuna shi",
+  they_declined: "Ba za su iya nuna shi ba",
+  inspection_fee_is: "Don ganin sa za su caji",
+  inspection_free: "Za su nuna shi kyauta",
+  what_happened_when_you_went: "Me ya faru lokacin da ka je?",
+  outcome_did_not_exist: "Babu komai a wurin",
+  outcome_agent_did_not_show: "Babu wanda ya zo",
+  outcome_asked_for_more_money: "Sun nemi ƙarin kuɗi",
+  outcome_as_described: "Yana kamar yadda aka bayyana",
+  outcome_not_for_me: "Bai dace da ni ba",
+  how_much_were_you_asked: "Nawa aka nema daga gare ka?",
+  tell_us: "Faɗa wa Keys",
+  your_name: "Sunanka",
+  your_number: "Lambarka",
+  start_messaging: "Fara saƙo",
+  enquiries: "Tambayoyi",
+  no_enquiries: "Babu wanda ya tambaya game da wuraren ka tukuna.",
+  reply_to_them: "Amsa",
+  they_want_to_see_it: "Suna son su gan shi",
+  what_will_you_charge: "Nawa za ka caji don nuna shi?",
+  agree_to_show: "Yarda ka nuna shi",
+  decline: "Ba zan iya nuna shi ba",
+  outcome_recorded: "Na gode. An rubuta hakan.",
+  number_shared: "An raba lambobi",
   which_number_reported: "Lambar da kake ba da rahoton ta",
   what_kind: "Wane irin abu ne?",
   what_happened: "Me ya faru",
@@ -732,6 +861,49 @@ export const YO: Readonly<Record<Phrase, string>> = {
   costs_save: "Fi owó náà pamọ́",
   costs_help: "Gbogbo ohun tí ayálégbé ń san kí ó tó gba kọ́kọ́rọ́. Fi 0 sí ibi tí kò sí owó.",
   costs_saved: "A ti fi owó pamọ́",
+  tab_messages: "Àwọn ìránṣẹ́",
+  messages_lede: "Àwọn aṣojú tí o béèrè lọ́wọ́ wọn nípa ibì kan.",
+  no_messages_yet: "Kò sí ìránṣẹ́ síbẹ̀",
+  no_messages_yet_help: "Ṣí ìpolówó kan kí o sì béèrè lọ́wọ́ aṣojú. Keys yóò dá nọ́mbà rẹ dúró títí ẹ̀yin méjèèjì yóò fi gbà.",
+  exchange_none: "Kò sí nọ́mbà tí a pín",
+  exchange_you_offered: "O pín tìrẹ",
+  exchange_they_offered: "Wọ́n pín tiwọn",
+  exchange_done: "A ti pín àwọn nọ́mbà",
+  message_the_agent: "Béèrè nípa ibì yìí",
+  ask_about_this_place: "Béèrè nípa ibì yìí",
+  why_we_want_your_number: "Keys ni yóò pa á mọ́. Aṣojú kò rí i — bí o bá fẹ́ kí wọ́n ní i, ìwọ yóò yàn án nígbà mìíràn, nínú ìjíròrò náà.",
+  say_something: "Sọ nǹkan kan",
+  send: "Fi ránṣẹ́",
+  share_my_number: "Pín nọ́mbà mi",
+  share_my_number_help: "Wọn yóò rí i kìkì tí wọ́n bá pín tiwọn. O lè gbà á padà títí di ìgbà náà.",
+  take_my_number_back: "Gba nọ́mbà mi padà",
+  their_number: "Nọ́mbà wọn",
+  ask_to_see_it: "Béèrè láti rí i",
+  waiting_on_the_agent: "À ń dúró de aṣojú",
+  they_agreed_to_show_it: "Wọ́n gbà láti fi hàn",
+  they_declined: "Wọn kò lè fi hàn",
+  inspection_fee_is: "Láti rí i wọn yóò gba",
+  inspection_free: "Wọn yóò fi hàn lọ́fẹ̀ẹ́",
+  what_happened_when_you_went: "Kí ló ṣẹlẹ̀ nígbà tí o lọ?",
+  outcome_did_not_exist: "Kò sí ohunkóhun níbẹ̀",
+  outcome_agent_did_not_show: "Kò sẹ́ni tí ó wá",
+  outcome_asked_for_more_money: "Wọ́n béèrè owó púpọ̀ sí i",
+  outcome_as_described: "Ó dàbí bí a ṣe sọ",
+  outcome_not_for_me: "Kò bá mi mu",
+  how_much_were_you_asked: "Owó mélòó ni wọ́n béèrè lọ́wọ́ rẹ?",
+  tell_us: "Sọ fún Keys",
+  your_name: "Orúkọ rẹ",
+  your_number: "Nọ́mbà rẹ",
+  start_messaging: "Bẹ̀rẹ̀ ìránṣẹ́",
+  enquiries: "Àwọn ìbéèrè",
+  no_enquiries: "Kò sẹ́ni tí ó béèrè nípa àwọn ibi rẹ síbẹ̀.",
+  reply_to_them: "Dáhùn",
+  they_want_to_see_it: "Wọ́n fẹ́ rí i",
+  what_will_you_charge: "Owó mélòó ni ìwọ yóò gba láti fi hàn?",
+  agree_to_show: "Gbà láti fi hàn",
+  decline: "Kò lè fi hàn",
+  outcome_recorded: "A dúpẹ́. A ti kọ ọ́ sílẹ̀.",
+  number_shared: "A ti pín àwọn nọ́mbà",
   which_number_reported: "Nọ́mbà tí ò ń ròyìn",
   what_kind: "Irú ohun wo ni?",
   what_happened: "Ohun tí ó ṣẹlẹ̀",
@@ -912,6 +1084,49 @@ export const IG: Readonly<Record<Phrase, string>> = {
   costs_save: "Chekwaa ụgwọ ndị a",
   costs_help: "Ihe niile onye mgbazinye na-akwụ tupu o nweta igodo. Tinye 0 ebe ọ dịghị ihe a ga-akwụ.",
   costs_saved: "Echekwala ụgwọ",
+  tab_messages: "Ozi",
+  messages_lede: "Ndị nnọchi ị jụrụ gbasara ebe.",
+  no_messages_yet: "Enweghị ozi ugbu a",
+  no_messages_yet_help: "Mepee mgbasa ozi ma jụọ onye nnọchi. Keys na-ejigide nọmba gị ruo mgbe unu abụọ kwetara ịgbanwe.",
+  exchange_none: "Ekekọtaghị nọmba",
+  exchange_you_offered: "I kekọrọ nke gị",
+  exchange_they_offered: "Ha kekọrọ nke ha",
+  exchange_done: "Ekekọrọ nọmba",
+  message_the_agent: "Jụọ gbasara ebe a",
+  ask_about_this_place: "Jụọ gbasara ebe a",
+  why_we_want_your_number: "Keys na-edobe ya naanị ya. Onye nnọchi anaghị ahụ ya — ọ bụrụ na ị chọrọ ka ha nweta ya, ị ga-ahọrọ ya mgbe e mesịrị, nʼime mkparịta ụka ahụ.",
+  say_something: "Kwuo ihe",
+  send: "Zipu",
+  share_my_number: "Kekọrịta nọmba m",
+  share_my_number_help: "Ha ga-ahụ ya naanị ma ha kekọrịta nke ha. Ị nwere ike ịnapụta ya ruo mgbe ahụ.",
+  take_my_number_back: "Napụta nọmba m",
+  their_number: "Nọmba ha",
+  ask_to_see_it: "Rịọ ka ị hụ ya",
+  waiting_on_the_agent: "Na-echere onye nnọchi",
+  they_agreed_to_show_it: "Ha kwetara igosi ya",
+  they_declined: "Ha enweghị ike igosi ya",
+  inspection_fee_is: "Iji hụ ya ha ga-ana",
+  inspection_free: "Ha ga-egosi ya nʼefu",
+  what_happened_when_you_went: "Gịnị mere mgbe ị gara?",
+  outcome_did_not_exist: "Ọ dịghị ihe dị ebe ahụ",
+  outcome_agent_did_not_show: "Ọ dịghị onye bịara",
+  outcome_asked_for_more_money: "Ha rịọrọ ego karịrị",
+  outcome_as_described: "Ọ dị ka e kwuru",
+  outcome_not_for_me: "Ọ bụghị maka m",
+  how_much_were_you_asked: "Ego ole ka a rịọrọ gị?",
+  tell_us: "Gwa Keys",
+  your_name: "Aha gị",
+  your_number: "Nọmba gị",
+  start_messaging: "Malite izi ozi",
+  enquiries: "Ajụjụ",
+  no_enquiries: "Ọ dịghị onye jụrụ gbasara ebe gị ugbu a.",
+  reply_to_them: "Zaghachi",
+  they_want_to_see_it: "Ha chọrọ ịhụ ya",
+  what_will_you_charge: "Ego ole ka ị ga-ana igosi ya?",
+  agree_to_show: "Kweta igosi ya",
+  decline: "Enweghị ike igosi",
+  outcome_recorded: "Daalụ. Edeela ya.",
+  number_shared: "Ekekọrọ nọmba",
   which_number_reported: "Nọmba ị na-akọ",
   what_kind: "Ụdị ihe dị aṅaa ka ọ bụ?",
   what_happened: "Ihe merenụ",

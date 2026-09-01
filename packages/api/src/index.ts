@@ -41,6 +41,17 @@ export type ListingView =
   paths['/v1/listings/{id}']['get']['responses'][200]['content']['application/json'];
 export type SignedUp =
   paths['/v1/agents']['post']['responses'][201]['content']['application/json'];
+export type TenantSignUp =
+  paths['/v1/tenants']['post']['responses'][201]['content']['application/json'];
+
+export type Conversation =
+  paths['/v1/conversations']['post']['responses'][201]['content']['application/json'];
+
+export type ConversationMessage = Conversation['messages'][number];
+
+export type Inspection =
+  paths['/v1/inspections']['post']['responses'][201]['content']['application/json'];
+
 export type Costs =
   paths['/v1/agents/me/listings/{id}/costs']['post']['requestBody']['content']['application/json'];
 
@@ -150,6 +161,12 @@ export interface ClientOptions {
    * belongs to can read it.
    */
   readonly agentToken?: string;
+  /**
+   * The tenant's own session. A different header from the agent's, so that a
+   * route meaning "an agent" cannot be satisfied by a tenant token that
+   * happens to resolve.
+   */
+  readonly tenantToken?: string;
   readonly fetch?: typeof globalThis.fetch;
 }
 
@@ -169,6 +186,7 @@ async function send<T>(
       ...(init.body ? { 'content-type': 'application/json' } : {}),
       ...(options.reviewerToken ? { 'x-reviewer-token': options.reviewerToken } : {}),
       ...(options.agentToken ? { 'x-agent-token': options.agentToken } : {}),
+      ...(options.tenantToken ? { 'x-tenant-token': options.tenantToken } : {}),
     },
     ...(init.body ? { body: JSON.stringify(init.body) } : {}),
   });
@@ -282,6 +300,84 @@ export function client(options: ClientOptions) {
         send<Listing>(options, 'POST', `/v1/agents/me/listings/${id}/publish`),
 
       listings: () => send<Listing[]>(options, 'GET', '/v1/agents/me/listings'),
+
+      /** People asking about your listings. */
+      conversations: () => send<Conversation[]>(options, 'GET', '/v1/agent/conversations'),
+
+      conversation: (id: string) =>
+        send<Conversation>(options, 'GET', `/v1/agent/conversations/${id}`),
+
+      reply: (id: string, body: string) =>
+        send<Conversation>(options, 'POST', `/v1/agent/conversations/${id}/messages`, {
+          body: { body },
+        }),
+
+      offerContact: (id: string, contact: string) =>
+        send<Conversation>(options, 'POST', `/v1/agent/conversations/${id}/contact`, {
+          body: { contact },
+        }),
+
+      withdrawContact: (id: string) =>
+        send<Conversation>(options, 'DELETE', `/v1/agent/conversations/${id}/contact`),
+
+      inspectionRequests: () => send<Inspection[]>(options, 'GET', '/v1/agent/inspections'),
+
+      /** Agree to show it, and say what you will charge. Zero is an answer. */
+      answerInspection: (id: string, agreed: boolean, feeKobo: number) =>
+        send<Inspection>(options, 'POST', `/v1/agent/inspections/${id}`, {
+          body: { agreed, feeKobo },
+        }),
+    },
+
+    /**
+     * Talking to an agent, and going to see a place.
+     *
+     * Every method here needs a tenant token except `signUp`, which mints one.
+     */
+    tenant: {
+      signUp: (displayName: string, phone: string) =>
+        send<TenantSignUp>(options, 'POST', '/v1/tenants', { body: { displayName, phone } }),
+
+      /**
+       * Ask about a listing.
+       *
+       * Takes the first message with it. A conversation with nothing in it is
+       * not a conversation — it is a notification an agent cannot answer.
+       */
+      ask: (listingId: string, body: string) =>
+        send<Conversation>(options, 'POST', '/v1/conversations', { body: { listingId, body } }),
+
+      conversations: () => send<Conversation[]>(options, 'GET', '/v1/conversations'),
+      conversation: (id: string) => send<Conversation>(options, 'GET', `/v1/conversations/${id}`),
+
+      say: (id: string, body: string) =>
+        send<Conversation>(options, 'POST', `/v1/conversations/${id}/messages`, { body: { body } }),
+
+      /** Offer your number. They see it only if they offer theirs. */
+      offerContact: (id: string, contact: string) =>
+        send<Conversation>(options, 'POST', `/v1/conversations/${id}/contact`, {
+          body: { contact },
+        }),
+
+      withdrawContact: (id: string) =>
+        send<Conversation>(options, 'DELETE', `/v1/conversations/${id}/contact`),
+
+      askToVisit: (conversationId: string) =>
+        send<Inspection>(options, 'POST', '/v1/inspections', { body: { conversationId } }),
+
+      inspections: () => send<Inspection[]>(options, 'GET', '/v1/inspections'),
+
+      /**
+       * Say what happened.
+       *
+       * `paidKobo` is required when the outcome is that more money was asked
+       * for, and checked against what the agent declared before the visit — a
+       * complaint its own figures contradict is refused rather than filed.
+       */
+      recordOutcome: (id: string, outcome: string, paidKobo?: number) =>
+        send<Inspection>(options, 'POST', `/v1/inspections/${id}/outcome`, {
+          body: { outcome, ...(paidKobo === undefined ? {} : { paidKobo }) },
+        }),
     },
 
     /**

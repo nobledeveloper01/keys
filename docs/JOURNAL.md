@@ -6,6 +6,81 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-01 — The number is the last thing, not the first
+
+**Did.** Phase 5's marketplace loop: a tenant messages an agent about a listing, they swap
+numbers only if both agree, they arrange a viewing at a fee named in advance, and they say
+what happened when they went. Server, domain, and the screens for both sides.
+
+### The two halves of one question
+
+*A stranger cannot reach an agent's number, and a stranger cannot take a listing down.*
+Both are about what an unknown party may do to somebody, and both have an obvious wrong
+answer that ships in most marketplaces.
+
+The number in the advert is the wrong answer to the first. An automatic suspension only a
+reviewer can lift is the wrong answer to the second — it hands anybody with an account a
+way to take a competitor off the market for as long as the queue is.
+
+### Where the number lives
+
+Not on the account. Every phone in this product is a hash, because the only thing the rest
+of the system does with one is *match* it. A hash cannot be revealed, which looked at first
+like a problem for a feature whose whole job is revealing a number.
+
+It was not. The number is supplied at the moment somebody offers it and stored on the
+conversation — which is better than un-hashing an account would have been. The hashing
+invariant survives everywhere else; the number shared is a decision per conversation, which
+is what people actually do; a conversation nobody offered in holds no number at all; and an
+offer nobody answered can be withdrawn, which sets the column to NULL rather than flipping
+a flag.
+
+### Why the suspension is safe
+
+The remedy is evidence, not an appeal. The agent walks back to the property and photographs
+it — ten minutes, no reviewer — and it is impossible for somebody who never had the flat,
+because the capture is device-signed and must fall inside the radius of the coordinates
+they published. It has to be taken *after* the complaint: a photograph from last week proves
+the flat was there last week, which nobody disputed.
+
+### What surprised us
+
+**Making `capturedAt` load-bearing opened a hole the same day.** It lives inside the *signed
+claim*, so the phone chooses it. One claim dated 2099, uploaded once, would have immunised a
+listing against every report anybody would ever make — for ever, silently, with a valid
+signature. Captures now refuse a future timestamp, with five minutes of clock skew for
+phones whose clocks drift.
+
+**`wired-check` found a comment wearing a constant's clothes.** `SUSPENSION_LIFTS_ONLY_ON_EVIDENCE
+= true` was read by nothing and could not have been; `false` would have changed no
+behaviour. Deleted. It also found `feeWasHonoured` unwired, which meant nothing ever
+compared what was paid to what was declared — so a fee complaint whose own figures
+contradict it is now refused rather than filed.
+
+**A second Postgres suite deadlocked the first.** Both clear the schema before running, and
+in parallel workers that is two `TRUNCATE ... CASCADE` racing over the same tables. It
+surfaced the day a second suite existed, not the day the first was written.
+
+**A phrase written as a label was used as half a sentence, again.** The contact-exchange
+copy — "they will only see it if they share theirs" — was reused on the sign-up screen,
+where it told somebody their number was on its way to an agent when it is hashed on arrival
+and no agent ever sees it. A borrowed sentence that is merely awkward is a nuisance; one
+that is *false in its new home* is worse than saying nothing.
+
+**One screen serves both sides of a conversation.** The thread, the contact panel and the
+message box are identical for tenant and agent; only the viewing panel differs. Two files
+would have been two copies of the part that must never disagree about who may see a number
+— the same duplication that put a ticked "photographed at the property" in front of one
+person and nothing in front of another, and cost this codebase `assessListing` to undo.
+
+### The gate
+
+Four deliberate breaks, each caught by the assertion meant to catch it: one side offering
+reveals the other's number; any capture lifts a suspension rather than only a later one; the
+outcome route stops checking whose inspection it is; the suspension never reaches the badge.
+
+---
+
 ## 2026-08-31 — ₦800,000 is not the price
 
 **Did.** An eighth Verified condition: a listing says what it actually costs to move

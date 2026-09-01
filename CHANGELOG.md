@@ -41,6 +41,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Ask an agent without giving them your number.** A tenant messages about a
+  listing and Keys holds both numbers back until each side offers theirs. An
+  offer nobody has answered can be taken back. A message with a number in it is
+  refused rather than quietly stripped, because somebody who thinks they sent
+  their number waits for a call that never comes.
+- **Arranging a viewing, at a fee named in advance.** The agent says what they
+  will charge to show it — zero is an answer — so being asked for more at the
+  door is a broken claim rather than an argument about what was said.
+- **Saying what happened when you went.** *There was nothing there* takes the
+  badge off the listing on the very next search. The agent lifts it themselves
+  by going back and photographing the property: ten minutes for somebody who has
+  the flat, impossible for somebody who never did. No reviewer, no queue, and no
+  way for one stranger to take a competitor off the market.
 - **What it actually costs.** A listing states rent, agency fee, agreement fee,
   caution deposit and service charge, and Keys totals them: ₦800,000 advertised
   is ₦1,100,000 to move in, and that figure is on the search row as well as the

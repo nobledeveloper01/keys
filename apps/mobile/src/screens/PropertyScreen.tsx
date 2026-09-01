@@ -2,19 +2,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { attempt, client, type Listing } from '@keys/api';
+import { attempt, client, type Conversation, type Listing } from '@keys/api';
 import { VERIFIED_CONDITIONS, conditionPhrase, conditionStepPhrase } from '@keys/domain';
 
 import { Button } from '../components/Button';
 import { Field } from '../components/Field';
 import { Glass } from '../components/Glass';
 import { Progress } from '../components/Progress';
+import { PropertyRow } from '../components/PropertyRow';
 import { Text } from '../components/Text';
 import KeysCapture from '../native/NativeKeysCapture';
 import { captureFor, deviceIdFor } from '../state/capture';
 import { space } from '../design/tokens';
 import { useColours } from '../design/theme';
 import { useLanguage } from '../state/language';
+import { useQuery } from '../state/server';
 
 /**
  * One property, and everything that can be done to it.
@@ -35,12 +37,14 @@ export function PropertyScreen({
   listing,
   onBack,
   onChanged,
+  onOpenEnquiry,
 }: {
   baseUrl: string;
   token: string;
   listing: Listing;
   onBack: () => void;
   onChanged: (said: string) => void;
+  onOpenEnquiry: (conversationId: string) => void;
 }) {
   const { t } = useLanguage();
   const colours = useColours();
@@ -48,6 +52,27 @@ export function PropertyScreen({
   const [busy, setBusy] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [landlordPhone, setLandlordPhone] = useState('');
+
+  /*
+    People asking about *this* property.
+
+    Fetched here rather than listed on the account screen, for the reason that
+    screen was rebuilt: an enquiry belongs to a property, and a floating list of
+    them would have to say which one each was about — a column that exists only
+    because the list is in the wrong place.
+  */
+  const { query: enquiries } = useQuery<readonly Conversation[]>(
+    async () => {
+      const all = await attempt(() =>
+        client({ baseUrl, agentToken: token }).agent.conversations(),
+      );
+      return all.ok
+        ? { ok: true as const, value: all.value.filter((c) => c.listingId === listing.id) }
+        : all;
+    },
+    [baseUrl, token, listing.id],
+  );
+  const asking = enquiries.state === 'ready' ? enquiries.value : [];
   /*
     Naira in the fields, kobo on the wire.
 
@@ -347,6 +372,32 @@ export function PropertyScreen({
         </View>
       )}
 
+      {/*
+        Enquiries, only when there are some.
+
+        An empty "nobody has asked" panel under every property would be a row
+        of furniture reporting that nothing happened.
+      */}
+      {asking.length > 0 && (
+        <View style={styles.section}>
+          <Text variant="title">{t('enquiries')}</Text>
+          {asking.map((conversation) => (
+            <PropertyRow
+              key={conversation.id}
+              title={conversation.otherPartyName}
+              address={lastWord(conversation)}
+              status={
+                conversation.exchange === 'exchanged'
+                  ? t('number_shared')
+                  : t('reply_to_them')
+              }
+              tone={conversation.exchange === 'exchanged' ? 'clear' : 'quiet'}
+              onPress={() => onOpenEnquiry(conversation.id)}
+            />
+          ))}
+        </View>
+      )}
+
       <View style={styles.section}>
         {listing.publishedAt === null ? (
           <>
@@ -417,6 +468,11 @@ export function PropertyScreen({
       </View>
     </ScrollView>
   );
+}
+
+/** The last thing said, so a row is worth reading before it is opened. */
+function lastWord(conversation: Conversation): string {
+  return conversation.messages.at(-1)?.body ?? '';
 }
 
 /**

@@ -205,6 +205,15 @@ export class MarketController {
     return Promise.all(conversations.map((c) => this.visible(c.id, 'agent')));
   }
 
+  @Get('agent/conversations/:id')
+  @UseGuards(AgentGuard)
+  @ApiSecurity('agent-token')
+  @ApiOkResponse({ type: ConversationResponse })
+  async oneOfMine(@Req() request: RequestWithAgent, @Param('id') id: string) {
+    await this.mineOr404(id, request.agent!.id, 'agent');
+    return this.visible(id, 'agent');
+  }
+
   @Post('agent/conversations/:id/messages')
   @UseGuards(AgentGuard)
   @ApiSecurity('agent-token')
