@@ -973,6 +973,603 @@
         ]
       }
     },
+    "/v1/tenants": {
+      "post": {
+        "operationId": "MarketController_signUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenantSignUpBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantSignUpResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Open a tenant account. Needed to message an agent.",
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/conversations": {
+      "post": {
+        "operationId": "MarketController_open",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenConversationBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Ask an agent about a listing, without giving them your number.",
+        "tags": [
+          "market"
+        ]
+      },
+      "get": {
+        "operationId": "MarketController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Your conversations.",
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/conversations/{id}": {
+      "get": {
+        "operationId": "MarketController_one",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/conversations/{id}/messages": {
+      "post": {
+        "operationId": "MarketController_saySomething",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SayBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/conversations/{id}/contact": {
+      "post": {
+        "operationId": "MarketController_offerAsTenant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfferContactBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Offer your number. They see it only if they offer theirs.",
+        "tags": [
+          "market"
+        ]
+      },
+      "delete": {
+        "operationId": "MarketController_unofferAsTenant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Take back a number they have not answered.",
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/agent/conversations/{id}/contact": {
+      "delete": {
+        "operationId": "MarketController_unofferAsAgent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Take back a number they have not answered.",
+        "tags": [
+          "market"
+        ]
+      },
+      "post": {
+        "operationId": "MarketController_offerAsAgent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfferContactBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Offer your number. They see it only if they offer theirs.",
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/agent/conversations": {
+      "get": {
+        "operationId": "MarketController_theirs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "People asking about your listings.",
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/agent/conversations/{id}/messages": {
+      "post": {
+        "operationId": "MarketController_replyAsAgent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SayBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/inspections": {
+      "post": {
+        "operationId": "MarketController_ask",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestInspectionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Ask to see the place.",
+        "tags": [
+          "market"
+        ]
+      },
+      "get": {
+        "operationId": "MarketController_myInspections",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InspectionResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/agent/inspections": {
+      "get": {
+        "operationId": "MarketController_inspectionsOnMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InspectionResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/agent/inspections/{id}": {
+      "post": {
+        "operationId": "MarketController_answer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerInspectionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Agree to show it, and say what you will charge.",
+        "tags": [
+          "market"
+        ]
+      }
+    },
+    "/v1/inspections/{id}/outcome": {
+      "post": {
+        "operationId": "MarketController_outcome",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutcomeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InspectionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Say what happened. \"It was not there\" suspends the badge.",
+        "tags": [
+          "market"
+        ]
+      }
+    },
     "/v1/captures/devices": {
       "post": {
         "operationId": "CapturesController_registerDevice",
@@ -1766,7 +2363,8 @@
               "not_a_known_duplicate",
               "recently_confirmed",
               "nothing_upheld",
-              "costs_stated"
+              "costs_stated",
+              "nobody_found_it_missing"
             ]
           },
           "whatToDo": {
@@ -2105,7 +2703,8 @@
               "not_a_known_duplicate",
               "recently_confirmed",
               "nothing_upheld",
-              "costs_stated"
+              "costs_stated",
+              "nobody_found_it_missing"
             ]
           },
           "label": {
@@ -2170,6 +2769,254 @@
           "agentMeaning",
           "checks",
           "costs"
+        ]
+      },
+      "TenantSignUpBody": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "example": "Ada"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+2348012345678"
+          }
+        },
+        "required": [
+          "displayName",
+          "phone"
+        ]
+      },
+      "TenantSignUpResponse": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "Shown once. Keys keeps a digest and cannot return it again — see the release gates for where a client must put it."
+          }
+        },
+        "required": [
+          "tenantId",
+          "token"
+        ]
+      },
+      "OpenConversationBody": {
+        "type": "object",
+        "properties": {
+          "listingId": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "description": "The first thing to say. A conversation with nothing in it is not one."
+          }
+        },
+        "required": [
+          "listingId",
+          "body"
+        ]
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "speaker": {
+            "type": "string",
+            "enum": [
+              "tenant",
+              "agent",
+              "keys"
+            ]
+          },
+          "body": {
+            "type": "string"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "speaker",
+          "body",
+          "sentAt"
+        ]
+      },
+      "ConversationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "listingId": {
+            "type": "string"
+          },
+          "listingTitle": {
+            "type": "string"
+          },
+          "otherPartyName": {
+            "type": "string",
+            "description": "Who you are talking to. A name, never a number."
+          },
+          "exchange": {
+            "type": "string",
+            "enum": [
+              "none",
+              "tenant_offered",
+              "agent_offered",
+              "exchanged"
+            ]
+          },
+          "theirContact": {
+            "type": "string",
+            "nullable": true,
+            "description": "The other party's number, and only once both of you have offered. Null at every other point, on every route, for everyone."
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageResponse"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "listingId",
+          "listingTitle",
+          "otherPartyName",
+          "exchange",
+          "theirContact",
+          "messages"
+        ]
+      },
+      "SayBody": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "OfferContactBody": {
+        "type": "object",
+        "properties": {
+          "contact": {
+            "type": "string",
+            "example": "+2348012345678",
+            "description": "The number you are choosing to share, here, with this person. Not read from your account — this product stores those as hashes, and a number that has to be revealed belongs only where revealing it is the point."
+          }
+        },
+        "required": [
+          "contact"
+        ]
+      },
+      "RequestInspectionBody": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "conversationId"
+        ]
+      },
+      "InspectionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "listingId": {
+            "type": "string"
+          },
+          "listingTitle": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "agreed",
+              "declined",
+              "done"
+            ]
+          },
+          "feeKobo": {
+            "type": "number",
+            "description": "What the agent said they would charge, in kobo."
+          },
+          "outcome": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "did_not_exist",
+              "agent_did_not_show",
+              "asked_for_more_money",
+              "as_described",
+              "not_for_me"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "listingId",
+          "listingTitle",
+          "state",
+          "feeKobo",
+          "outcome"
+        ]
+      },
+      "AnswerInspectionBody": {
+        "type": "object",
+        "properties": {
+          "agreed": {
+            "type": "boolean",
+            "description": "Agree to show it, or decline."
+          },
+          "feeKobo": {
+            "type": "number",
+            "example": 0,
+            "description": "What you will charge to show it, in kobo. Zero is an answer and a claim: a tenant who is then asked for money at the door can report it."
+          }
+        },
+        "required": [
+          "agreed",
+          "feeKobo"
+        ]
+      },
+      "OutcomeBody": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "did_not_exist",
+              "agent_did_not_show",
+              "asked_for_more_money",
+              "as_described",
+              "not_for_me"
+            ]
+          },
+          "paidKobo": {
+            "type": "number",
+            "nullable": true,
+            "description": "What you were actually asked for at the door, in kobo. Required when the outcome is asked_for_more_money, and checked against what the agent declared — a complaint its own figures contradict is refused rather than filed."
+          }
+        },
+        "required": [
+          "outcome"
         ]
       },
       "RegisterDeviceBody": {

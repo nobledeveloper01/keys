@@ -56,6 +56,22 @@ export const VERIFIED_CONDITIONS = [
    * and the only one a dishonest one gains anything by skipping.
    */
   'costs_stated',
+  /**
+   * Nobody has gone to this address and found nothing there.
+   *
+   * The only condition a stranger can set, which is why it is the only one
+   * with a remedy that does not involve a queue. An outcome of *it was not
+   * there*, from somebody whose inspection this agent agreed to, suspends the
+   * badge at once — a tenant who made that journey should not watch the
+   * listing stay Verified while a reviewer gets to it.
+   *
+   * What stops it being a button for taking a competitor off the market is
+   * that the agent lifts it themselves, by going back and photographing the
+   * property. Ten minutes for somebody who has the flat; impossible for
+   * somebody who never did, because the capture is signed by a device key and
+   * has to be within the radius of the coordinates they published.
+   */
+  'nobody_found_it_missing',
 ] as const;
 
 export type VerifiedCondition = (typeof VERIFIED_CONDITIONS)[number];
@@ -108,6 +124,14 @@ export interface ListingEvidence {
    * zero is stated; a missing field is not.
    */
   readonly costsStated: boolean;
+  /**
+   * An unanswered report that somebody went and found nothing.
+   *
+   * "Unanswered" is doing the work: a suspension a fresh on-site capture has
+   * already answered is not one, and that judgement is `liftsSuspension`'s,
+   * made against the capture's own timestamp.
+   */
+  readonly unansweredSuspension: boolean;
 }
 
 /** A capture that actually proves somebody stood in the property. */
@@ -174,6 +198,8 @@ export function unmetConditions(
 
   if (!evidence.costsStated) unmet.push('costs_stated');
 
+  if (evidence.unansweredSuspension) unmet.push('nobody_found_it_missing');
+
   return unmet;
 }
 
@@ -213,5 +239,7 @@ export function whatToDo(condition: VerifiedCondition): string {
       return 'A report against this listing or against you was upheld. It has to be resolved before this can be Verified again.';
     case 'costs_stated':
       return 'State the full cost of moving in: rent, your fee, the agreement fee, the deposit and any service charge. Put zero where there is nothing to pay — a zero is an answer, a blank is not.';
+    case 'nobody_found_it_missing':
+      return 'Somebody went to this address and said there was nothing there. Go back and take a photo in the app, standing at the property. That lifts this straight away — you do not need to wait for anybody.';
   }
 }

@@ -143,6 +143,8 @@ export type Phrase =
   | 'condition_recently_confirmed'
   | 'condition_nothing_upheld'
   | 'condition_costs_stated'
+  | 'condition_nobody_found_it_missing'
+  | 'step_nobody_found_it_missing'
   | 'one_property_confirmed'
   | 'report_lede'
   | 'which_number_reported'
@@ -300,6 +302,8 @@ export const EN: Readonly<Record<Phrase, string>> = {
   condition_recently_confirmed: "Confirm the property is still available. Verified listings are confirmed every fortnight.",
   condition_nothing_upheld: "A report against this listing or against you was upheld. That has to be resolved first.",
   condition_costs_stated: "Say what it costs to move in: rent, your fee, the agreement fee, the deposit and any service charge. A zero is an answer; a blank is not.",
+  condition_nobody_found_it_missing: "Somebody went to this address and said there was nothing there. Take a photo at the property in the app and this lifts at once.",
+  step_nobody_found_it_missing: "Nobody found it missing",
   one_property_confirmed: "One property a landlord confirmed",
   report_lede: "A reviewer reads this before anything appears about anybody. Nothing you write here is published until a person upholds it.",
   only_report_what_happened_to_you: "Report what happened to you, not what you heard. A report nobody can assess cannot be upheld, and one that turns out to be false is worse than no report at all.",
@@ -478,6 +482,8 @@ export const HA: Readonly<Record<Phrase, string>> = {
   condition_recently_confirmed: "Tabbatar da cewa wurin yana nan. Ana tabbatar da tallace-tallacen da aka tabbatar kowane mako biyu.",
   condition_nothing_upheld: "An tabbatar da rahoto kan wannan tallar ko kanka. Dole a warware shi tukuna.",
   condition_costs_stated: "Faɗi abin da za a biya kafin shiga: haya, kuɗinka, kuɗin yarjejeniya, ajiya da kuɗin hidima. Sifili amsa ce; wofi ba amsa ba ce.",
+  condition_nobody_found_it_missing: "Wani ya je wannan adireshin ya ce babu komai a wurin. Ɗauki hoto a wurin da ke cikin manhajar, sai wannan ya ɗage nan take.",
+  step_nobody_found_it_missing: "Babu wanda bai same shi ba",
   one_property_confirmed: "Wuri ɗaya da mai gida ya tabbatar",
   report_lede: "Mai duba yana karanta wannan kafin komai ya bayyana game da kowa. Ba a buga abin da ka rubuta a nan sai mutum ya tabbatar da shi.",
   only_report_what_happened_to_you: "Ba da rahoton abin da ya same ka, ba abin da ka ji ba. Rahoton da ba wanda zai iya tantancewa ba za a tabbatar da shi ba, kuma wanda ya zamo ƙarya ya fi rashin rahoto muni.",
@@ -656,6 +662,8 @@ export const YO: Readonly<Record<Phrase, string>> = {
   condition_recently_confirmed: "Fọwọ́ sí i pé ilé náà ṣì wà. A ń fọwọ́ sí àwọn ìpolówó tí a ti fọwọ́ sí ní ọ̀sẹ̀ méjì méjì.",
   condition_nothing_upheld: "A gba ẹ̀sùn kan lòdì sí ìpolówó yìí tàbí lòdì sí ọ. Ó gbọ́dọ̀ yanjú kí ó tó ṣeé ṣe.",
   condition_costs_stated: "Sọ ohun tí ó ná láti wọlé: owó ilé, owó rẹ, owó àdéhùn, owó ìdógò àti owó ìtọ́jú. Òdo jẹ́ ìdáhùn; òfìfo kọ́.",
+  condition_nobody_found_it_missing: "Ẹnìkan lọ sí àdírẹ́sì yìí ó sì sọ pé kò sí ohunkóhun níbẹ̀. Ya àwòrán níbi ilé náà nínú ẹ̀rọ yìí, yóò sì kúrò lẹ́sẹ̀kẹsẹ̀.",
+  step_nobody_found_it_missing: "Kò sẹ́ni tí kò rí i",
   one_property_confirmed: "Ilé kan tí onílé fọwọ́ sí",
   report_lede: "Olùyẹ̀wò kan ka èyí kí ohunkóhun tó farahàn nípa ẹnikẹ́ni. A kì í tẹ ohun tí o kọ síbí jáde àyàfi tí ènìyàn bá gbà á.",
   only_report_what_happened_to_you: "Ròyìn ohun tí ó ṣẹlẹ̀ sí ọ, kì í ṣe ohun tí o gbọ́. Ìròyìn tí ẹnikẹ́ni kò lè ṣàyẹ̀wò ni a kò lè gbà, èyí tí ó bá sì di irọ́ burú ju àìròyìn lọ.",
@@ -834,6 +842,8 @@ export const IG: Readonly<Record<Phrase, string>> = {
   condition_recently_confirmed: "Kwado na ụlọ ahụ ka dị. A na-akwado mgbasa ozi akwadoro kwa izu abụọ.",
   condition_nothing_upheld: "A kwadoro mkpesa megide mgbasa ozi a ma ọ bụ megide gị. A ga-edozi ya tupu nke a emee.",
   condition_costs_stated: "Kwuo ihe ọ ga-efu ịbanye: ụgwọ ụlọ, ụgwọ gị, ụgwọ nkwekọrịta, ego nchekwa na ụgwọ ọrụ. Efu bụ azịza; oghere abụghị.",
+  condition_nobody_found_it_missing: "Otu onye gara adreesị a kwuo na ọ dịghị ihe dị ebe ahụ. Sepụta foto nʼebe ụlọ ahụ dị nʼime ngwa a, nke a ga-ewepụ ya ozugbo.",
+  step_nobody_found_it_missing: "Ọ dịghị onye na-ahụghị ya",
   one_property_confirmed: "Otu ụlọ onye nwe ụlọ kwadoro",
   report_lede: "Onye nyocha na-agụ nke a tupu ihe ọ bụla apụta banyere onye ọ bụla. Anaghị ebipụta ihe i dere ebe a ruo mgbe mmadụ kwadoro ya.",
   only_report_what_happened_to_you: "Kọọ ihe mere gị, ọ bụghị ihe ị nụrụ. Mkpesa onye ọ bụla na-apụghị inyocha ka a na-apụghị ịkwado, nke ghọrọ ụgha kwa jọrọ njọ karịa enweghị mkpesa ọ bụla.",

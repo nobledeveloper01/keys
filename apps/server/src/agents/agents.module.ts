@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { CapturesStoreModule } from '../captures/captures-store.module';
+import { MarketStoreModule } from '../market/market-store.module';
 import { ReportsModule } from '../reports/reports.module';
 import { AgentReviewController } from './agent-review.controller';
 import { AgentsController } from './agents.controller';
@@ -30,7 +31,7 @@ import { PostgresAgentsStore } from './agents.postgres';
  * far from either file.
  */
 @Module({
-  imports: [ReportsModule, CapturesStoreModule, OutboxModule],
+  imports: [ReportsModule, CapturesStoreModule, MarketStoreModule, OutboxModule],
   controllers: [AgentsController, AuthorityController, AgentReviewController, SearchController],
   providers: [
     {

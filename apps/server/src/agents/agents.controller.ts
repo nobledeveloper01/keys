@@ -1,3 +1,4 @@
+import { MarketStore } from '../market/market.store';
 import { readCosts, viewCosts } from './costs.view';
 import {
   BadRequestException,
@@ -69,6 +70,7 @@ export class AgentsController {
     private readonly reports: ReportsStore,
     private readonly outbox: Outbox,
     private readonly captures: CapturesStore,
+    private readonly market: MarketStore,
   ) {}
 
   /**
@@ -455,7 +457,7 @@ export class AgentsController {
         listing.id,
         await assessListing(
           listing,
-          { agents: this.store, reports: this.reports, captures: this.captures },
+          { agents: this.store, reports: this.reports, captures: this.captures, market: this.market },
           now,
         ),
       );

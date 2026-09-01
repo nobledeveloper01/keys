@@ -16,6 +16,7 @@ import {
 
 import { CapturesStore } from '../captures/captures.store';
 import { ReportsStore } from '../reports/reports.store';
+import { MarketStore } from '../market/market.store';
 import { AgentsStore, type Listing } from './agents.store';
 import { assessListing } from './assess';
 import { SearchResult, ListingView } from './agents.dto';
@@ -43,6 +44,7 @@ export class SearchController {
     private readonly store: AgentsStore,
     private readonly reports: ReportsStore,
     private readonly captures: CapturesStore,
+    private readonly market: MarketStore,
   ) {}
 
   @Get()
@@ -149,7 +151,7 @@ export class SearchController {
   private async assess(listing: Listing, now: Date) {
     const assessment = await assessListing(
       listing,
-      { agents: this.store, reports: this.reports, captures: this.captures },
+      { agents: this.store, reports: this.reports, captures: this.captures, market: this.market },
       now,
     );
     return { ...listing, ...assessment };

@@ -19,6 +19,7 @@ import {
   type CaptureClaim,
   type Grey,
   type Match,
+  capturedAtIsPlausible,
 } from '@keys/domain';
 
 import { AgentGuard, type RequestWithAgent } from '../agents/agent.guard';
@@ -104,6 +105,23 @@ export class CapturesController {
     const capturedAt = new Date(body?.capturedAt ?? '');
     if (Number.isNaN(capturedAt.getTime())) {
       throw new BadRequestException('Give the time it was captured.');
+    }
+    /*
+      A capture may not be from the future, and this is not housekeeping.
+
+      `capturedAt` is inside the signed claim, so the *phone* chooses it — and
+      a suspension is lifted by a capture taken after the complaint. Without
+      this check an agent could sign one claim dated 2099, upload it once, and
+      immunise a listing against every report anybody will ever make: for ever,
+      silently, with a perfectly valid signature.
+
+      Five minutes of skew, because phone clocks drift and a refusal somebody
+      cannot act on is worse than useless.
+    */
+    if (!capturedAtIsPlausible(capturedAt, now)) {
+      throw new BadRequestException(
+        'That capture time is not one this can accept. Check the clock on your phone.',
+      );
     }
 
     const claim: CaptureClaim = {

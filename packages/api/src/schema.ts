@@ -449,6 +449,209 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/tenants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open a tenant account. Needed to message an agent. */
+        post: operations["MarketController_signUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your conversations. */
+        get: operations["MarketController_mine"];
+        put?: never;
+        /** Ask an agent about a listing, without giving them your number. */
+        post: operations["MarketController_open"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/conversations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MarketController_one"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/conversations/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MarketController_saySomething"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/conversations/{id}/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Offer your number. They see it only if they offer theirs. */
+        post: operations["MarketController_offerAsTenant"];
+        /** Take back a number they have not answered. */
+        delete: operations["MarketController_unofferAsTenant"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agent/conversations/{id}/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Offer your number. They see it only if they offer theirs. */
+        post: operations["MarketController_offerAsAgent"];
+        /** Take back a number they have not answered. */
+        delete: operations["MarketController_unofferAsAgent"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agent/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** People asking about your listings. */
+        get: operations["MarketController_theirs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agent/conversations/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MarketController_replyAsAgent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inspections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MarketController_myInspections"];
+        put?: never;
+        /** Ask to see the place. */
+        post: operations["MarketController_ask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agent/inspections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MarketController_inspectionsOnMine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agent/inspections/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Agree to show it, and say what you will charge. */
+        post: operations["MarketController_answer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inspections/{id}/outcome": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Say what happened. "It was not there" suspends the badge. */
+        post: operations["MarketController_outcome"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/captures/devices": {
         parameters: {
             query?: never;
@@ -722,7 +925,7 @@ export interface components {
         };
         StillNeeded: {
             /** @enum {string} */
-            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld" | "costs_stated";
+            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld" | "costs_stated" | "nobody_found_it_missing";
             /** @description A sentence with a next action in it, not a failure notice. */
             whatToDo: string;
         };
@@ -841,7 +1044,7 @@ export interface components {
         };
         ListingCheck: {
             /** @enum {string} */
-            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld" | "costs_stated";
+            condition: "agent_identity" | "landlord_authority" | "capture_on_site" | "walkthrough_video" | "not_a_known_duplicate" | "recently_confirmed" | "nothing_upheld" | "costs_stated" | "nobody_found_it_missing";
             /** @description The condition as a checklist row, in the reader's language. */
             label: string;
             met: boolean;
@@ -858,6 +1061,81 @@ export interface components {
             checks: components["schemas"]["ListingCheck"][];
             /** @description Null when the agent has not said, which is itself an unmet condition rather than a blank in the page. */
             costs: components["schemas"]["CostsResponse"] | null;
+        };
+        TenantSignUpBody: {
+            /** @example Ada */
+            displayName: string;
+            /** @example +2348012345678 */
+            phone: string;
+        };
+        TenantSignUpResponse: {
+            tenantId: string;
+            /** @description Shown once. Keys keeps a digest and cannot return it again — see the release gates for where a client must put it. */
+            token: string;
+        };
+        OpenConversationBody: {
+            listingId: string;
+            /** @description The first thing to say. A conversation with nothing in it is not one. */
+            body: string;
+        };
+        MessageResponse: {
+            id: string;
+            /** @enum {string} */
+            speaker: "tenant" | "agent" | "keys";
+            body: string;
+            /** Format: date-time */
+            sentAt: string;
+        };
+        ConversationResponse: {
+            id: string;
+            listingId: string;
+            listingTitle: string;
+            /** @description Who you are talking to. A name, never a number. */
+            otherPartyName: string;
+            /** @enum {string} */
+            exchange: "none" | "tenant_offered" | "agent_offered" | "exchanged";
+            /** @description The other party's number, and only once both of you have offered. Null at every other point, on every route, for everyone. */
+            theirContact: string | null;
+            messages: components["schemas"]["MessageResponse"][];
+        };
+        SayBody: {
+            body: string;
+        };
+        OfferContactBody: {
+            /**
+             * @description The number you are choosing to share, here, with this person. Not read from your account — this product stores those as hashes, and a number that has to be revealed belongs only where revealing it is the point.
+             * @example +2348012345678
+             */
+            contact: string;
+        };
+        RequestInspectionBody: {
+            conversationId: string;
+        };
+        InspectionResponse: {
+            id: string;
+            listingId: string;
+            listingTitle: string;
+            /** @enum {string} */
+            state: "requested" | "agreed" | "declined" | "done";
+            /** @description What the agent said they would charge, in kobo. */
+            feeKobo: number;
+            /** @enum {string|null} */
+            outcome: "did_not_exist" | "agent_did_not_show" | "asked_for_more_money" | "as_described" | "not_for_me" | null;
+        };
+        AnswerInspectionBody: {
+            /** @description Agree to show it, or decline. */
+            agreed: boolean;
+            /**
+             * @description What you will charge to show it, in kobo. Zero is an answer and a claim: a tenant who is then asked for money at the door can report it.
+             * @example 0
+             */
+            feeKobo: number;
+        };
+        OutcomeBody: {
+            /** @enum {string} */
+            outcome: "did_not_exist" | "agent_did_not_show" | "asked_for_more_money" | "as_described" | "not_for_me";
+            /** @description What you were actually asked for at the door, in kobo. Required when the outcome is asked_for_more_money, and checked against what the agent declared — a complaint its own figures contradict is refused rather than filed. */
+            paidKobo?: number | null;
         };
         RegisterDeviceBody: {
             /** @description The device's P-256 public key, SPKI DER, base64. P-256 because that is what the Secure Enclave holds. */
@@ -1543,6 +1821,364 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ListingView"];
+                };
+            };
+        };
+    };
+    MarketController_signUp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TenantSignUpBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenantSignUpResponse"];
+                };
+            };
+        };
+    };
+    MarketController_mine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"][];
+                };
+            };
+        };
+    };
+    MarketController_open: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenConversationBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+        };
+    };
+    MarketController_one: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+        };
+    };
+    MarketController_saySomething: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SayBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+        };
+    };
+    MarketController_offerAsTenant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferContactBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+        };
+    };
+    MarketController_unofferAsTenant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+        };
+    };
+    MarketController_offerAsAgent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferContactBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+        };
+    };
+    MarketController_unofferAsAgent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+        };
+    };
+    MarketController_theirs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"][];
+                };
+            };
+        };
+    };
+    MarketController_replyAsAgent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SayBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationResponse"];
+                };
+            };
+        };
+    };
+    MarketController_myInspections: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionResponse"][];
+                };
+            };
+        };
+    };
+    MarketController_ask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestInspectionBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionResponse"];
+                };
+            };
+        };
+    };
+    MarketController_inspectionsOnMine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionResponse"][];
+                };
+            };
+        };
+    };
+    MarketController_answer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerInspectionBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionResponse"];
+                };
+            };
+        };
+    };
+    MarketController_outcome: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutcomeBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InspectionResponse"];
                 };
             };
         };

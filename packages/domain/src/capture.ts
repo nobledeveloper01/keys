@@ -205,3 +205,32 @@ export function refusalMeans(refusal: CaptureRefusal): string {
       return 'This phone is reporting a fake location. Turn off any location-spoofing app.';
   }
 }
+
+/**
+ * How far a phone's clock may be out.
+ *
+ * Five minutes. Phones drift, and a capture refused because somebody's clock
+ * was ninety seconds fast is a refusal nobody can act on.
+ */
+export const CLOCK_SKEW_MS = 5 * 60_000;
+
+/**
+ * Whether a claimed capture time is one this server will accept.
+ *
+ * **A capture may not be from the future.** That reads like housekeeping and
+ * is not: `capturedAt` is inside the signed claim, which means the *phone*
+ * chooses it, and a suspension is lifted by a capture taken after the
+ * complaint. Without this, an agent could sign one claim dated 2099, upload
+ * it once, and immunise a listing against every report anybody will ever make
+ * — permanently, silently, and with a valid signature.
+ *
+ * The past is bounded too, though less tightly. A capture from a year ago is
+ * not evidence that a flat is there now, and the confirmation cycle already
+ * assumes a photograph means something about the recent present.
+ */
+export const CAPTURE_MAX_AGE_MS = 90 * 24 * 60 * 60_000;
+
+export function capturedAtIsPlausible(capturedAt: Date, now: Date): boolean {
+  const age = now.getTime() - capturedAt.getTime();
+  return age >= -CLOCK_SKEW_MS && age <= CAPTURE_MAX_AGE_MS;
+}

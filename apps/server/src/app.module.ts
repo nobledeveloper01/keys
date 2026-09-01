@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { MarketModule } from './market/market.module';
 import { AgentsModule } from './agents/agents.module';
 import { CapturesModule } from './captures/captures.module';
 import { ReportsModule } from './reports/reports.module';
@@ -10,6 +11,7 @@ import { ReportsModule } from './reports/reports.module';
  * provides what it injects.
  */
 @Module({
-  imports: [ReportsModule, AgentsModule, CapturesModule],
+  imports: [ReportsModule, AgentsModule,
+    MarketModule, CapturesModule],
 })
 export class AppModule {}

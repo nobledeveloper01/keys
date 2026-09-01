@@ -1,6 +1,8 @@
 import {
   costsAreStated,
+  liftsSuspension,
   mayList,
+  provesPresence,
   metresBetween,
   tierOf,
   tierSentence,
@@ -12,6 +14,7 @@ import {
 } from '@keys/domain';
 
 import type { CapturesStore } from '../captures/captures.store';
+import type { MarketStore } from '../market/market.store';
 import type { ReportsStore } from '../reports/reports.store';
 import type { AgentsStore, Listing } from './agents.store';
 
@@ -43,6 +46,7 @@ export async function assessListing(
     agents: AgentsStore;
     reports: ReportsStore;
     captures: CapturesStore;
+    market: MarketStore;
   },
   now: Date,
 ): Promise<Assessment> {
@@ -51,16 +55,21 @@ export async function assessListing(
   const upheld = agent ? await stores.reports.publishedForHash(agent.phoneHash, now) : [];
   const captured = await stores.captures.capturesFor(listing.id);
   const blocked = await stores.captures.isBlocked(listing.id);
+  const suspensions = await stores.market.suspensionsFor(listing.id);
 
   const agentTier: Tier = agent
     ? tierOf(evidence, { joinedAt: agent.joinedAt, upheldReports: upheld.length }, now)
     : 'unverified';
 
-  const inputs: ListingEvidence = {
-    agentTier,
-    authorityLive: mayList(evidence, listing.propertyId, now),
-    captures: captured.map(
-      (capture): Capture => ({
+  /*
+    Mapped once and read twice — by `unmetConditions` for the photo and video
+    conditions, and by the suspension check below. Building the list a second
+    time for the suspension would be a second implementation of "does this
+    capture prove presence", which is precisely the duplication this file
+    exists to have deleted.
+  */
+  const captures: readonly (Capture & { capturedAt: Date })[] = captured.map(
+      (capture): Capture & { capturedAt: Date } => ({
         kind: capture.kind,
         // Anything the store holds passed signature verification to get there
         // — that is the only door — so these are true by construction.
@@ -81,8 +90,14 @@ export async function assessListing(
               )
             : null,
         durationSeconds: capture.durationSeconds,
+        capturedAt: capture.capturedAt,
       }),
-    ),
+  );
+
+  const inputs: ListingEvidence = {
+    agentTier,
+    authorityLive: mayList(evidence, listing.propertyId, now),
+    captures,
     blockedDuplicate: blocked,
     lastConfirmedAt: listing.lastConfirmedAt,
     upheldReports: upheld.length,
@@ -92,6 +107,30 @@ export async function assessListing(
       breaking, and silence is not.
     */
     costsStated: listing.costs !== null && costsAreStated(listing.costs),
+    /*
+      A suspension counts only while it is unanswered.
+
+      The remedy is deliberately not an appeal: the agent goes back to the
+      property and takes a photograph, and `liftsSuspension` compares that
+      capture against the suspension's own timestamp. A photograph from before
+      the complaint proves the flat existed before the complaint, which nobody
+      disputed — so only a capture taken *after* it counts, and it has to prove
+      presence, which means signed, in-app, and inside the radius.
+
+      Computed here rather than written back to a `lifted_at` column, for the
+      same reason nothing else in this file is stored: an agent who re-captures
+      is Verified again on the very next read, with nothing to run and nothing
+      to be behind.
+    */
+    unansweredSuspension: suspensions.some(
+      (suspension) =>
+        !captures.some((capture) =>
+          liftsSuspension(suspension, {
+            provesPresence: provesPresence(capture),
+            capturedAt: capture.capturedAt,
+          }),
+        ),
+    ),
   };
 
   const unmet = new Set(unmetConditions(inputs, now));

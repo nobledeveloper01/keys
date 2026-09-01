@@ -254,7 +254,7 @@ none of them can wait for launch.*
    Media arrives as a raw greyscale grid rather than a JPEG — the capture module will emit
    one alongside the encoded file, which keeps a native image decoder out of the server.
 
-## Phase 4 — Search & Discovery (Weeks 20–23) · **current**
+## Phase 4 — Search & Discovery (Weeks 20–23)
 Postgres FTS + PostGIS search, filters with Verified defaulting on, map search, ranking in the
 domain package, total-cost calculation, listing pages with the evidence panel, **SSR and
 structured data on web**.
@@ -273,12 +273,29 @@ structured data validating. All three are about a deployment nobody has stood up
 it was written, because `provesPresence` needs a distance and nothing knew where a property
 *was*. Properties get coordinates here, which is the same thing search needs.
 
-## Phase 5 — Marketplace Loop (Weeks 24–27)
+## Phase 5 — Marketplace Loop (Weeks 24–27) · **current**
 Messaging with deferred contact exchange, inspection requests with fee policy, outcome recording
 with the automatic Verified suspension on `didn't exist`, listing reports, featured placement
 (Verified-only, capped).
 
-**Exit gate:** end-to-end from search to inspection outcome, on all three surfaces.
+**Phase gate.** *A stranger cannot reach an agent's phone number, and a stranger cannot take
+a listing down.* Both halves are about the same thing — what an unknown party is allowed to
+do to somebody — and both have an obvious wrong answer that ships in most marketplaces.
+
+Contact details are exchanged when both sides agree and not before. Nothing in any response,
+at any point in a conversation, contains a number either party has not been given. And an
+outcome of *the property did not exist* suspends the badge immediately, because a tenant who
+went to an address and found nothing should not watch the listing stay Verified — but the
+remedy is a fresh signed capture at the coordinates, which costs an honest agent a walk and
+is impossible for a liar. A suspension a stranger can trigger and only a reviewer can lift
+is a griefing tool; one the agent can lift with the same evidence the badge already rests on
+is not.
+
+**Amended from "on all three surfaces".** This is a React Native product. The web app exists
+and is not where the marketplace loop is being built, and a gate naming a surface nobody is
+shipping is a gate that either blocks forever or gets waived — [ADR-0004](adr/0004-a-gate-that-cannot-fail-is-not-a-gate.md)
+applies to gates that cannot *pass* for the same reason. The web equivalent is a release
+gate if it is anything.
 
 ## Phase 6 — Launch Hardening (Weeks 28–32)
 Media pipeline budgets enforced, data-saver, offline saved listings, device matrix, accessibility
