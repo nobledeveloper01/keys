@@ -41,6 +41,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Photographs now survive a restart.** The captures store had no durable
+  implementation — it was in memory in production as well as in tests — so
+  every deploy silently took `capture_on_site` and `walkthrough_video` off
+  every listing in the catalogue, and every agent would have had to walk back
+  to their property and photograph it again. Spent nonces went with them, which
+  made every previously-used capture replayable after a restart.
 - **An upload says what it will cost before it costs it.** "This will use about
   4.2 MB", in your language, and it waits for an answer when you are on mobile
   data. Saying so in a progress bar afterwards is saying so after the money is

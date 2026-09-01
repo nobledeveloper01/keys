@@ -307,11 +307,21 @@ describe.each(STORES)('search shows nothing it cannot stand behind (%s)', (_name
     const made = await aFullyVerifiedListing('3');
     expect(await results()).toContain(made.listingId);
 
+    /*
+      A real second listing, not a made-up id.
+
+      This said `'somewhere-else'`, which the memory store accepted and Postgres
+      refused — the column is a uuid because a matched listing id *is* a listing
+      id. Widening the column to text so a fixture could keep its placeholder
+      would have been the test deciding the schema.
+    */
+    const other = await aFullyVerifiedListing('8');
+
     const captures = app.get(CapturesStore);
-    await captures.openPairs(made.listingId, [{ id: 'somewhere-else', distance: 0 }], new Date());
+    await captures.openPairs(made.listingId, [{ id: other.listingId, distance: 0 }], new Date());
     await captures.decidePair({
       listingId: made.listingId,
-      matchedListingId: 'somewhere-else',
+      matchedListingId: other.listingId,
       decision: 'blocked',
       reviewer: 'a reviewer',
       reasoning: 'The same photograph as a listing we already took down.',

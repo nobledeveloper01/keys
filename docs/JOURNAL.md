@@ -6,6 +6,63 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-01 — Every deploy un-verified the catalogue
+
+**Did.** Gave the captures store a durable implementation. It had none.
+
+### What was actually happening
+
+`CapturesStore` had exactly one implementation — `InMemoryCapturesStore` — wired
+unconditionally, in production as well as in tests. Every other store in this codebase
+switches on `KEYS_DATABASE_URL`; this one did not, and nothing had ever noticed.
+
+So every photograph and every walkthrough in the product lived in a process. A restart took
+them, and with them `capture_on_site` and `walkthrough_video` on every listing that had
+them. **A deploy silently un-verified the entire catalogue**, and each agent would have had
+to walk back to their property and photograph it again.
+
+Nothing said so. `/healthz` reports the *reports* store's durability and has no opinion about
+this one. The badge is recomputed on every read, so it was simply false afterwards rather
+than stale in a way anything could detect. And the suite could not see it: a test that
+starts a fresh app for every run cannot notice a store that only forgets *between* runs.
+
+I met it twice in this session — re-seeding captures after each server restart — and read it
+as a demo inconvenience both times.
+
+### The security half
+
+Nonces lived in the same store. A restart made every previously-spent nonce spendable again,
+and a signed capture plus a reusable nonce is a replay: an attacker holding one valid upload
+could resubmit it after any deploy. That is now a primary key and an `ON CONFLICT DO
+NOTHING`, which is one statement rather than a check and a write with a gap between them.
+
+### The index is rebuilt per query, on purpose
+
+Duplicate matching is a BK-tree over perceptual hashes, and a BK-tree does not live in
+Postgres. The choice was between reimplementing the distance search in SQL and loading the
+hashes to run the *same* `HashIndex` the memory store runs.
+
+It does the second, at the cost of a table scan per upload. Two stores that disagree about
+whether two photographs are the same picture is the failure that matters, and it is exactly
+the shape of the bug that cost this codebase `assessListing`. When the scan stops being
+free, the fix is a coarse SQL pre-filter that *narrows* the candidates before the same index
+runs over them — never a second answer computed a different way.
+
+### What surprised us
+
+**My own restart gate could not fail, in one of three assertions.** The nonce check read
+`capture_nonces` directly and asserted the row was there — which stayed true with the store
+switched back to memory, because the row existed and nothing was reading it. It asks through
+the store now, and checks that an unused nonce is still spendable, so it cannot pass for a
+store that refuses everything either. Ninth ADR-0004 instance.
+
+**A test had been deciding the schema.** `duplicate_pairs` takes listing ids, so its columns
+are `uuid` — and a phase-4 test passed the literal `'somewhere-else'`, which the memory store
+accepted happily. The tempting fix was to widen the column to `text`. The right one was to
+give the test a real second listing.
+
+---
+
 ## 2026-09-01 — Sentences for a feature that does not exist
 
 **Did.** Started phase 6 by looking for places the app claims something it cannot do, and by
