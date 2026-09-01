@@ -172,7 +172,15 @@ describe.each(STORES)('search shows nothing it cannot stand behind (%s)', (_name
       .get('/v1/listings')
       .query(query)
       .expect(200);
-    return (response.body as Array<{ id: string }>).map((r) => r.id);
+    return (response.body.results as Array<{ id: string }>).map((r) => r.id);
+  }
+
+  async function band(query: Record<string, string> = {}) {
+    const response = await request(app.getHttpServer())
+      .get('/v1/listings')
+      .query(query)
+      .expect(200);
+    return (response.body.featured as Array<{ id: string }>).map((r) => r.id);
   }
 
   beforeAll(async () => {
@@ -320,6 +328,94 @@ describe.each(STORES)('search shows nothing it cannot stand behind (%s)', (_name
     expect(await results()).not.toContain(made.listingId);
   });
 
+  describe('a paid slot cannot change what a search says', () => {
+    /*
+      Phase 5 adds featured placement to a product whose search says, in its own
+      doc comments and on its own pages, that position cannot be bought. Both of
+      those can be true only if a slot is a *slot* — a labelled band, above,
+      drawn from results the search already returned — rather than a thumb on
+      the scale.
+
+      What is asserted here is the thing that would be easy to lose later: the
+      order of the free results is byte-identical whether or not somebody paid.
+    */
+    let paidId: string;
+
+    beforeAll(async () => {
+      /*
+        Its own listing, not the suite's.
+
+        The tests above deliberately take the badge off `listingId` — that is
+        what they are for — and by the time these run it is unverified. Reusing
+        it would have made every assertion here true for the wrong reason.
+      */
+      const made = await aFullyVerifiedListing('9');
+      paidId = made.listingId;
+    });
+
+    afterEach(async () => {
+      // Each test leaves the slot empty, so the next one starts from nothing
+      // bought rather than from whatever the last one did.
+      await agents.feature({ id: paidId, until: null });
+    });
+
+    it('leaves the ranked order exactly as it was', async () => {
+      const before = await results();
+      expect(before).toContain(paidId);
+
+      await agents.feature({ id: paidId, until: new Date(Date.now() + 7 * 86_400_000) });
+
+      const after = await results();
+      expect(await band()).toEqual([paidId]);
+      // The paid listing moved out of the list, and nothing else moved at all.
+      expect(after).toEqual(before.filter((id) => id !== paidId));
+
+      await agents.feature({ id: paidId, until: null });
+      expect(await results()).toEqual(before);
+      expect(await band()).toEqual([]);
+    });
+
+    it('empties the slot the moment the listing loses its badge', async () => {
+      await agents.feature({ id: paidId, until: new Date(Date.now() + 7 * 86_400_000) });
+      expect(await band()).toEqual([paidId]);
+
+      // A slot must not be a way to put an unchecked listing in front of
+      // somebody — that would be money buying exactly what the badge means.
+      await agents.confirmStillAvailable(paidId, new Date(Date.now() - 20 * 86_400_000));
+
+      expect(await band()).toEqual([]);
+      expect(await results()).not.toContain(paidId);
+
+      await agents.confirmStillAvailable(paidId, new Date());
+    });
+
+    it('never shows a paid listing for a search it does not match', async () => {
+      // A paid slot showing a flat in Ikeja to somebody searching Surulere is
+      // an advert, not a result. The band is drawn from what the search already
+      // returned, so this is structural rather than a rule to remember.
+      await agents.feature({ id: paidId, until: new Date(Date.now() + 7 * 86_400_000) });
+
+      expect(await band({ q: 'Yaba' })).toEqual([paidId]);
+      expect(await band({ q: 'Surulere' })).toEqual([]);
+      expect(await results({ q: 'Surulere' })).toEqual([]);
+    });
+
+    it('does not show the same listing twice', async () => {
+      // Paying buys a different position, not two of them.
+      await agents.feature({ id: paidId, until: new Date(Date.now() + 7 * 86_400_000) });
+
+      expect(await band()).toContain(paidId);
+      expect(await results()).not.toContain(paidId);
+    });
+
+    it('does not hold an expired placement', async () => {
+      await agents.feature({ id: paidId, until: new Date(Date.now() - 60_000) });
+      // A date rather than a flag: nothing has to run for this to be false.
+      expect(await band()).toEqual([]);
+      expect(await results()).toContain(paidId);
+    });
+  });
+
   it('shows an unverified listing only when asked for one', async () => {
     /*
       The filter defaults on, and turning it off is a deliberate act.
@@ -339,7 +435,7 @@ describe.each(STORES)('search shows nothing it cannot stand behind (%s)', (_name
       .get('/v1/listings')
       .query({ verifiedOnly: 'false' })
       .expect(200);
-    const found = (all.body as Array<{ id: string; verified: boolean }>).find(
+    const found = (all.body.results as Array<{ id: string; verified: boolean }>).find(
       (r) => r.id === made.listingId,
     );
     expect(found).toBeTruthy();

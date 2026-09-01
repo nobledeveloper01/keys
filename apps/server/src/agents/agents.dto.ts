@@ -287,6 +287,39 @@ export class SearchResult {
       'Why this is ranked where it is. Said out loud, because a ranking nobody can interrogate is one somebody will assume was bought.',
   })
   because!: string[];
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    format: 'date-time',
+    description:
+      'When this listing\'s paid placement runs out, or null. Sent so a client can label the band without a second request, and so that a reader poking at the API sees the same fact the page shows.',
+  })
+  featuredUntil!: string | null;
+}
+
+/**
+ * What a search returns: a paid band, and the answer.
+ *
+ * Two fields rather than one list, because a list cannot say which of its
+ * entries were bought without a flag on each — and a flag on each is one
+ * `if` away from being sorted on. Keeping them apart in the wire format is
+ * what makes "the ranking cannot be bought" checkable rather than promised.
+ */
+export class SearchResponse {
+  @ApiProperty({
+    type: [SearchResult],
+    description:
+      'Slots somebody paid for. Verified only, capped, and always drawn from listings this search already returned — a paid slot cannot show you a place you did not ask about. Usually empty.',
+  })
+  featured!: SearchResult[];
+
+  @ApiProperty({
+    type: [SearchResult],
+    description:
+      'The answer to what was asked, ranked. Nothing in this list was bought, and anything in `featured` has been taken out of it so nobody appears twice.',
+  })
+  results!: SearchResult[];
 }
 
 export class ListingCheck {

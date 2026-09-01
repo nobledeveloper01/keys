@@ -13,6 +13,7 @@
  */
 export * from './agents.ts';
 export * from './capture.ts';
+export * from './featured.ts';
 export * from './hashing.ts';
 export * from './language.ts';
 export * from './inspections.ts';

@@ -919,10 +919,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SearchResult"
-                  }
+                  "$ref": "#/components/schemas/SearchResponse"
                 }
               }
             }
@@ -2722,6 +2719,12 @@
             "items": {
               "type": "string"
             }
+          },
+          "featuredUntil": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When this listing's paid placement runs out, or null. Sent so a client can label the band without a second request, and so that a reader poking at the API sees the same fact the page shows."
           }
         },
         "required": [
@@ -2732,7 +2735,31 @@
           "agentName",
           "moveInKobo",
           "annualRentKobo",
-          "because"
+          "because",
+          "featuredUntil"
+        ]
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "featured": {
+            "description": "Slots somebody paid for. Verified only, capped, and always drawn from listings this search already returned — a paid slot cannot show you a place you did not ask about. Usually empty.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          },
+          "results": {
+            "description": "The answer to what was asked, ranked. Nothing in this list was bought, and anything in `featured` has been taken out of it so nobody appears twice.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          }
+        },
+        "required": [
+          "featured",
+          "results"
         ]
       },
       "ListingCheck": {

@@ -41,6 +41,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Paid placement that cannot buy a ranking.** Featured listings appear in a
+  band above the results, labelled "These agents paid to appear here", and are
+  taken out of the list below so nobody appears twice. They must be Verified,
+  must match what you searched for, and are capped at three. The ranking
+  function has no idea featuring exists — no parameter, no field — so a slot
+  cannot quietly become a boost later.
 - **Report a listing without knowing whose it is.** Reports used to need a phone
   number, which meant a tenant who found a place through search — and so has
   never seen one — could read the whole evidence panel, believe it was

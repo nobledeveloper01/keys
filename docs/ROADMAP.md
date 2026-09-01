@@ -278,8 +278,8 @@ Messaging with deferred contact exchange, inspection requests with fee policy, o
 with the automatic Verified suspension on `didn't exist`, listing reports, featured placement
 (Verified-only, capped).
 
-**Phase gate.** *A stranger cannot reach an agent's phone number, and a stranger cannot take
-a listing down.* Both halves are about the same thing — what an unknown party is allowed to
+**Phase gate — ✅ green.** *A stranger cannot reach an agent's phone number, and a stranger
+cannot take a listing down.* Both halves are about the same thing — what an unknown party is allowed to
 do to somebody — and both have an obvious wrong answer that ships in most marketplaces.
 
 Contact details are exchanged when both sides agree and not before. Nothing in any response,

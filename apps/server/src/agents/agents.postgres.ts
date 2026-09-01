@@ -80,11 +80,13 @@ interface ListingRow {
   legal_fee_kobo: string | null;
   caution_deposit_kobo: string | null;
   service_charge_kobo: string | null;
+  featured_until: Date | null;
 }
 
 const LISTING_COLUMNS =
   'id, agent_id, property_id, title, published_at, last_confirmed_at, latitude, longitude, ' +
-  'annual_rent_kobo, agency_fee_kobo, legal_fee_kobo, caution_deposit_kobo, service_charge_kobo';
+  'annual_rent_kobo, agency_fee_kobo, legal_fee_kobo, caution_deposit_kobo, service_charge_kobo, ' +
+  'featured_until';
 
 const EVIDENCE_COLUMNS = `
   agent_id, kind, attestor_kind, attestor_vendor, attestor_reference,
@@ -486,6 +488,7 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
       latitude: input.latitude,
       longitude: input.longitude,
       costs: input.costs,
+      featuredUntil: null,
     };
     const c = listing.costs;
     await this.pool.query(
@@ -509,6 +512,15 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
       ],
     );
     return listing;
+  }
+
+  async feature(input: { id: string; until: Date | null }) {
+    if (!/^[0-9a-f-]{36}$/i.test(input.id)) return null;
+    const { rows } = await this.pool.query<ListingRow>(
+      `UPDATE listings SET featured_until = $2 WHERE id = $1 RETURNING ${LISTING_COLUMNS}`,
+      [input.id, input.until],
+    );
+    return rows[0] ? this.hydrateListing(rows[0]) : null;
   }
 
   async stateCosts(input: { id: string; agentId: string; costs: Costs }) {
@@ -562,6 +574,7 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
               cautionDepositKobo: Number(row.caution_deposit_kobo),
               serviceChargeKobo: Number(row.service_charge_kobo),
             },
+      featuredUntil: row.featured_until,
     };
   }
 

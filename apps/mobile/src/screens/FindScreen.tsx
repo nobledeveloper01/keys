@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import { attempt, client, type SearchResult } from '@keys/api';
+import { attempt, client, type SearchResponse } from '@keys/api';
 
 import { Chip } from '../components/Chip';
 import { naira } from '@keys/domain';
@@ -37,12 +37,14 @@ export function FindScreen({
   const [typed, setTyped] = useState('');
   const [verifiedOnly, setVerifiedOnly] = useState(true);
 
-  const { query, refresh } = useQuery<SearchResult[]>(
+  const { query, refresh } = useQuery<SearchResponse>(
     () => attempt(() => client({ baseUrl }).search({ q: typed.trim(), verifiedOnly })),
     [typed, verifiedOnly, baseUrl],
   );
 
-  const results = query.state === 'ready' ? query.value : null;
+  const found = query.state === 'ready' ? query.value : null;
+  const results = found?.results ?? null;
+  const featured = found?.featured ?? [];
 
   return (
     <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
@@ -70,8 +72,43 @@ export function FindScreen({
           drawn over a failed request is the lie this app refuses everywhere. */}
       <Unready query={query} onRetry={refresh} />
 
+      {/*
+        The paid band, above the answer and labelled as bought.
+
+        Not interleaved, and not sorted against anything. `rank()` has never
+        heard of featuring — no parameter, no field — so this cannot quietly
+        become a boost. What money buys here is a slot with a label on it; what
+        it cannot buy is a better answer to the question somebody asked, and
+        keeping the two apart in the response is what makes that checkable
+        rather than promised.
+
+        Usually empty, and rendering nothing when it is: an empty "no paid
+        listings" heading would be an advert for advertising.
+      */}
+      {featured.length > 0 && (
+        <View style={styles.band}>
+          <Text variant="label" tone="secondary">
+            {t('paid_to_appear_here')}
+          </Text>
+          {featured.map((result) => (
+            <PropertyRow
+              key={result.id}
+              title={result.title}
+              address={result.address}
+              status={
+                typeof result.moveInKobo === 'number'
+                  ? `${naira(result.moveInKobo)} · ${result.agentName}`
+                  : result.agentName
+              }
+              tone={result.verified ? 'clear' : 'quiet'}
+              onPress={() => onOpen(result.id)}
+            />
+          ))}
+        </View>
+      )}
+
       {results !== null &&
-        (results.length === 0 ? (
+        (results.length === 0 && featured.length === 0 ? (
           <View style={styles.empty}>
             <Text variant="title">{t('nothing_found')}</Text>
             <Text variant="body" tone="secondary" style={styles.row}>
@@ -80,6 +117,22 @@ export function FindScreen({
           </View>
         ) : (
           <View style={styles.rows}>
+            {/*
+              A heading on the free list, but only when there is a paid band
+              above it.
+
+              Without one, the band and the answer render identically and there
+              is no line where "bought" stops — a reader with one paid listing
+              above three free ones cannot tell which is which, which makes the
+              label decorative. With nothing bought there is nothing to
+              distinguish, and a heading over the only list on the screen is
+              furniture.
+            */}
+            {featured.length > 0 && (
+              <Text variant="label" tone="secondary" style={styles.heading}>
+                {t('what_your_search_found')}
+              </Text>
+            )}
             {results.map((result) => (
               <PropertyRow
                 key={result.id}
@@ -123,6 +176,8 @@ const styles = StyleSheet.create({
   lede: { marginTop: space.sm, marginBottom: space.md },
   filter: { marginTop: space.md, flexDirection: 'row' },
   rows: { marginTop: space.lg },
+  band: { marginTop: space.lg, gap: space.xs },
+  heading: { marginBottom: space.sm },
   empty: { marginTop: space.xl },
   row: { marginTop: space.sm },
 });

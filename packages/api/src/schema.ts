@@ -1064,6 +1064,17 @@ export interface components {
             annualRentKobo: number | null;
             /** @description Why this is ranked where it is. Said out loud, because a ranking nobody can interrogate is one somebody will assume was bought. */
             because: string[];
+            /**
+             * Format: date-time
+             * @description When this listing's paid placement runs out, or null. Sent so a client can label the band without a second request, and so that a reader poking at the API sees the same fact the page shows.
+             */
+            featuredUntil: string | null;
+        };
+        SearchResponse: {
+            /** @description Slots somebody paid for. Verified only, capped, and always drawn from listings this search already returned — a paid slot cannot show you a place you did not ask about. Usually empty. */
+            featured: components["schemas"]["SearchResult"][];
+            /** @description The answer to what was asked, ranked. Nothing in this list was bought, and anything in `featured` has been taken out of it so nobody appears twice. */
+            results: components["schemas"]["SearchResult"][];
         };
         ListingCheck: {
             /** @enum {string} */
@@ -1820,7 +1831,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SearchResult"][];
+                    "application/json": components["schemas"]["SearchResponse"];
                 };
             };
         };

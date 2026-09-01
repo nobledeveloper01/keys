@@ -35,8 +35,10 @@ export type SubmitReply =
   paths['/v1/registry/reply']['post']['requestBody']['content']['application/json'];
 export type AgentProfile =
   paths['/v1/agents']['get']['responses'][200]['content']['application/json'];
-export type SearchResult =
-  paths['/v1/listings']['get']['responses'][200]['content']['application/json'][number];
+export type SearchResponse =
+  paths['/v1/listings']['get']['responses'][200]['content']['application/json'];
+
+export type SearchResult = SearchResponse['results'][number];
 export type ListingView =
   paths['/v1/listings/{id}']['get']['responses'][200]['content']['application/json'];
 export type SignedUp =
@@ -388,7 +390,7 @@ export function client(options: ClientOptions) {
      * missing parameter to fail in.
      */
     search: (query: { q?: string; latitude?: number; longitude?: number; verifiedOnly?: boolean }) =>
-      send<SearchResult[]>(options, 'GET', '/v1/listings', {
+      send<SearchResponse>(options, 'GET', '/v1/listings', {
         query: Object.fromEntries(
           Object.entries(query)
             .filter(([, value]) => value !== undefined && value !== '')

@@ -6,6 +6,73 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-01 — A slot, not a thumb on the scale
+
+**Did.** Featured placement, which is the last thing in phase 5 and the one that could have
+quietly falsified everything the search says about itself.
+
+### The problem with the obvious version
+
+This product's ranking says, in its own doc comments and on its own pages, that position
+cannot be bought. The naïve reading of "featured placement" — a boost, a weight, a
+multiplier — makes that sentence false. A ranking that can be bought is not a ranking, it is
+a rate card, and "Verified first" stops meaning what it says the moment "and paid before
+that" is also true.
+
+So a featured listing does not rank. It sits in a separate band above the results, labelled
+**"These agents paid to appear here"**, and `rank()` was never told that featuring exists —
+no parameter, no field on a scored listing. That is asserted on the *signature*, because
+asserting on behaviour would only prove that today's `rank` ignores an input it could be
+given tomorrow.
+
+### Four rules, three of them structural
+
+**Verified only.** A slot must not be a way to put an unchecked listing in front of somebody
+— that would be money buying exactly what the badge is supposed to mean. Lose the badge and
+the band empties on the very next request.
+
+**It must match the query.** Enforced by the shape of the function rather than by a rule
+somebody has to remember: `featuredAmong` takes the *already ranked results*, so there is no
+way to hand it a listing the search did not return. A paid slot cannot show a flat in Ikeja
+to somebody searching Surulere.
+
+**Capped at three.** A page that can be filled with paid slots is a page where the free
+answer is below the fold.
+
+**Never twice.** The band is taken *out of* the list underneath, so paying buys a different
+position rather than two of them — and a reader scrolling past does not meet the same flat
+again wearing no label, which would make the label look optional.
+
+### What surprised us
+
+**The response had to stop being a list.** A bare array cannot say which of its entries were
+bought without a flag on each, and a flag on each is one `if` away from being sorted on.
+Two fields in the wire format is what makes "the ranking cannot be bought" checkable instead
+of promised. Every caller and four test files changed; that is the price and it is the right
+one.
+
+**Two Metro instances were serving different bundles.** A render error that looked like a
+code fault in `FindScreen` was two processes bound to 8081. Worth writing down because the
+error pointed at a library file and said nothing about the real cause.
+
+**Restoring a deliberate break with `git checkout` reverted uncommitted work.** `featured.ts`
+was untracked, so its restore silently failed and contaminated the next break; the controller
+*was* tracked, so its restore threw away the change under test. Breaks now get restored from
+a copy, not from the index.
+
+**The band and the results rendered identically.** With one paid listing above three free
+ones there was no line where "bought" stopped, which makes the label decorative. The free
+list gets a heading — but only when something was bought, because a heading over the only
+list on a screen is furniture.
+
+### What does not exist
+
+No payment provider, no amount, no route that sells a slot. Placements are set by hand. There
+is deliberately no `paid_kobo` column sitting at zero on every row, which would read like a
+feature that works. R13.
+
+---
+
 ## 2026-09-01 — The listing nobody could report
 
 **Did.** A report can now be about a listing rather than a number, from somebody who has

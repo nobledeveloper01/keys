@@ -54,6 +54,14 @@ export interface Listing {
    * agent can be held to. See `costs_stated` among the Verified conditions.
    */
   readonly costs: Costs | null;
+  /**
+   * When a paid placement runs out, or null if nobody bought one.
+   *
+   * A date rather than a flag, so it is true or false at the moment it is read
+   * and nothing has to run to expire it — the same reason this schema has no
+   * `is_verified`.
+   */
+  readonly featuredUntil: Date | null;
 }
 
 /**
@@ -223,6 +231,15 @@ export abstract class AgentsStore {
    * schedule, and a form that demands everything at once is a form people
    * abandon. Returns false if the listing is not theirs.
    */
+  /**
+   * Sell a paid slot on a listing, until a date.
+   *
+   * There is no payment behind this and the method does not pretend otherwise
+   * — it takes a date, not an amount, because an amount would imply something
+   * received it. Buying a placement is a release gate; placing one is this.
+   */
+  abstract feature(input: { id: string; until: Date | null }): Await<Listing | null>;
+
   abstract stateCosts(input: {
     id: string;
     agentId: string;
@@ -499,11 +516,20 @@ export class InMemoryAgentsStore extends AgentsStore {
       publishedAt: null,
       lastConfirmedAt: null,
       costs: input.costs,
+      featuredUntil: null,
       latitude: input.latitude,
       longitude: input.longitude,
     };
     this.listings.set(listing.id, listing);
     return listing;
+  }
+
+  feature(input: { id: string; until: Date | null }) {
+    const listing = this.listings.get(input.id);
+    if (!listing) return null;
+    const next: Listing = { ...listing, featuredUntil: input.until };
+    this.listings.set(next.id, next);
+    return next;
   }
 
   stateCosts(input: { id: string; agentId: string; costs: Costs }) {

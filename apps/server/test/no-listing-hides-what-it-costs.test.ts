@@ -201,7 +201,10 @@ describe.each(STORES)('a listing that hides what it costs (%s)', (_name, databas
 
     // And genuinely absent from a search, not merely flagged in one.
     const found = await request(app.getHttpServer()).get('/v1/listings').expect(200);
-    expect(found.body.map((r: { id: string }) => r.id)).not.toContain(listing.id);
+    // Neither half: a listing that cannot be stood behind must not be in a
+    // paid band either, which is what "not shown" has to mean once slots exist.
+    const shown = [...found.body.featured, ...found.body.results];
+    expect(shown.map((r: { id: string }) => r.id)).not.toContain(listing.id);
   });
 
   it('is Verified once they are said, and publishes the total', async () => {
@@ -308,10 +311,9 @@ describe.each(STORES)('a listing that hides what it costs (%s)', (_name, databas
 
     const found = await request(app.getHttpServer()).get('/v1/listings?q=Ikoyi').expect(200);
     const rows = new Map<string, { moveInKobo: number; annualRentKobo: number }>(
-      (found.body as Array<{ id: string; moveInKobo: number; annualRentKobo: number }>).map((r) => [
-        r.id,
-        r,
-      ]),
+      (
+        found.body.results as Array<{ id: string; moveInKobo: number; annualRentKobo: number }>
+      ).map((r) => [r.id, r]),
     );
 
     // Same advertised rent...

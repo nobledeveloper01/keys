@@ -6,8 +6,10 @@ import {
   VERIFIED_CONDITIONS,
   conditionStepPhrase,
   isPlausiblePoint,
+  featuredAmong,
   matches,
   moveInCostKobo,
+  withoutFeatured,
   rank,
   say,
   type Language,
@@ -19,7 +21,7 @@ import { ReportsStore } from '../reports/reports.store';
 import { MarketStore } from '../market/market.store';
 import { AgentsStore, type Listing } from './agents.store';
 import { assessListing } from './assess';
-import { SearchResult, ListingView } from './agents.dto';
+import { SearchResponse, ListingView } from './agents.dto';
 
 /**
  * What a tenant can find. No account, like the registry.
@@ -49,7 +51,7 @@ export class SearchController {
 
   @Get()
   @ApiOperation({ summary: 'Published listings, Verified first. No account required.' })
-  @ApiOkResponse({ type: SearchResult, isArray: true })
+  @ApiOkResponse({ type: SearchResponse })
   async search(
     @Query('q') q?: string,
     @Query('latitude') latitude?: string,
@@ -75,7 +77,7 @@ export class SearchController {
     const shown =
       verifiedOnly === 'false' ? assessed : assessed.filter((a) => a.verified);
 
-    return rank(shown, near, now).map(({ listing, because }) => ({
+    const ranked = rank(shown, near, now).map(({ listing, because }) => ({
       id: listing.id,
       title: listing.title,
       address: listing.propertyId,
@@ -94,7 +96,27 @@ export class SearchController {
       // Said, so a tenant can see why this is above that one. A ranking nobody
       // can interrogate is a ranking somebody will assume was bought.
       because: [...because],
+      featuredUntil: listing.featuredUntil,
     }));
+
+    /*
+      The paid band is taken *out of* the ranked list, never mixed into it.
+
+      `rank()` was not told that featuring exists — there is no parameter for it
+      and no field on a scored listing — so a slot cannot quietly become a boost
+      by somebody threading an argument through in a later phase. What money
+      buys here is a labelled position above the answer; what it cannot buy is a
+      better answer to the question somebody asked.
+
+      Drawn from the ranked results rather than queried separately, which is
+      what stops a slot showing a flat in Ikeja to somebody searching Surulere:
+      nothing reaches this that the search did not already return.
+    */
+    const band = featuredAmong(ranked, now);
+    return {
+      featured: band.map((result) => ({ ...result, because: ['paid to appear here'] })),
+      results: withoutFeatured(ranked, band),
+    };
   }
 
   @Get(':id')

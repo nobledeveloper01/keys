@@ -258,7 +258,15 @@ describe.each(STORES)('a stranger cannot reach you or unlist you (%s)', (_name, 
 
     const verified = async (id: string) => {
       const found = await request(app.getHttpServer()).get('/v1/listings').expect(200);
-      return (found.body as Array<{ id: string }>).some((r) => r.id === id);
+      /*
+        Both halves, because a listing that lost its badge must be in neither.
+
+        Checking only `results` would have gone quiet the moment featuring
+        landed: a suspended listing sitting in a paid band would still be in
+        front of somebody, and this helper would call it gone.
+      */
+      const body = found.body as { featured: Array<{ id: string }>; results: Array<{ id: string }> };
+      return [...body.featured, ...body.results].some((r) => r.id === id);
     };
 
     it('takes the badge the moment somebody says it was not there', async () => {
