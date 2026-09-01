@@ -29,8 +29,28 @@
  */
 
 export interface CaptureClaim {
-  /** SHA-256 of the media bytes, lower-case hex. */
+  /**
+   * SHA-256 of the media bytes — the photograph or the video — lower-case hex.
+   *
+   * This used to be the hash of the greyscale grid, because until real media
+   * existed the grid *was* the capture. It is the photograph now, and the grid
+   * has its own field below.
+   */
   readonly sha256: string;
+  /**
+   * SHA-256 of the greyscale grid derived from that media, or null.
+   *
+   * Signed alongside the photograph rather than sent beside it. The grid is
+   * what duplicate detection reads, so a grid outside the signature is a grid
+   * an agent can invent — pair a stolen photograph with a fabricated grid and
+   * it matches nothing Keys has seen.
+   *
+   * Null for a capture with no grid, which the server refuses for a photograph
+   * and accepts for a video: there is no frame extraction on the server, and
+   * pretending otherwise by requiring a grid nobody can produce would refuse
+   * every walkthrough.
+   */
+  readonly gridSha256: string | null;
   readonly listingId: string;
   readonly capturedAt: Date;
   readonly latitude: number;
@@ -78,13 +98,38 @@ export function claimMessage(claim: CaptureClaim): string {
       v2, because the shape changed.
 
       `durationSeconds` moved inside the signature when it turned out a client
-      could claim thirty seconds for a two-second clip. The version prefix
-      exists so that is a new scheme rather than a silent break — an old client
-      signs a v1 string, the server rebuilds a v2 one, and the mismatch is a
-      refusal rather than a capture verified against the wrong statement.
+      could claim thirty seconds for a two-second clip, which made v2. The
+      version prefix exists so each of those is a new scheme rather than a
+      silent break — an old client signs a v2 string, the server rebuilds a v3
+      one, and the mismatch is a refusal rather than a capture verified against
+      the wrong statement.
     */
-    'keys.capture.v2',
+    /*
+      v3, because a real photograph arrived beside the grid.
+
+      Until now `sha256` was the hash of the greyscale grid, because the grid
+      *was* the capture — there was no photograph anywhere in this product.
+      With real media there are two artefacts and both have to be inside the
+      signature.
+
+      Signing only the photograph would leave the grid unsigned, and the grid is
+      what duplicate detection reads: an agent could pair a stolen photograph
+      with a grid they invented and match nothing. Signing only the grid would
+      leave the photograph free to be swapped for any other. So both, and a
+      client that sends one without the other cannot produce a string the server
+      will rebuild.
+    */
+    'keys.capture.v3',
     claim.sha256,
+    /*
+      The grid's own hash, or `nogrid`.
+
+      A literal rather than an empty field, so a claim with no grid and a claim
+      whose grid hashed to the empty string are different strings. Empty fields
+      inside a signed message are how two different claims come to sign the
+      same bytes.
+    */
+    claim.gridSha256 ?? 'nogrid',
     claim.listingId,
     claim.capturedAt.toISOString(),
     claim.latitude.toFixed(6),

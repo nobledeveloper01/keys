@@ -111,8 +111,8 @@ export class PostgresCapturesStore extends CapturesStore implements OnModuleInit
     await this.pool.query(
       `INSERT INTO captures
          (id, listing_id, device_id, sha256, captured_at, latitude, longitude,
-          distance_m, kind, duration_seconds)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+          distance_m, kind, duration_seconds, media_key)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
       [
         capture.id,
         capture.listingId,
@@ -124,6 +124,7 @@ export class PostgresCapturesStore extends CapturesStore implements OnModuleInit
         capture.distanceM,
         capture.kind,
         capture.durationSeconds,
+        capture.mediaKey,
       ],
     );
   }
@@ -141,9 +142,10 @@ export class PostgresCapturesStore extends CapturesStore implements OnModuleInit
       distance_m: string | null;
       kind: string;
       duration_seconds: number | null;
+      media_key: string | null;
     }>(
       `SELECT id, listing_id, device_id, sha256, captured_at, latitude, longitude,
-              distance_m, kind, duration_seconds
+              distance_m, kind, duration_seconds, media_key
          FROM captures WHERE listing_id = $1 ORDER BY captured_at`,
       [listingId],
     );
@@ -165,6 +167,7 @@ export class PostgresCapturesStore extends CapturesStore implements OnModuleInit
         distanceM: row.distance_m === null ? null : Number(row.distance_m),
         kind: row.kind as 'photo' | 'video',
         durationSeconds: row.duration_seconds,
+        mediaKey: row.media_key,
         /*
           Not read back.
 

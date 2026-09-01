@@ -28,6 +28,7 @@ import {
 import { AgentGuard, type RequestWithAgent } from '../agents/agent.guard';
 import { CapturesStore } from './captures.store';
 import { CaptureBody, CaptureRefusedResponse, RegisterDeviceBody } from './captures.dto';
+import { MediaStore } from './media.store';
 import { NotAGrid, readGrid } from './pixels';
 
 /**
@@ -61,7 +62,10 @@ import { NotAGrid, readGrid } from './pixels';
 @ApiTags('captures')
 @Controller('v1/captures')
 export class CapturesController {
-  constructor(private readonly store: CapturesStore) {}
+  constructor(
+    private readonly store: CapturesStore,
+    private readonly media: MediaStore,
+  ) {}
 
   @Post('devices')
   @UseGuards(AgentGuard)
@@ -137,6 +141,10 @@ export class CapturesController {
       mockLocation: body?.mockLocation === true,
       durationSeconds:
         typeof body?.durationSeconds === 'number' ? body.durationSeconds : null,
+      gridSha256:
+        typeof body?.gridSha256 === 'string' && body.gridSha256.length > 0
+          ? body.gridSha256.toLowerCase()
+          : null,
     };
     if (!/^[0-9a-f]{64}$/.test(claim.sha256) || !claim.listingId || !claim.nonce) {
       throw new BadRequestException('Give the hash, the listing and a nonce.');
@@ -156,34 +164,74 @@ export class CapturesController {
       capture is its bytes; taking the claim without them proves the agent once
       held a photograph, not that this is it.
     */
+    /*
+      Two artefacts now, and each is checked against its own hash in the
+      signature.
+
+      `media` is the photograph or the video — the thing a tenant looks at.
+      `pixels` is the greyscale grid derived from it, which is what duplicate
+      detection reads. Signing only the media would leave the grid free to be
+      invented, so a stolen photograph could arrive with a grid that matches
+      nothing; signing only the grid would leave the photograph free to be
+      swapped for anything at all.
+
+      `media` is optional while there is no camera on a simulator (R11), and
+      when it is absent the grid stands alone exactly as it used to. What is
+      *not* optional is that whatever arrives hashes to what was signed.
+    */
     let image: Grey | null = null;
     let bytesMatch = false;
-    if (typeof body?.pixels === 'string' && body.pixels.length > 0) {
-      const bytes = Buffer.from(body.pixels, 'base64');
+    let mediaKey: string | null = null;
+
+    const media =
+      typeof body?.media === 'string' && body.media.length > 0
+        ? Buffer.from(body.media, 'base64')
+        : null;
+
+    if (media !== null) {
       /*
-        The cap is enforced here as well as on the phone, because a cap that
-        only the client checks is a suggestion.
+        The cap is on the media, and enforced here as well as on the phone —
+        a cap only the client checks is a suggestion.
 
         Refused rather than downscaled: re-encoding somebody's evidence would
         make the signature stop matching the bytes it was taken over, and the
-        signature is the only reason a capture proves anything. A phone that
-        recorded something enormous has to record it again, and the message
-        says so.
+        signature is the only reason a capture proves anything.
       */
-      if (isTooLarge(bytes.byteLength)) {
+      if (isTooLarge(media.byteLength)) {
         throw new BadRequestException(
-          `That is ${megabytes(bytes.byteLength)}, and the limit is ${megabytes(MAX_CAPTURE_BYTES)}. Record a shorter walkthrough.`,
+          `That is ${megabytes(media.byteLength)}, and the limit is ${megabytes(MAX_CAPTURE_BYTES)}. Record a shorter walkthrough.`,
         );
       }
-      bytesMatch = createHash('sha256').update(bytes).digest('hex') === claim.sha256;
+    }
+
+    if (typeof body?.pixels === 'string' && body.pixels.length > 0) {
+      const grid = Buffer.from(body.pixels, 'base64');
+      const gridHash = createHash('sha256').update(grid).digest('hex');
+
+      /*
+        With media present the signed `sha256` is the media's, and the grid
+        answers to `gridSha256`. Without it the grid is the capture, as it has
+        been since phase 3, and answers to `sha256` itself.
+      */
+      bytesMatch =
+        media === null
+          ? gridHash === claim.sha256
+          : createHash('sha256').update(media).digest('hex') === claim.sha256 &&
+            gridHash === claim.gridSha256;
+
       try {
-        image = readGrid(bytes);
+        image = readGrid(grid);
       } catch (error) {
         // A grid we cannot read is not a 500 — it is an upload that did not
         // come from the Keys camera, which is what this route exists to refuse.
         if (!(error instanceof NotAGrid)) throw error;
         bytesMatch = false;
       }
+    } else if (media !== null) {
+      // A walkthrough with no grid: there is no frame extraction on the
+      // server, and demanding a grid nobody can produce would refuse every
+      // video. The media still has to be the media that was signed.
+      bytesMatch = createHash('sha256').update(media).digest('hex') === claim.sha256;
     }
 
     /*
@@ -237,6 +285,17 @@ export class CapturesController {
       : [];
     if (looksLike.length > 0) await this.store.openPairs(claim.listingId, looksLike, now);
 
+    /*
+      Stored after every refusal has been considered, and keyed by its own hash.
+
+      Content-addressed, so the object cannot be swapped for different bytes
+      without the key changing — and the key is the hash inside the signature,
+      so there is no path where what is served is not what was signed.
+    */
+    if (media !== null) {
+      mediaKey = await this.media.put(claim.sha256, media);
+    }
+
     await this.store.record({
       id: randomUUID(),
       listingId: claim.listingId,
@@ -250,6 +309,7 @@ export class CapturesController {
       // From the claim, which the signature covers — not from the body beside
       // it, which the client chooses.
       durationSeconds: claim.durationSeconds,
+      mediaKey,
       looksLike,
     });
 

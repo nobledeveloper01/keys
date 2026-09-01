@@ -136,8 +136,18 @@ export async function aVerifiedListing(
 
   const captureAgain = async (kind: 'photo' | 'video', imageSeed: number, capturedAt?: Date) => {
     const bytes = grid(imageSeed);
+    /*
+      A stand-in for a photograph.
+
+      There is no camera on a simulator, so this is bytes that are *not* the
+      grid — which is the whole point: the signature now covers the media and
+      the grid separately, and a fixture that sent the same bytes for both
+      could not tell the difference between binding one and binding both.
+    */
+    const media = Buffer.concat([Buffer.from('KEYSJPEGSTANDIN'), bytes]);
     const claim: CaptureClaim = {
-      sha256: createHash('sha256').update(bytes).digest('hex'),
+      sha256: createHash('sha256').update(media).digest('hex'),
+      gridSha256: createHash('sha256').update(bytes).digest('hex'),
       listingId: id,
       capturedAt: capturedAt ?? new Date(),
       latitude: point.latitude,
@@ -153,6 +163,7 @@ export async function aVerifiedListing(
         deviceId: device.body.deviceId,
         listingId: id,
         sha256: claim.sha256,
+        gridSha256: claim.gridSha256,
         capturedAt: claim.capturedAt.toISOString(),
         latitude: claim.latitude,
         longitude: claim.longitude,
@@ -164,6 +175,7 @@ export async function aVerifiedListing(
           'base64',
         ),
         pixels: bytes.toString('base64'),
+        media: media.toString('base64'),
       });
   };
 

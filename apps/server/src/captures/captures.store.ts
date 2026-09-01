@@ -21,6 +21,15 @@ export interface StoredCapture {
   readonly distanceM: number | null;
   readonly kind: 'photo' | 'video';
   readonly durationSeconds: number | null;
+  /**
+   * Where the photograph or video is, or null when only a grid arrived.
+   *
+   * The SHA-256 of the media, which is also its key in the media store and the
+   * hash inside the signature. One value doing all three jobs is deliberate:
+   * a separate id would need a column saying which hash it was supposed to be,
+   * and a column can be wrong.
+   */
+  readonly mediaKey: string | null;
   /** Listings whose images this one resembles. Empty is the ordinary case. */
   readonly looksLike: readonly Match[];
 }

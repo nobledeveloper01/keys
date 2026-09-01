@@ -85,3 +85,13 @@ CREATE INDEX IF NOT EXISTS duplicate_pairs_blocked ON duplicate_pairs (listing_i
   WHERE decision = 'blocked';
 CREATE INDEX IF NOT EXISTS duplicate_pairs_pending ON duplicate_pairs (distance)
   WHERE decision = 'pending';
+
+-- Where the photograph or video is.
+--
+-- The SHA-256 of the media, which is also its key in the media store and the
+-- hash inside the signature — one value doing all three jobs, so there is no
+-- column that can disagree with the others about which bytes these are.
+--
+-- Nullable: a capture that arrived as a greyscale grid alone, which is every
+-- capture taken before real media existed and every one taken on a simulator.
+ALTER TABLE captures ADD COLUMN IF NOT EXISTS media_key TEXT;

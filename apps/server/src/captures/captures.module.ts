@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { AgentsModule } from '../agents/agents.module';
 import { CapturesStoreModule } from './captures-store.module';
+import { MediaModule } from './media.module';
 import { CapturesController } from './captures.controller';
 import { DuplicatesController } from './duplicates.controller';
 
@@ -15,7 +16,7 @@ import { DuplicatesController } from './duplicates.controller';
  * common.
  */
 @Module({
-  imports: [AgentsModule, CapturesStoreModule],
+  imports: [AgentsModule, CapturesStoreModule, MediaModule],
   controllers: [CapturesController, DuplicatesController],
 })
 export class CapturesModule {}

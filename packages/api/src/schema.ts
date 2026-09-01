@@ -449,6 +449,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/listings/{id}/media/{sha256}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A photograph from a published listing. No account required. */
+        get: operations["SearchController_photograph"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/tenants": {
         parameters: {
             query?: never;
@@ -1178,8 +1195,12 @@ export interface components {
         CaptureBody: {
             deviceId: string;
             listingId: string;
-            /** @description SHA-256 of the media bytes, lower-case hex. */
+            /** @description SHA-256 of the media bytes — the photograph or the video — lower-case hex. When no media is sent this is the grid, as it was before real photographs existed. */
             sha256: string;
+            /** @description SHA-256 of the greyscale grid. Inside the signature alongside the media hash, because the grid is what duplicate detection reads — a grid outside the signature is a grid an agent can invent, and a stolen photograph would arrive matching nothing. */
+            gridSha256?: string | null;
+            /** @description The photograph or video itself, base64. Optional while there is no camera on a simulator; what is not optional is that it hashes to the sha256 inside the signature. */
+            media?: string;
             /** Format: date-time */
             capturedAt: string;
             latitude: number;
@@ -1856,6 +1877,26 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ListingView"];
                 };
+            };
+        };
+    };
+    SearchController_photograph: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                sha256: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

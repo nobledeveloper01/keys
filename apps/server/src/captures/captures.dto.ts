@@ -14,8 +14,28 @@ export class CaptureBody {
   @ApiProperty() deviceId!: string;
   @ApiProperty() listingId!: string;
 
-  @ApiProperty({ description: 'SHA-256 of the media bytes, lower-case hex.' })
+  @ApiProperty({
+    description:
+      'SHA-256 of the media bytes — the photograph or the video — lower-case hex. When no media is sent this is the grid, as it was before real photographs existed.',
+  })
   sha256!: string;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    required: false,
+    description:
+      'SHA-256 of the greyscale grid. Inside the signature alongside the media hash, because the grid is what duplicate detection reads — a grid outside the signature is a grid an agent can invent, and a stolen photograph would arrive matching nothing.',
+  })
+  gridSha256?: string | null;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description:
+      'The photograph or video itself, base64. Optional while there is no camera on a simulator; what is not optional is that it hashes to the sha256 inside the signature.',
+  })
+  media?: string;
 
   @ApiProperty({ format: 'date-time' })
   capturedAt!: string;

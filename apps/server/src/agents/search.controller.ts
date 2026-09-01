@@ -1,4 +1,5 @@
-import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Query, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { viewCosts } from './costs.view';
@@ -19,6 +20,7 @@ import {
 import { CapturesStore } from '../captures/captures.store';
 import { ReportsStore } from '../reports/reports.store';
 import { MarketStore } from '../market/market.store';
+import { MediaStore } from '../captures/media.store';
 import { AgentsStore, type Listing } from './agents.store';
 import { assessListing } from './assess';
 import { SearchResponse, ListingView } from './agents.dto';
@@ -46,6 +48,7 @@ export class SearchController {
     private readonly store: AgentsStore,
     private readonly reports: ReportsStore,
     private readonly captures: CapturesStore,
+    private readonly media: MediaStore,
     private readonly market: MarketStore,
   ) {}
 
@@ -161,6 +164,59 @@ export class SearchController {
       })),
       costs: viewCosts(listing.costs),
     };
+  }
+
+  @Get(':id/media/:sha256')
+  @ApiOperation({ summary: 'A photograph from a published listing. No account required.' })
+  async photograph(
+    @Param('id') id: string,
+    @Param('sha256') sha256: string,
+    @Res() response: Response,
+  ) {
+    const listing = await this.store.listing(id);
+    /*
+      A draft is a 404, the same as everywhere else.
+
+      This route would otherwise be the way around every other one: an
+      unpublished listing's photographs are nobody's business, and answering
+      differently for "no such listing" and "not published" tells a stranger
+      which ids are real.
+    */
+    if (!listing || listing.publishedAt === null) throw new NotFoundException('No such listing.');
+
+    /*
+      The hash has to belong to *this* listing.
+
+      Media is content-addressed, so a key from one listing is a valid key
+      everywhere — without this check, anybody holding a hash could pull the
+      photograph through whichever published listing they liked, including one
+      whose own photographs a reviewer had blocked.
+    */
+    const captures = await this.captures.capturesFor(listing.id);
+    const wanted = captures.find((capture) => capture.mediaKey === sha256.toLowerCase());
+    if (!wanted) throw new NotFoundException('No such photograph.');
+
+    const bytes = await this.media.get(wanted.mediaKey!);
+    if (!bytes) throw new NotFoundException('No such photograph.');
+
+    /*
+      The type comes from the capture's kind, not from the bytes and not from
+      the client.
+
+      Keys' own camera produces JPEG stills and MP4 walkthroughs; sniffing the
+      bytes would mean deciding what an uploaded file *is*, which is how a
+      served image comes to be `text/html`. `nosniff` says the browser must not
+      second-guess it either.
+    */
+    response.setHeader('content-type', wanted.kind === 'video' ? 'video/mp4' : 'image/jpeg');
+    response.setHeader('x-content-type-options', 'nosniff');
+    /*
+      Immutable, because the key is the hash. Bytes under this URL cannot ever
+      be different bytes, so a year is not a risk — it is the one case where a
+      long cache is simply true.
+    */
+    response.setHeader('cache-control', 'public, max-age=31536000, immutable');
+    response.send(bytes);
   }
 
   /** Coordinates from a query string, or nothing. */

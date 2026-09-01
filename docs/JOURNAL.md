@@ -6,6 +6,69 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — There were no photographs
+
+**Did.** Object storage, and the signature change it forced.
+
+### What a capture was
+
+A 40×32 greyscale grid. That is all. Enough to compute a perceptual hash, enough for every
+gate in this codebase to pass, and not enough for anybody to *look at the flat*. The evidence
+panel has been saying "Photo at the property — ticked" about an artefact no tenant could
+ever see.
+
+### Adding a photograph is a signature problem
+
+The interesting part is not the bucket. Until now `sha256` in the signed claim *was* the
+grid's hash, because the grid was the capture. With real media there are two artefacts doing
+two different jobs, and it turns out both have to be inside the signature:
+
+- Sign only the photograph and the grid is free. Duplicate detection reads the grid, so an
+  agent could pair a stolen picture with a grid they invented — recognisably somebody else's
+  flat, hashing to something Keys has never seen.
+- Sign only the grid and the photograph is free to be swapped for anything at all.
+
+So `keys.capture.v3` carries both, and `gridSha256` is the literal `nogrid` when absent
+rather than an empty field — empty fields inside a signed message are how two different
+claims come to sign the same bytes.
+
+Each half is proved separately: bind only the grid and the swapped-photograph test fails;
+bind only the photograph and the swapped-grid test fails.
+
+### Content-addressed, and that is not an optimisation
+
+The storage key is the SHA-256 of the bytes, which is the same hash inside the signature. A
+stored object cannot be swapped for different bytes without the key changing, so there is no
+path where what is served is not what was signed. A uuid would have needed a column saying
+which hash it was supposed to be, and a column can be wrong.
+
+It also makes the cache header true rather than a gamble: `immutable`, a year, because bytes
+under that URL cannot ever be different bytes.
+
+### The hole in the serving route
+
+Content addressing has a consequence worth stating: a key from one listing is a valid key
+everywhere. Without checking that the hash belongs to *this* listing, anybody holding one
+could pull the photograph through whichever published listing they liked — including one
+whose own images a reviewer had blocked. There is a test for it and it fails when the check
+goes.
+
+### No default directory
+
+`FilesystemMediaStore` began with `root = process.env.KEYS_MEDIA_DIR ?? '/tmp/keys-media'`,
+which is exactly the failure the captures store spent this whole project having: something
+that looks like it worked until the machine is replaced. There is no default now. A
+deployment that has not said where media goes gets the in-memory store, which reports
+`durable: false` out loud.
+
+### What still is not real
+
+The phone has nothing to put in the media field — `KeysCapture` emits the grid and nothing
+else, so every listing's "photograph" is still a grid. The server accepts and binds media;
+the camera has to produce it. R14. And there is no bucket: R15.
+
+---
+
 ## 2026-09-01 — Every deploy un-verified the catalogue
 
 **Did.** Gave the captures store a durable implementation. It had none.

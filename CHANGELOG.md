@@ -41,6 +41,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Somewhere for actual photographs to live.** A capture was a 40×32 greyscale
+  grid and nothing else — enough for a perceptual hash, and not enough for
+  anybody to look at the flat. Media is stored under its own hash, served only
+  through the listing it belongs to, and the signature now covers the
+  photograph *and* the grid: signing one without the other would let a stolen
+  picture arrive with an invented grid and match nothing.
 - **Photographs now survive a restart.** The captures store had no durable
   implementation — it was in memory in production as well as in tests — so
   every deploy silently took `capture_on_site` and `walkthrough_video` off

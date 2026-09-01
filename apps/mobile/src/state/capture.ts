@@ -99,6 +99,17 @@ export async function captureFor(
 
   const claim: CaptureClaim = {
     sha256: sha256(bytes),
+    /*
+      Null, because this phone has no photograph to send yet.
+
+      The capture module emits the greyscale grid and nothing else, so the grid
+      is still the capture and answers to `sha256` — exactly as it has since
+      phase 3. When the native side emits a JPEG alongside the grid, `sha256`
+      becomes the photograph's and this becomes the grid's, and both go inside
+      the same signature. Until then a `null` here signs the literal `nogrid`,
+      which the server rebuilds and matches.
+    */
+    gridSha256: null,
     listingId,
     // The camera's time and place, not this function's. A capture that says
     // where the phone was when it uploaded rather than when it photographed
