@@ -6,10 +6,9 @@ import { ReportsModule } from '../reports/reports.module';
 import { AgentReviewController } from './agent-review.controller';
 import { AgentsController } from './agents.controller';
 import { SearchController } from './search.controller';
-import { AgentsStore, InMemoryAgentsStore } from './agents.store';
+import { AgentsStoreModule } from './agents-store.module';
 import { AuthorityController } from './authority.controller';
 import { OutboxModule } from '../outbox/outbox.module';
-import { PostgresAgentsStore } from './agents.postgres';
 
 /**
  * Three doors again, and again they are not the same size.
@@ -31,17 +30,17 @@ import { PostgresAgentsStore } from './agents.postgres';
  * far from either file.
  */
 @Module({
-  imports: [ReportsModule, CapturesStoreModule, MarketStoreModule, OutboxModule],
+  imports: [AgentsStoreModule, ReportsModule, CapturesStoreModule, MarketStoreModule, OutboxModule],
   controllers: [AgentsController, AuthorityController, AgentReviewController, SearchController],
-  providers: [
-    {
-      provide: AgentsStore,
-      useFactory: (): AgentsStore => {
-        const url = process.env.KEYS_DATABASE_URL;
-        return url ? new PostgresAgentsStore(url) : new InMemoryAgentsStore();
-      },
-    },
-  ],
-  exports: [AgentsStore],
+  /*
+    The module, not the provider.
+
+    Nest will not re-export a provider it did not itself declare — the store is
+    `AgentsStoreModule`'s now — and the error it gives when you try says
+    "cannot export a provider that is not part of the currently processed
+    module", which is exactly what is happening and takes a moment to read as
+    such.
+  */
+  exports: [AgentsStoreModule],
 })
 export class AgentsModule {}

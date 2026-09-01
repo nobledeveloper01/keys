@@ -41,6 +41,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Report a listing without knowing whose it is.** Reports used to need a phone
+  number, which meant a tenant who found a place through search — and so has
+  never seen one — could read the whole evidence panel, believe it was
+  fiction, and have no way to say so. Keys resolves the agent from the listing;
+  the number stays where it was. A reviewer judging whether a place is real can
+  now open the place.
 - **Ask an agent without giving them your number.** A tenant messages about a
   listing and Keys holds both numbers back until each side offers theirs. An
   offer nobody has answered can be taken back. A message with a number in it is

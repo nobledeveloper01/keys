@@ -48,9 +48,28 @@ export class ReportAcceptedResponse {
   whatHappensNext!: string;
 }
 
+/**
+ * A report is about a number *or* about a listing, and needs exactly one.
+ *
+ * Both are optional in the schema because neither is required on its own, and
+ * the rule that one must be present is enforced in the controller rather than
+ * by a decorator — OpenAPI has no way to say "one of these two", and a schema
+ * claiming both are optional is at least not a schema claiming something false.
+ */
 export class SubmitReportBody {
-  @ApiProperty({ example: '+2348012345678' })
-  reportedPhone!: string;
+  @ApiProperty({
+    example: '+2348012345678',
+    required: false,
+    description: 'The number you are reporting. Not needed — and not asked for — when you report a listing.',
+  })
+  reportedPhone?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'The listing you are reporting. Keys resolves whose it is; you never need the agent\'s number, which is the whole point of holding numbers back until both sides agree.',
+  })
+  listingId?: string;
 
   @ApiProperty({ enum: REPORT_CATEGORIES })
   category!: string;
@@ -131,6 +150,14 @@ export class ReviewView {
   @ApiProperty() evidenceCount!: number;
   @ApiProperty() hasReply!: boolean;
   @ApiProperty({ type: String, nullable: true }) reply!: string | null;
+
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description:
+      'The listing this is about, when there is one. Null for a report that came in from the registry — a number and no property. A reviewer judging whether a place is fiction needs to be able to open it.',
+  })
+  listingId!: string | null;
 }
 
 export class EvidenceBody {

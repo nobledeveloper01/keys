@@ -118,6 +118,18 @@ function Shell() {
   const [openEnquiry, setOpenEnquiry] = useState<string | null>(null);
 
   /*
+    A listing being reported, which is not the same state as a *number* being
+    reported.
+
+    `reporting` holds a phone number and lives in the Check tab, where somebody
+    arrived by looking one up. This holds a listing id and lives in Find, where
+    somebody arrived by reading a page and has never seen a number. One
+    variable for both would have made the report screen guess which kind of
+    string it was holding.
+  */
+  const [reportingListing, setReportingListing] = useState<string | null>(null);
+
+  /*
     A link from a text message, which is not a destination anybody navigates to.
 
     It takes the whole screen, above the tabs, because somebody who has just
@@ -209,7 +221,19 @@ function Shell() {
 
       <View style={styles.body}>
         {tab === 'find' &&
-          (asking !== null ? (
+          (reportingListing !== null ? (
+            <ReportScreen
+              baseUrl={API_URL}
+              /*
+                No number to pre-fill, and that is the point: the server
+                resolves whose listing it is from data this phone never held.
+              */
+              phone=""
+              listingId={reportingListing}
+              onDone={() => setReportingListing(null)}
+              onCancel={() => setReportingListing(null)}
+            />
+          ) : asking !== null ? (
             <AskScreen
               baseUrl={API_URL}
               listingId={asking.listingId}
@@ -256,6 +280,7 @@ function Shell() {
                 attached to it.
               */
               onMessage={() => setAsking({ listingId: openListing })}
+              onReport={() => setReportingListing(openListing)}
             />
           ))}
         {tab === 'messages' &&

@@ -58,9 +58,21 @@ export interface AddReport {
   readonly id: string;
   readonly reporterId: string;
   readonly reportedPhone: string;
+  /**
+   * A hash for a caller that never held the number.
+   *
+   * A report filed from a listing page reaches the agent through the listing,
+   * and an agent's row holds only a hash. When this is set it wins and
+   * `reportedPhone` is ignored — which is the only way to file a report about
+   * somebody whose number the reporter has never seen, and the whole reason
+   * deferred contact exchange did not quietly make listings unreportable.
+   */
+  readonly reportedPhoneHash?: string | null;
   readonly category: ReportCategory;
   readonly description: string;
   readonly evidenceKeys: readonly string[];
+  /** The listing this is about, when it came from a listing page. */
+  readonly listingId: string | null;
   readonly now: Date;
 }
 
@@ -167,8 +179,9 @@ export class InMemoryReportsStore extends ReportsStore {
       publishedAt: null,
       expiresAt: null,
       hasReply: false,
+      listingId: input.listingId,
       reporterId: input.reporterId,
-      reportedPhoneHash: hashPhone(input.reportedPhone),
+      reportedPhoneHash: input.reportedPhoneHash ?? hashPhone(input.reportedPhone),
       description: input.description,
       evidenceKeys: input.evidenceKeys,
       reply: null,

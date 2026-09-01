@@ -30,12 +30,23 @@ import { useLanguage } from '../state/language';
 export function ReportScreen({
   baseUrl,
   phone,
+  listingId,
   onDone,
   onCancel,
 }: {
   baseUrl: string;
   /** Pre-filled from the lookup they just did. Editable, because they may have mistyped. */
   phone: string;
+  /**
+   * The listing this is about, when it came from a listing page.
+   *
+   * When it is set, the number field is not shown at all — and not because it
+   * is inconvenient. A tenant who found this place through search has never
+   * seen the agent's number; that is what deferred contact exchange is *for*.
+   * Asking them to supply one would have made every listing they can see
+   * unreportable, which is what it quietly was until this prop existed.
+   */
+  listingId?: string | undefined;
   onDone: () => void;
   onCancel: () => void;
 }) {
@@ -100,13 +111,26 @@ export function ReportScreen({
         </Text>
       )}
 
-      <Field
-        label={t('which_number_reported')}
-        value={reported}
-        onChange={setReported}
-        keyboard="phone-pad"
-        help={t('check_a_number_help')}
-      />
+      {/*
+        No number field at all when this is about a listing.
+
+        Not hidden as a convenience — a tenant who found this place through
+        search has never seen the agent's number, and a field they cannot fill
+        in is a report they cannot file.
+      */}
+      {listingId === undefined ? (
+        <Field
+          label={t('which_number_reported')}
+          value={reported}
+          onChange={setReported}
+          keyboard="phone-pad"
+          help={t('check_a_number_help')}
+        />
+      ) : (
+        <Text variant="body" tone="secondary" style={styles.row}>
+          {t('report_this_listing_help')}
+        </Text>
+      )}
 
       <Text variant="label" style={styles.kind}>
         {t('what_kind')}
@@ -131,7 +155,12 @@ export function ReportScreen({
       <View style={styles.send}>
         <Button
           label={t('send_report')}
-          disabled={busy || category === null || tooShort || reported.trim().length < 7}
+          disabled={
+            busy ||
+            category === null ||
+            tooShort ||
+            (listingId === undefined && reported.trim().length < 7)
+          }
           accessibilityHint={tooShort ? t('report_too_short') : undefined}
           onPress={() => {
             /*
@@ -148,7 +177,16 @@ export function ReportScreen({
             setProblem(null);
             void attempt(() =>
               client({ baseUrl }).report({
-                reportedPhone: reported.trim(),
+                /*
+                  One of the two, never both invented.
+
+                  With a listing, the server resolves whose it is from data
+                  this phone has never held. Without one, this is the registry
+                  path and the number is what there is.
+                */
+                ...(listingId === undefined
+                  ? { reportedPhone: reported.trim() }
+                  : { listingId }),
                 category,
                 description: description.trim(),
                 evidenceKeys: [],

@@ -26,6 +26,9 @@ const report = (over: Partial<Report> = {}): Report => ({
   id: 'r1',
   status: 'submitted',
   category: 'inspection_fee_scam',
+  // A registry report: a number and no property, which is the case this
+  // product started with and still the common one.
+  listingId: null,
   submittedAt: T0,
   replyDeadlineAt: replyDeadline(T0),
   publishedAt: null,

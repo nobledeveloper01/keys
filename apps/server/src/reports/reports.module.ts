@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 
+import { AgentsStoreModule } from '../agents/agents-store.module';
+
 import { OutboxModule } from '../outbox/outbox.module';
 import { HealthController } from '../health.controller';
 import { ReplyController } from './reply.controller';
@@ -17,7 +19,7 @@ import { ReviewController } from './review.controller';
  * everything. Nothing else may read the store.
  */
 @Module({
-  imports: [OutboxModule],
+  imports: [AgentsStoreModule, OutboxModule],
   controllers: [ReportsController, ReplyController, ReviewController, HealthController],
   providers: [
     {

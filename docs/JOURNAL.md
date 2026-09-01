@@ -6,6 +6,59 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-01 — The listing nobody could report
+
+**Did.** A report can now be about a listing rather than a number, from somebody who has
+never seen a number.
+
+### The hole the previous entry opened
+
+Every report in this product is keyed on a phone number. That was right when the only way
+to meet an agent was to be messaged by one — you have their number and nothing else.
+
+Deferred contact exchange inverted it, and nothing noticed. A tenant who finds a listing
+through search has *never seen a number*: that is what the whole mechanism is for. So they
+could open a listing, read all nine conditions, decide the place was fiction, and have
+nothing to press. The report screen would have asked them for a number they had no way to
+know.
+
+Reporting a listing resolves the agent's hash on the server, from data the reporter never
+holds. They report a property; Keys knows whose it is; the number stays where it was.
+
+### What surprised us
+
+**My own gate could not fail.** The first version of "reaches the right agent" asserted the
+report appeared in the reviewer queue with the right listing id — which stayed true when the
+agent hash was set to `null`. A report filed against nobody passed. It asserts by consequence
+now: upheld, it costs *that* agent the badge and leaves another agent's listing alone.
+[ADR-0004](adr/0004-a-gate-that-cannot-fail-is-not-a-gate.md), eighth instance, this time in
+a test written the same hour.
+
+**A reviewer was being asked whether a property is fiction with no way to look at it.**
+`fake_listing` has been a category since phase 1 and nothing ever carried which listing.
+
+**`replace` wrote seven of a row's columns and dropped the rest.** In memory it swaps the
+whole row; in Postgres it was an UPDATE of a subset, so the two stores disagreed about what
+a write means — and every suite here runs against both precisely so that passing in memory
+is evidence about production. `reply_deadline_at` is what exposed it. Nothing in the product
+moves a deadline, so this is not a feature; it is the two stores telling the same story.
+
+**Restoring a deliberate break hit the wrong line.** A `return true;` I put back landed
+inside `isPublic` instead of the function I had broken — which would have published every
+report regardless of status. The type checker caught it because the surrounding line
+referenced a name that was not in scope. It would not have caught a break that happened to
+type-check, which is an argument for restoring breaks with an anchored edit rather than a
+substring.
+
+### The third store module
+
+`AgentsStoreModule` exists now, for the third time this shape has been needed — captures,
+market, reports. Each time because two modules needed each other and Nest resolves one of
+them to `undefined`, failing as a null dereference in a route far from either file. A module
+that provides one thing and imports nothing cannot take part in a cycle.
+
+---
+
 ## 2026-09-01 — The number is the last thing, not the first
 
 **Did.** Phase 5's marketplace loop: a tenant messages an agent about a listing, they swap

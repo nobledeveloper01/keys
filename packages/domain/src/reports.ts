@@ -76,6 +76,21 @@ export interface Report {
   readonly publishedAt: Date | null;
   readonly expiresAt: Date | null;
   readonly hasReply: boolean;
+  /**
+   * The listing this is about, when there is one.
+   *
+   * Null for a report that came in from the registry — somebody who was
+   * messaged on WhatsApp has a number and no listing, which is the case this
+   * product started with.
+   *
+   * It is not null for a report filed from a listing page, and *that* case
+   * could not be filed at all until it existed: reports are keyed on a phone
+   * number, and the whole point of deferred contact exchange is that a tenant
+   * browsing search does not have one. A person looking at a listing they
+   * believe is fake could see the badge, read the evidence, and have no way to
+   * say so.
+   */
+  readonly listingId: string | null;
 }
 
 /**
@@ -316,4 +331,20 @@ export function transparency(
     medianDaysToDecision: median === null ? null : Math.round(median * 10) / 10,
     oldestAwaitingDays: oldest === null ? null : Math.round(oldest * 10) / 10,
   };
+}
+
+/**
+ * Whether a category can be said about a listing at all.
+ *
+ * `impersonation` is about a person, not a property — somebody using another
+ * agent's name is doing that across every listing they have, and filing it
+ * against one of them would make the report narrower than the problem. It is
+ * still reportable from the registry, where it belongs.
+ *
+ * The rest are all things that happen *to a listing*: it was fake, it was
+ * already let, the fee was not disclosed, they took an inspection fee, they
+ * never turned up.
+ */
+export function mayBeReportedAgainstAListing(category: ReportCategory): boolean {
+  return category !== 'impersonation';
 }

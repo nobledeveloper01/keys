@@ -1861,7 +1861,12 @@
         "properties": {
           "reportedPhone": {
             "type": "string",
-            "example": "+2348012345678"
+            "example": "+2348012345678",
+            "description": "The number you are reporting. Not needed — and not asked for — when you report a listing."
+          },
+          "listingId": {
+            "type": "string",
+            "description": "The listing you are reporting. Keys resolves whose it is; you never need the agent's number, which is the whole point of holding numbers back until both sides agree."
           },
           "category": {
             "type": "string",
@@ -1887,7 +1892,6 @@
           }
         },
         "required": [
-          "reportedPhone",
           "category",
           "description"
         ]
@@ -2039,6 +2043,11 @@
           "reply": {
             "type": "string",
             "nullable": true
+          },
+          "listingId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The listing this is about, when there is one. Null for a report that came in from the registry — a number and no property. A reviewer judging whether a place is fiction needs to be able to open it."
           }
         },
         "required": [
@@ -2051,7 +2060,8 @@
           "description",
           "evidenceCount",
           "hasReply",
-          "reply"
+          "reply",
+          "listingId"
         ]
       },
       "ReviewerTally": {

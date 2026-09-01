@@ -31,12 +31,13 @@ interface Row {
   has_reply: boolean;
   reply: string | null;
   reply_token: string;
+  listing_id: string | null;
 }
 
 const COLUMNS = `
   id, reporter_id, reported_phone_hash, status, category, description,
   evidence_keys, submitted_at, reply_deadline_at, published_at, expires_at,
-  has_reply, reply, reply_token
+  has_reply, reply, reply_token, listing_id
 `;
 
 function hydrate(row: Row): StoredReport {
@@ -48,6 +49,7 @@ function hydrate(row: Row): StoredReport {
     replyDeadlineAt: row.reply_deadline_at,
     publishedAt: row.published_at,
     expiresAt: row.expires_at,
+    listingId: row.listing_id,
     hasReply: row.has_reply,
     reporterId: row.reporter_id,
     reportedPhoneHash: row.reported_phone_hash,
@@ -106,19 +108,21 @@ export class PostgresReportsStore
     const result = await this.pool.query<Row>(
       `INSERT INTO reports (
          id, reporter_id, reported_phone_hash, status, category, description,
-         evidence_keys, submitted_at, reply_deadline_at, has_reply, reply_token
-       ) VALUES ($1,$2,$3,'submitted',$4,$5,$6,$7,$8,FALSE,$9)
+         evidence_keys, submitted_at, reply_deadline_at, has_reply, reply_token,
+         listing_id
+       ) VALUES ($1,$2,$3,'submitted',$4,$5,$6,$7,$8,FALSE,$9,$10)
        RETURNING ${COLUMNS}`,
       [
         input.id,
         input.reporterId,
-        hashPhone(input.reportedPhone),
+        input.reportedPhoneHash ?? hashPhone(input.reportedPhone),
         input.category,
         input.description,
         [...input.evidenceKeys],
         input.now,
         replyDeadline(input.now),
         randomBytes(32).toString('base64url'),
+        input.listingId,
       ],
     );
     return hydrate(result.rows[0]!);
@@ -181,11 +185,31 @@ export class PostgresReportsStore
     return result.rows.map(hydrate);
   }
 
+  /**
+   * Write back every mutable column, not most of them.
+   *
+   * This took `StoredReport` and wrote seven of its fields, silently dropping
+   * the rest — so the in-memory store, which swaps the whole row, and this one
+   * disagreed about what `replace` means. Every test that passes against
+   * memory is only evidence about production while those two behave the same
+   * way, which is the entire premise of running each suite against both.
+   *
+   * `reply_deadline_at` is the field that exposed it. Nothing in the product
+   * moves a deadline — a reviewer must not be able to shorten somebody's right
+   * to answer, and there is no route that tries — so this is not a feature. It
+   * is the two stores telling the same story about what a write does.
+   *
+   * The columns still absent are the ones that are immutable by construction:
+   * the id, who reported it, whose number it is about, which listing, when it
+   * arrived, and the reply token. A row that changed any of those would not be
+   * the same report.
+   */
   async replace(row: StoredReport): Promise<void> {
     await this.pool.query(
       `UPDATE reports SET
          status = $2, description = $3, evidence_keys = $4,
-         published_at = $5, expires_at = $6, has_reply = $7, reply = $8
+         published_at = $5, expires_at = $6, has_reply = $7, reply = $8,
+         reply_deadline_at = $9
        WHERE id = $1`,
       [
         row.id,
@@ -196,6 +220,7 @@ export class PostgresReportsStore
         row.expiresAt,
         row.hasReply,
         row.reply,
+        row.replyDeadlineAt,
       ],
     );
   }

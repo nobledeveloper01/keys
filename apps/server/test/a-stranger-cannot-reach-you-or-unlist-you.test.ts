@@ -5,6 +5,7 @@ import * as request from 'supertest';
 
 import { AppModule } from '../src/app.module';
 import { AgentsStore } from '../src/agents/agents.store';
+import { ReportsStore } from '../src/reports/reports.store';
 import {
   KYC_TOKEN,
   REVIEWER_TOKEN,
@@ -430,6 +431,169 @@ describe.each(STORES)('a stranger cannot reach you or unlist you (%s)', (_name, 
         .send({ outcome: 'did_not_exist' })
         .expect(400);
       expect(await verified(listing.id)).toBe(true);
+    });
+  });
+
+  describe('reporting a listing you found', () => {
+    /*
+      The hole deferred contact exchange opened, which nobody would have
+      noticed until somebody tried.
+
+      Every report in this product is keyed on a phone number. A tenant who
+      found a listing through search has never seen one — that is the entire
+      point of the rest of this file. So a person could read the whole evidence
+      panel, believe the place was fiction, and have no way at all to say so.
+    */
+    it('takes a report about a listing from somebody who has never seen a number', async () => {
+      const listing = await build({});
+
+      const filed = await request(app.getHttpServer())
+        .post('/v1/registry/reports')
+        .send({
+          listingId: listing.id,
+          category: 'fake_listing',
+          description: 'I went to this address and the building number does not exist at all.',
+        })
+        .expect(201);
+
+      expect(filed.body.received).toBe(true);
+      // And it comes back with no more about the agent than it went in with.
+      expect(JSON.stringify(filed.body)).not.toContain('+234');
+    });
+
+    it('reaches the right agent, without the reporter ever supplying one', async () => {
+      /*
+        Asserted by consequence, not by presence.
+
+        An earlier version of this checked only that the report appeared in the
+        reviewer queue with the right listing id — which stayed true when the
+        agent hash was set to null, so a report filed against nobody passed the
+        test. What proves the link is that upholding it costs *that* agent, and
+        nothing else in this file would notice if it did not.
+      */
+      const listing = await build({});
+      const untouched = await build({});
+
+      const filed = await request(app.getHttpServer())
+        .post('/v1/registry/reports')
+        .send({
+          listingId: listing.id,
+          category: 'fake_listing',
+          description: 'There is a mechanic workshop at this address and no flat above it.',
+        })
+        .expect(201);
+
+      const queue = await request(app.getHttpServer())
+        .get('/v1/review/queue')
+        .set('x-reviewer-token', REVIEWER_TOKEN)
+        .expect(200);
+      const mine = queue.body.reports.find(
+        (r: { listingId: string | null }) => r.listingId === listing.id,
+      );
+      // A reviewer judging whether a place is fiction can open the place.
+      expect(mine).toBeDefined();
+
+      /*
+        Evidence and a closed reply window, because the domain refuses an
+        upheld report without both — and this test is about who the report
+        reaches, not about weakening the rules that protect the accused.
+
+        The deadline is moved through the store rather than by waiting seven
+        days. That is the one thing here a route cannot do, and doing it any
+        other way would mean this file quietly stopped testing the reply window
+        it depends on.
+      */
+      await request(app.getHttpServer())
+        .post(`/v1/review/${mine.id}/evidence`)
+        .set('x-reviewer-token', REVIEWER_TOKEN)
+        .send({
+          note: 'Two visitors photographed a mechanic workshop at this address on separate days.',
+          source: 'inspection outcomes recorded in the app',
+        })
+        .expect(200);
+
+      const reports = app.get(ReportsStore);
+      const row = await reports.byId(mine.id);
+      await reports.replace({ ...row!, replyDeadlineAt: new Date(Date.now() - 86_400_000) });
+
+      await request(app.getHttpServer())
+        .post(`/v1/review/${mine.id}/decision`)
+        .set('x-reviewer-token', REVIEWER_TOKEN)
+        .send({
+          decision: 'upheld',
+          reasoning:
+            'Two independent visits found a workshop at this address and the agent did not answer.',
+        })
+        .expect(200);
+
+      const reported = await request(app.getHttpServer())
+        .get(`/v1/listings/${listing.id}`)
+        .expect(200);
+      expect(
+        reported.body.checks.find(
+          (c: { condition: string }) => c.condition === 'nothing_upheld',
+        ).met,
+      ).toBe(false);
+
+      // And it landed on that agent alone, not on everybody.
+      const other = await request(app.getHttpServer())
+        .get(`/v1/listings/${untouched.id}`)
+        .expect(200);
+      expect(other.body.verified).toBe(true);
+
+      expect(filed.body.received).toBe(true);
+    });
+
+    it('refuses a listing report about a person rather than a property', async () => {
+      // Somebody using another agent's name is doing it across everything they
+      // have posted; filing that against one listing makes the report narrower
+      // than the problem.
+      const listing = await build({});
+      const refused = await request(app.getHttpServer())
+        .post('/v1/registry/reports')
+        .send({
+          listingId: listing.id,
+          category: 'impersonation',
+          description: 'This person is using the name of a firm I know they do not work for.',
+        })
+        .expect(400);
+      expect(JSON.stringify(refused.body)).toMatch(/person rather than a property/i);
+    });
+
+    it('refuses a report about a listing nobody can see', async () => {
+      // A draft is a 404 here as everywhere, so this route cannot be used to
+      // find out which listing ids are real.
+      await request(app.getHttpServer())
+        .post('/v1/registry/reports')
+        .send({
+          listingId: '00000000-0000-4000-8000-000000000000',
+          category: 'fake_listing',
+          description: 'This listing does not exist and I would like to say so about it.',
+        })
+        .expect(404);
+    });
+
+    it('still takes a report with a number and no listing', async () => {
+      // The case this product started with: somebody messaged on WhatsApp has
+      // a number and no listing at all.
+      await request(app.getHttpServer())
+        .post('/v1/registry/reports')
+        .send({
+          reportedPhone: '+2348090000001',
+          category: 'inspection_fee_scam',
+          description: 'They took five thousand naira to show me a flat and never turned up.',
+        })
+        .expect(201);
+    });
+
+    it('refuses a report with neither a listing nor a number', async () => {
+      await request(app.getHttpServer())
+        .post('/v1/registry/reports')
+        .send({
+          category: 'fake_listing',
+          description: 'Something happened but I am not saying who or what it was about.',
+        })
+        .expect(400);
     });
   });
 

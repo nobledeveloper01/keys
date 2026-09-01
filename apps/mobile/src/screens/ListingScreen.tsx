@@ -32,12 +32,14 @@ export function ListingScreen({
   onBack,
   onCheckAgent,
   onMessage,
+  onReport,
 }: {
   baseUrl: string;
   id: string;
   onBack: () => void;
   onCheckAgent: () => void;
   onMessage: () => void;
+  onReport: () => void;
 }) {
   const { t, language } = useLanguage();
   const colours = useColours();
@@ -138,6 +140,13 @@ export function ListingScreen({
             */}
             <Button label={t('message_the_agent')} onPress={onMessage} />
             <Button label={t('check_this_agent')} onPress={onCheckAgent} quiet />
+            {/*
+              Reporting is last and quiet, and it exists at all only because
+              the number field on that screen became optional. Before that, a
+              tenant could read this whole page, believe the place was fiction,
+              and have nothing to press.
+            */}
+            <Button label={t('report_this_listing')} onPress={onReport} quiet />
           </View>
         </>
       )}

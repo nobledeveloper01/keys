@@ -767,8 +767,13 @@ export interface components {
             oldestAwaitingDays: number | null;
         };
         SubmitReportBody: {
-            /** @example +2348012345678 */
-            reportedPhone: string;
+            /**
+             * @description The number you are reporting. Not needed — and not asked for — when you report a listing.
+             * @example +2348012345678
+             */
+            reportedPhone?: string;
+            /** @description The listing you are reporting. Keys resolves whose it is; you never need the agent's number, which is the whole point of holding numbers back until both sides agree. */
+            listingId?: string;
             /** @enum {string} */
             category: "fake_listing" | "inspection_fee_scam" | "property_already_let" | "impersonation" | "undisclosed_fees" | "no_show";
             /** @description A report nobody can assess cannot be upheld. */
@@ -815,6 +820,8 @@ export interface components {
             evidenceCount: number;
             hasReply: boolean;
             reply: string | null;
+            /** @description The listing this is about, when there is one. Null for a report that came in from the registry — a number and no property. A reviewer judging whether a place is fiction needs to be able to open it. */
+            listingId: string | null;
         };
         ReviewerTally: {
             reviewer: string;

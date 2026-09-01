@@ -61,9 +61,18 @@ export class ReviewController {
       evidenceCount: row.evidenceKeys.length,
       hasReply: row.hasReply,
       reply: row.reply,
-      // reporterId and reportedPhoneHash are absent, deliberately. A reviewer
-      // judges what happened, not who said it, and cannot leak what they were
-      // never shown.
+      /*
+        Which listing, when there is one.
+
+        A reviewer judging `fake_listing` was being asked whether a property is
+        fiction with no way to look at it. This is the id — not the agent, not
+        the number — so they can open the same public page the reporter read.
+
+        reporterId and reportedPhoneHash stay absent, deliberately. A reviewer
+        judges what happened, not who said it, and cannot leak what they were
+        never shown.
+      */
+      listingId: row.listingId,
     };
   }
 

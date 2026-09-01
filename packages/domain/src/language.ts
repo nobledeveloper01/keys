@@ -235,6 +235,8 @@ export type Phrase =
   | 'exchange_done'
   | 'message_the_agent'
   | 'ask_about_this_place'
+  | 'report_this_listing'
+  | 'report_this_listing_help'
   | 'why_we_want_your_number'
   | 'say_something'
   | 'send'
@@ -425,6 +427,8 @@ export const EN: Readonly<Record<Phrase, string>> = {
   exchange_done: "Numbers shared",
   message_the_agent: "Ask about this place",
   ask_about_this_place: "Ask about this place",
+  report_this_listing: "Report this listing",
+  report_this_listing_help: "You do not need the agent's number. Keys knows whose listing this is.",
   why_we_want_your_number: "Keys keeps this to itself. The agent does not see it — if you want them to have it, you choose that later, inside the conversation.",
   say_something: "Say something",
   send: "Send",
@@ -648,6 +652,8 @@ export const HA: Readonly<Record<Phrase, string>> = {
   exchange_done: "An raba lambobi",
   message_the_agent: "Tambaya game da wannan wurin",
   ask_about_this_place: "Tambaya game da wannan wurin",
+  report_this_listing: "Bayar da rahoton wannan tallar",
+  report_this_listing_help: "Ba ka bukatar lambar dillali. Keys ya san tallan wa ne.",
   why_we_want_your_number: "Keys yana riƙe wannan da kansa. Dillali ba ya ganin sa — idan kana son su same shi, za ka zaɓa daga baya, cikin tattaunawar.",
   say_something: "Ka faɗi wani abu",
   send: "Aika",
@@ -871,6 +877,8 @@ export const YO: Readonly<Record<Phrase, string>> = {
   exchange_done: "A ti pín àwọn nọ́mbà",
   message_the_agent: "Béèrè nípa ibì yìí",
   ask_about_this_place: "Béèrè nípa ibì yìí",
+  report_this_listing: "Ròyìn ìpolówó yìí",
+  report_this_listing_help: "O kò nílò nọ́mbà aṣojú. Keys mọ ẹni tí ìpolówó yìí jẹ́ tirẹ̀.",
   why_we_want_your_number: "Keys ni yóò pa á mọ́. Aṣojú kò rí i — bí o bá fẹ́ kí wọ́n ní i, ìwọ yóò yàn án nígbà mìíràn, nínú ìjíròrò náà.",
   say_something: "Sọ nǹkan kan",
   send: "Fi ránṣẹ́",
@@ -1094,6 +1102,8 @@ export const IG: Readonly<Record<Phrase, string>> = {
   exchange_done: "Ekekọrọ nọmba",
   message_the_agent: "Jụọ gbasara ebe a",
   ask_about_this_place: "Jụọ gbasara ebe a",
+  report_this_listing: "Kọọ mgbasa ozi a",
+  report_this_listing_help: "Ị chọghị nọmba onye nnọchi. Keys maara onye nwe mgbasa ozi a.",
   why_we_want_your_number: "Keys na-edobe ya naanị ya. Onye nnọchi anaghị ahụ ya — ọ bụrụ na ị chọrọ ka ha nweta ya, ị ga-ahọrọ ya mgbe e mesịrị, nʼime mkparịta ụka ahụ.",
   say_something: "Kwuo ihe",
   send: "Zipu",
