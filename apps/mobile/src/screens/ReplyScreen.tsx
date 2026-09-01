@@ -161,7 +161,7 @@ export function ReplyScreen({
                       setProblem(
                         result.failure.kind === 'refused'
                           ? result.failure.detail
-                          : t('no_signal_saved_here'),
+                          : t('no_signal_nothing_sent'),
                       );
                   });
                 }}

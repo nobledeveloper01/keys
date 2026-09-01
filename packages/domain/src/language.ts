@@ -50,14 +50,11 @@ export type Language = 'en' | 'ha' | 'yo' | 'ig';
 export type Phrase =
   | 'app_name'
   | 'try_again'
-  | 'something_went_wrong'
-  | 'no_signal'
+  | 'no_signal_nothing_sent'
   | 'loading'
   | 'verified'
-  | 'not_verified'
   | 'report_a_number'
   | 'check_a_number'
-  | 'no_reports_found'
   | 'this_number_was_reported'
   | 'under_review'
   | 'search'
@@ -73,8 +70,6 @@ export type Phrase =
   | 'cannot_reach_the_server'
   | 'it_is_still_there'
   | 'the_server_said_no'
-  | 'saved_here_will_send'
-  | 'waiting_to_send'
   | 'check_a_number_hint'
   | 'check_a_number_help'
   | 'not_a_nigerian_number'
@@ -84,7 +79,6 @@ export type Phrase =
   | 'upheld_reports'
   | 'one_upheld_report'
   | 'report_this_number'
-  | 'no_reports_yet_detail'
   | 'lede_registry'
   | 'claims_note'
   | 'category_fake_listing'
@@ -94,12 +88,10 @@ export type Phrase =
   | 'category_undisclosed_fees'
   | 'category_no_show'
   | 'share_this_answer'
-  | 'no_signal_saved_here'
   | 'refused_reply_window_open'
   | 'refused_no_evidence'
   | 'refused_already_decided'
   | 'verified_agent'
-  | 'no_verified_agent'
   | 'what_was_checked'
   | 'properties_confirmed'
   | 'tier_unverified'
@@ -118,15 +110,10 @@ export type Phrase =
   | 'which_property'
   | 'landlord_number'
   | 'ask_them'
-  | 'your_listings'
-  | 'no_listings_yet'
-  | 'draft_another'
   | 'what_you_are_letting'
   | 'save_draft'
   | 'publish_listing'
   | 'draft_private'
-  | 'not_verified_yet'
-  | 'listing_verified'
   | 'id_check_not_available'
   | 'sign_out'
   | 'tab_check'
@@ -178,10 +165,13 @@ export type Phrase =
   | 'mark_where_this_is'
   | 'mark_where_this_is_help'
   | 'property_placed'
+  | 'this_will_use_data'
+  | 'send_it'
+  | 'not_now'
+  | 'capture_cancelled'
   | 'take_a_photo'
   | 'record_a_walkthrough'
   | 'capture_accepted'
-  | 'place_it_first'
   | 'your_properties'
   | 'add_a_property'
   | 'no_properties_yet'
@@ -191,7 +181,6 @@ export type Phrase =
   | 'all_steps_done'
   | 'back_to_properties'
   | 'what_this_property_needs'
-  | 'this_property'
   | 'add_property_help'
   | 'tab_find'
   | 'find_a_place'
@@ -262,9 +251,7 @@ export type Phrase =
   | 'tell_us'
   | 'your_name'
   | 'your_number'
-  | 'start_messaging'
   | 'enquiries'
-  | 'no_enquiries'
   | 'reply_to_them'
   | 'they_want_to_see_it'
   | 'what_will_you_charge'
@@ -276,14 +263,19 @@ export type Phrase =
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
   try_again: "Try again",
-  something_went_wrong: "Something went wrong.",
-  no_signal: "No signal",
+  /*
+    Renamed from `no_signal`.
+
+    The text was always honest — it says "No signal" and nothing else — but the
+    identifier promised a queue this app does not have, on eleven screens, and a
+    name is how the next person decides what already exists. If offline drafts
+    are ever built, the message will change too, and the two should start
+    agreeing rather than start with the name running ahead.
+  */
   loading: "Loading",
   verified: "Verified",
-  not_verified: "Not verified",
   report_a_number: "Report a number",
   check_a_number: "Check a number",
-  no_reports_found: "No reports found",
   this_number_was_reported: "This number has been reported",
   under_review: "Under review",
   search: "Search",
@@ -299,13 +291,33 @@ export const EN: Readonly<Record<Phrase, string>> = {
   cannot_reach_the_server: "We cannot reach Keys",
   it_is_still_there: "Your reports are still there. This phone cannot see them right now.",
   the_server_said_no: "That did not go through",
-  saved_here_will_send: "Saved on this phone. It will send when you have signal.",
-  no_signal_saved_here: "No signal",
+  /*
+    Renamed from `no_signal`.
+
+    The text was always honest — it says "No signal" and nothing else — but the
+    identifier promised a queue this app does not have, on eleven screens, and a
+    name is how the next person decides what already exists. If offline drafts
+    are ever built, the message will change too, and the two should start
+    agreeing rather than start with the name running ahead.
+  */
+  /*
+    Renamed from `no_signal_saved_here`.
+
+    The text was always honest — it says "No signal" and nothing else — but the
+    identifier promised a queue this app does not have, on eleven screens, and a
+    name is how the next person decides what already exists. There was also
+    already a `no_signal`, with different words in Yoruba and Igbo, so the
+    rename collided and the new name had to say what actually happens: nothing
+    was sent, and nothing was kept.
+
+    If offline drafts are ever built the message changes too, and the name and
+    the behaviour should start agreeing rather than the name running ahead.
+  */
+  no_signal_nothing_sent: "No signal",
   refused_reply_window_open: "The seven days are not up yet.",
   refused_no_evidence: "There is nothing attached to assess.",
   refused_already_decided: "Somebody has already decided this one.",
   verified_agent: "This number belongs to an agent Keys has checked.",
-  no_verified_agent: "No agent Keys has checked uses this number.",
   what_was_checked: "What was checked",
   properties_confirmed: "properties a landlord confirmed",
   tier_unverified: "Nothing about this person has been checked.",
@@ -324,15 +336,10 @@ export const EN: Readonly<Record<Phrase, string>> = {
   which_property: "Which property",
   landlord_number: "The landlord's number",
   ask_them: "Ask them",
-  your_listings: "Your listings",
-  no_listings_yet: "Nothing yet. You can draft a listing before a landlord confirms you. You just cannot publish it until they have.",
-  draft_another: "Draft another",
   what_you_are_letting: "What you are letting",
   save_draft: "Save draft",
   publish_listing: "Publish",
   draft_private: "Draft. Nobody can see this.",
-  not_verified_yet: "Not Verified yet. Still needed:",
-  listing_verified: "Verified.",
   id_check_not_available: "Your ID has not been checked, and you cannot do that part here yet. Everything else rests on it, so a landlord confirming you changes nothing until it is done. We will ask you for it here when we are ready.",
   sign_out: "Sign out on this phone",
   tab_check: "Check",
@@ -372,10 +379,13 @@ export const EN: Readonly<Record<Phrase, string>> = {
   mark_where_this_is: "Mark where this property is",
   mark_where_this_is_help: "Do this standing at the property. It is recorded once and cannot be moved afterwards, because moving it would change what your photos prove.",
   property_placed: "Marked. Photos taken here will now count.",
+  this_will_use_data: "This will use about",
+  send_it: "Send it",
+  not_now: "Not now",
+  capture_cancelled: "Nothing was sent.",
   take_a_photo: "Take a photo here",
   record_a_walkthrough: "Record a walkthrough here",
   capture_accepted: "Accepted.",
-  place_it_first: "Mark where the property is first, or photos cannot prove where they were taken.",
   your_properties: "Your properties",
   add_a_property: "Add a property",
   no_properties_yet: "No properties yet. Add one, then mark where it is and photograph it.",
@@ -385,7 +395,6 @@ export const EN: Readonly<Record<Phrase, string>> = {
   all_steps_done: "Everything done",
   back_to_properties: "Your properties",
   what_this_property_needs: "What this property needs",
-  this_property: "This property",
   add_property_help: "One property at a time. You can draft it anywhere; the rest has to be done standing at it.",
   tab_find: "Find",
   find_a_place: "Find a place",
@@ -456,9 +465,7 @@ export const EN: Readonly<Record<Phrase, string>> = {
   tell_us: "Tell Keys",
   your_name: "Your name",
   your_number: "Your number",
-  start_messaging: "Start messaging",
   enquiries: "Enquiries",
-  no_enquiries: "Nobody has asked about your places yet.",
   reply_to_them: "Reply",
   they_want_to_see_it: "They want to see it",
   what_will_you_charge: "What will you charge to show it?",
@@ -478,7 +485,6 @@ export const EN: Readonly<Record<Phrase, string>> = {
   tab_settings: "Settings",
   appearance: "Appearance",
   language_setting: "Language",
-  waiting_to_send: "waiting to send",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Any format. 0803…, +234 803…, or 803….",
   not_a_nigerian_number: "That does not look like a Nigerian phone number.",
@@ -488,7 +494,6 @@ export const EN: Readonly<Record<Phrase, string>> = {
   upheld_reports: "upheld reports",
   one_upheld_report: "One upheld report against this number.",
   report_this_number: "Report this number",
-  no_reports_yet_detail: "Type a number above to check it. No account needed.",
   lede_registry: "Reports of rental scams in Nigeria. A person reviews each one before it appears here.",
   claims_note: "Keys checks authority to let, not ownership, and handles no money.",
   category_fake_listing: "The property did not exist",
@@ -503,14 +508,10 @@ export const EN: Readonly<Record<Phrase, string>> = {
 export const HA: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
   try_again: "Sake gwadawa",
-  something_went_wrong: "An sami matsala.",
-  no_signal: "Babu sigina",
   loading: "Ana lodi",
   verified: "An tabbatar",
-  not_verified: "Ba a tabbatar ba",
   report_a_number: "Ka kai ƙarar lamba",
   check_a_number: "Duba lamba",
-  no_reports_found: "Ba a sami ƙara ba",
   this_number_was_reported: "An kai ƙarar wannan lambar",
   under_review: "Ana duba shi",
   search: "Bincika",
@@ -526,13 +527,11 @@ export const HA: Readonly<Record<Phrase, string>> = {
   cannot_reach_the_server: "Ba mu iya isa Keys",
   it_is_still_there: "Rahotanninka na nan. Wannan wayar ba ta ganin su yanzu.",
   the_server_said_no: "Wannan bai wuce ba",
-  saved_here_will_send: "An ajiye a wannan wayar. Za a aika idan an sami sigina.",
-  no_signal_saved_here: "Babu sigina",
+  no_signal_nothing_sent: "Babu sigina",
   refused_reply_window_open: "Kwanaki bakwai ba su cika ba tukuna.",
   refused_no_evidence: "Babu wata shaida da aka haɗa.",
   refused_already_decided: "An riga an yanke hukunci a kan wannan.",
   verified_agent: "Wannan lambar mallakar wakili ne da Keys ya duba.",
-  no_verified_agent: "Babu wakilin da Keys ya duba da ke amfani da wannan lambar.",
   what_was_checked: "Abin da aka duba",
   properties_confirmed: "wurare da mai gida ya tabbatar",
   tier_unverified: "Ba a duba kome game da wannan mutumin ba.",
@@ -551,15 +550,10 @@ export const HA: Readonly<Record<Phrase, string>> = {
   which_property: "Wane wuri",
   landlord_number: "Lambar mai gida",
   ask_them: "Ka roƙe shi",
-  your_listings: "Tallace-tallacenka",
-  no_listings_yet: "Babu kome tukuna. Za ka iya shirya talla kafin mai gida ya tabbatar da kai. Sai dai ba za ka iya buga shi ba sai ya tabbatar.",
-  draft_another: "Shirya wani",
   what_you_are_letting: "Abin da kake hayarwa",
   save_draft: "Ajiye shirin",
   publish_listing: "Buga",
   draft_private: "Shiri. Babu wanda ke ganin wannan.",
-  not_verified_yet: "Ba a tabbatar ba tukuna. Ana buƙatar:",
-  listing_verified: "An tabbatar.",
   id_check_not_available: "Ba a duba katin shaidarka ba, kuma ba za ka iya yin wannan a nan tukuna ba. Duk sauran suna kan sa, don haka tabbatarwar mai gida ba ta canza kome sai an gama shi. Za mu nema maka shi a nan idan mun shirya.",
   sign_out: "Fita daga wannan wayar",
   tab_check: "Duba",
@@ -599,10 +593,13 @@ export const HA: Readonly<Record<Phrase, string>> = {
   mark_where_this_is: "Yi alama inda wannan wurin yake",
   mark_where_this_is_help: "Ka yi wannan kana tsaye a wurin. Ana rubuta shi sau ɗaya kuma ba za a iya matsar da shi ba, domin matsar da shi zai canza abin da hotunanka ke tabbatarwa.",
   property_placed: "An yi alama. Hotunan da aka ɗauka a nan yanzu za su ƙidaya.",
+  this_will_use_data: "Wannan zai yi amfani da kusan",
+  send_it: "Aika shi",
+  not_now: "Ba yanzu ba",
+  capture_cancelled: "Ba a aika komai ba.",
   take_a_photo: "Ɗauki hoto a nan",
   record_a_walkthrough: "Ɗauki bidiyon zagayawa a nan",
   capture_accepted: "An karɓa.",
-  place_it_first: "Ka fara yin alama inda wurin yake, in ba haka ba hotuna ba za su tabbatar da inda aka ɗauke su ba.",
   your_properties: "Wuraren ka",
   add_a_property: "Ƙara wuri",
   no_properties_yet: "Babu wurare tukuna. Ƙara ɗaya, sannan ka yi alama inda yake ka ɗauki hoto.",
@@ -612,7 +609,6 @@ export const HA: Readonly<Record<Phrase, string>> = {
   all_steps_done: "An gama komai",
   back_to_properties: "Wuraren ka",
   what_this_property_needs: "Abin da wannan wurin ke buƙata",
-  this_property: "Wannan wurin",
   add_property_help: "Wuri ɗaya a lokaci ɗaya. Za ka iya shirya shi ko'ina; sauran dole ka yi shi kana tsaye a wurin.",
   tab_find: "Nemo",
   find_a_place: "Nemo wuri",
@@ -683,9 +679,7 @@ export const HA: Readonly<Record<Phrase, string>> = {
   tell_us: "Faɗa wa Keys",
   your_name: "Sunanka",
   your_number: "Lambarka",
-  start_messaging: "Fara saƙo",
   enquiries: "Tambayoyi",
-  no_enquiries: "Babu wanda ya tambaya game da wuraren ka tukuna.",
   reply_to_them: "Amsa",
   they_want_to_see_it: "Suna son su gan shi",
   what_will_you_charge: "Nawa za ka caji don nuna shi?",
@@ -705,7 +699,6 @@ export const HA: Readonly<Record<Phrase, string>> = {
   tab_settings: "Saituna",
   appearance: "Kamanni",
   language_setting: "Harshe",
-  waiting_to_send: "na jiran aikawa",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Kowace sura. 0803…, +234 803…, ko 803….",
   not_a_nigerian_number: "Wannan bai yi kama da lambar wayar Najeriya ba.",
@@ -715,7 +708,6 @@ export const HA: Readonly<Record<Phrase, string>> = {
   upheld_reports: "rahotannin da aka tabbatar",
   one_upheld_report: "Rahoto ɗaya da aka tabbatar a kan wannan lambar.",
   report_this_number: "Ba da rahoton wannan lambar",
-  no_reports_yet_detail: "Rubuta lamba a sama don dubawa. Ba a buƙatar asusu.",
   lede_registry: "Rahotannin zamban haya a Najeriya. Mutum yana duba kowanne kafin ya bayyana a nan.",
   claims_note: "Keys yana duba izinin haya, ba mallakar gida ba, kuma ba ya riƙe kuɗi.",
   category_fake_listing: "Gidan bai wanzu ba",
@@ -730,14 +722,10 @@ export const HA: Readonly<Record<Phrase, string>> = {
 export const YO: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
   try_again: "Gbìyànjú lẹ́ẹ̀kansi",
-  something_went_wrong: "Ìṣòro kan ṣẹlẹ̀.",
-  no_signal: "Kò sí sìgnà",
   loading: "Ń gbé wọlé",
   verified: "A ti fọwọ́sí",
-  not_verified: "A kò tíì fọwọ́sí",
   report_a_number: "Ròyìn nọ́mbà kan",
   check_a_number: "Ṣàyẹ̀wò nọ́mbà kan",
-  no_reports_found: "Kò sí ìròyìn kankan",
   this_number_was_reported: "A ti ròyìn nọ́mbà yìí",
   under_review: "À ń yẹ̀ ẹ́ wò",
   search: "Wá",
@@ -753,13 +741,11 @@ export const YO: Readonly<Record<Phrase, string>> = {
   cannot_reach_the_server: "A kò lè dé Keys",
   it_is_still_there: "Àwọn ìròyìn rẹ ṣì wà níbẹ̀. Fóònù yìí kò rí wọn báyìí.",
   the_server_said_no: "Èyí kò lọ",
-  saved_here_will_send: "A tì í pamọ́ sí fóònù yìí. Yóò lọ nígbà tí o bá ní ìsopọ̀.",
-  no_signal_saved_here: "Kò sí ìsopọ̀",
+  no_signal_nothing_sent: "Kò sí ìsopọ̀",
   refused_reply_window_open: "Ọjọ́ méje kò tí ì pé.",
   refused_no_evidence: "Kò sí ẹ̀rí kankan tí a so mọ́ ọn.",
   refused_already_decided: "Ẹnìkan ti pinnu lórí èyí tẹ́lẹ̀.",
   verified_agent: "Nọ́mbà yìí jẹ́ ti aṣojú tí Keys ti ṣàyẹ̀wò.",
-  no_verified_agent: "Kò sí aṣojú tí Keys ṣàyẹ̀wò tó ń lo nọ́mbà yìí.",
   what_was_checked: "Ohun tí a ṣàyẹ̀wò",
   properties_confirmed: "ilé tí onílé fọwọ́ sí",
   tier_unverified: "A kò ṣàyẹ̀wò ohunkóhun nípa ẹni yìí.",
@@ -778,15 +764,10 @@ export const YO: Readonly<Record<Phrase, string>> = {
   which_property: "Ilé wo",
   landlord_number: "Nọ́mbà onílé",
   ask_them: "Béèrè lọ́wọ́ rẹ̀",
-  your_listings: "Àwọn ìpolówó rẹ",
-  no_listings_yet: "Kò sí nǹkan kan síbẹ̀. O lè kọ ìpolówó kí onílé tó fọwọ́ sí ọ. Ṣùgbọ́n o kò lè tẹ̀ ẹ́ jáde títí tí ó fi ṣe bẹ́ẹ̀.",
-  draft_another: "Kọ òmíràn",
   what_you_are_letting: "Ohun tí ò ń yá",
   save_draft: "Pa àkọsílẹ̀ mọ́",
   publish_listing: "Tẹ̀ jáde",
   draft_private: "Àkọsílẹ̀. Kò sí ẹni tí ó lè rí èyí.",
-  not_verified_yet: "A kò tíì fọwọ́ sí i. Ó ṣì nílò:",
-  listing_verified: "A ti fọwọ́ sí i.",
   id_check_not_available: "A kò tíì ṣàyẹ̀wò káàdì ìdánimọ̀ rẹ, o kò sì lè ṣe apá yìí níbí síbẹ̀. Gbogbo ìyókù dúró lé e, torí náà onílé fọwọ́ sí ọ kò yí ohunkóhun padà títí tí a ó fi ṣe é. A ó béèrè rẹ̀ lọ́wọ́ rẹ níbí nígbà tí a bá ṣetán.",
   sign_out: "Jáde ní fóònù yìí",
   tab_check: "Ṣàyẹ̀wò",
@@ -826,10 +807,13 @@ export const YO: Readonly<Record<Phrase, string>> = {
   mark_where_this_is: "Sàmi ibi tí ilé yìí wà",
   mark_where_this_is_help: "Ṣe èyí nígbà tí o dúró ní ibẹ̀. A kọ ọ́ sílẹ̀ lẹ́ẹ̀kan, a kò sì lè gbé e lọ, nítorí gbígbé e yóò yí ohun tí àwọn fọ́tò rẹ fi hàn padà.",
   property_placed: "A ti sàmì sí i. Àwọn fọ́tò tí a yà níbí yóò ka báyìí.",
+  this_will_use_data: "Èyí yóò lo nǹkan bí",
+  send_it: "Fi ránṣẹ́",
+  not_now: "Kì í ṣe nísinsìnyí",
+  capture_cancelled: "A kò fi nǹkankan ránṣẹ́.",
   take_a_photo: "Ya fọ́tò níbí",
   record_a_walkthrough: "Ya fídíò ìrìn àyíká níbí",
   capture_accepted: "A ti gbà á.",
-  place_it_first: "Sàmi ibi tí ilé náà wà ní àkọ́kọ́, bí bẹ́ẹ̀ kọ́ àwọn fọ́tò kò lè fi ibi tí a ti yà wọ́n hàn.",
   your_properties: "Àwọn ilé rẹ",
   add_a_property: "Fi ilé kún un",
   no_properties_yet: "Kò sí ilé kankan síbẹ̀. Fi ọ̀kan kún un, kí o sàmi ibi tí ó wà kí o sì ya fọ́tò rẹ̀.",
@@ -839,7 +823,6 @@ export const YO: Readonly<Record<Phrase, string>> = {
   all_steps_done: "Gbogbo rẹ̀ ti parí",
   back_to_properties: "Àwọn ilé rẹ",
   what_this_property_needs: "Ohun tí ilé yìí nílò",
-  this_property: "Ilé yìí",
   add_property_help: "Ilé kan lẹ́ẹ̀kan. O lè kọ ọ́ sílẹ̀ níbikíbi; ìyókù gbọ́dọ̀ ṣe nígbà tí o dúró níbẹ̀.",
   tab_find: "Wá",
   find_a_place: "Wá ibùgbé",
@@ -910,9 +893,7 @@ export const YO: Readonly<Record<Phrase, string>> = {
   tell_us: "Sọ fún Keys",
   your_name: "Orúkọ rẹ",
   your_number: "Nọ́mbà rẹ",
-  start_messaging: "Bẹ̀rẹ̀ ìránṣẹ́",
   enquiries: "Àwọn ìbéèrè",
-  no_enquiries: "Kò sẹ́ni tí ó béèrè nípa àwọn ibi rẹ síbẹ̀.",
   reply_to_them: "Dáhùn",
   they_want_to_see_it: "Wọ́n fẹ́ rí i",
   what_will_you_charge: "Owó mélòó ni ìwọ yóò gba láti fi hàn?",
@@ -932,7 +913,6 @@ export const YO: Readonly<Record<Phrase, string>> = {
   tab_settings: "Ètò",
   appearance: "Ìrísí",
   language_setting: "Èdè",
-  waiting_to_send: "ń dúró láti lọ",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ìrísí èyíkéyìí. 0803…, +234 803…, tàbí 803….",
   not_a_nigerian_number: "Èyí kò dà bí nọ́mbà fóònù Nàìjíríà.",
@@ -942,7 +922,6 @@ export const YO: Readonly<Record<Phrase, string>> = {
   upheld_reports: "ìròyìn tí a fọwọ́sí",
   one_upheld_report: "Ìròyìn kan tí a fọwọ́sí lórí nọ́mbà yìí.",
   report_this_number: "Ròyìn nọ́mbà yìí",
-  no_reports_yet_detail: "Tẹ nọ́mbà sí òkè láti ṣàyẹ̀wò. Kò sí àkọọ́lẹ̀ tí a nílò.",
   lede_registry: "Ìròyìn jìbìtì ìyáléta ní Nàìjíríà. Ènìyàn ni ó ń ṣàyẹ̀wò ọ̀kọ̀ọ̀kan kí ó tó farahàn níbí.",
   claims_note: "Keys ń ṣàyẹ̀wò àṣẹ láti yá ilé, kì í ṣe níní ilé, kò sì ń mú owó.",
   category_fake_listing: "Ilé náà kò sí",
@@ -957,14 +936,10 @@ export const YO: Readonly<Record<Phrase, string>> = {
 export const IG: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
   try_again: "Nwaa ọzọ",
-  something_went_wrong: "Enwere nsogbu.",
-  no_signal: "Enweghị sịgnal",
   loading: "Na-ebugo",
   verified: "A kwadoro ya",
-  not_verified: "A kwadobeghị ya",
   report_a_number: "Kọọ nọmba",
   check_a_number: "Lelee nọmba",
-  no_reports_found: "Ọ dịghị mkpesa a hụrụ",
   this_number_was_reported: "A kọọla nọmba a",
   under_review: "A na-enyocha ya",
   search: "Chọọ",
@@ -980,13 +955,11 @@ export const IG: Readonly<Record<Phrase, string>> = {
   cannot_reach_the_server: "Anyị enweghị ike iru Keys",
   it_is_still_there: "Akụkọ gị ka dị. Ekwentị a anaghị ahụ ha ugbu a.",
   the_server_said_no: "Nke ahụ agaghị",
-  saved_here_will_send: "Echekwara ya na ekwentị a. Ọ ga-eziga mgbe ị nwere netwọk.",
-  no_signal_saved_here: "Enweghị netwọk",
+  no_signal_nothing_sent: "Enweghị netwọk",
   refused_reply_window_open: "Ụbọchị asaa erubeghị.",
   refused_no_evidence: "Ọ dịghị ihe akaebe e jikọtara na ya.",
   refused_already_decided: "Otu onye ekpebiela nke a.",
   verified_agent: "Nọmba a bụ nke onye nnọchiteanya Keys nyochara.",
-  no_verified_agent: "Ọ dịghị onye nnọchiteanya Keys nyochara na-eji nọmba a.",
   what_was_checked: "Ihe e nyochara",
   properties_confirmed: "ụlọ onye nwe ụlọ kwadoro",
   tier_unverified: "Ọ dịghị ihe e nyochara banyere onye a.",
@@ -1005,15 +978,10 @@ export const IG: Readonly<Record<Phrase, string>> = {
   which_property: "Ụlọ ole",
   landlord_number: "Nọmba onye nwe ụlọ",
   ask_them: "Rịọ ya",
-  your_listings: "Mgbasa ozi gị",
-  no_listings_yet: "Ọ dịghị ihe ugbu a. Ị nwere ike ide mgbasa ozi tupu onye nwe ụlọ akwado gị. Naanị na ị gaghị ebipụta ya ruo mgbe o mere.",
-  draft_another: "Dee ọzọ",
   what_you_are_letting: "Ihe ị na-agbazinye",
   save_draft: "Chekwaa ederede",
   publish_listing: "Bipụta",
   draft_private: "Ederede. Ọ dịghị onye na-ahụ nke a.",
-  not_verified_yet: "Akwadobeghị ya. Ka chọrọ:",
-  listing_verified: "Akwadoro ya.",
   id_check_not_available: "Enyochabeghị kaadị njirimara gị, ị gaghịkwa eme akụkụ ahụ ebe a ugbu a. Ihe niile ndị ọzọ dabere na ya, ya mere na onye nwe ụlọ ịkwado gị anaghị agbanwe ihe ọ bụla ruo mgbe emechara ya. Anyị ga-arịọ gị ya ebe a mgbe anyị dịla njikere.",
   sign_out: "Pụọ na ekwentị a",
   tab_check: "Nyochaa",
@@ -1053,10 +1021,13 @@ export const IG: Readonly<Record<Phrase, string>> = {
   mark_where_this_is: "Debe ebe ụlọ a dị",
   mark_where_this_is_help: "Mee nke a ka ị guzo n'ebe ahụ. A na-edekọ ya otu ugboro, a pụghịkwa ịkwaga ya, n'ihi na ịkwaga ya ga-agbanwe ihe foto gị na-egosi.",
   property_placed: "Edeela ya. Foto ndị a sere ebe a ga-agụ ugbu a.",
+  this_will_use_data: "Nke a ga-eji ihe dịka",
+  send_it: "Zipu ya",
+  not_now: "Ọ bụghị ugbu a",
+  capture_cancelled: "E zipughị ihe ọ bụla.",
   take_a_photo: "Sere foto ebe a",
   record_a_walkthrough: "Dekọọ vidiyo njegharị ebe a",
   capture_accepted: "Anabatala ya.",
-  place_it_first: "Buru ụzọ debe ebe ụlọ ahụ dị, ma ọ bụghị ya foto agaghị egosi ebe e sere ha.",
   your_properties: "Ụlọ gị",
   add_a_property: "Tinye ụlọ",
   no_properties_yet: "Enweghị ụlọ ugbu a. Tinye otu, wee debe ebe ọ dị ma sere ya foto.",
@@ -1066,7 +1037,6 @@ export const IG: Readonly<Record<Phrase, string>> = {
   all_steps_done: "Emechaala ihe niile",
   back_to_properties: "Ụlọ gị",
   what_this_property_needs: "Ihe ụlọ a chọrọ",
-  this_property: "Ụlọ a",
   add_property_help: "Otu ụlọ n'otu oge. Ị nwere ike ide ya ebe ọ bụla; ihe fọdụrụ ka a ga-eme ka ị guzo na ya.",
   tab_find: "Chọọ",
   find_a_place: "Chọọ ebe obibi",
@@ -1137,9 +1107,7 @@ export const IG: Readonly<Record<Phrase, string>> = {
   tell_us: "Gwa Keys",
   your_name: "Aha gị",
   your_number: "Nọmba gị",
-  start_messaging: "Malite izi ozi",
   enquiries: "Ajụjụ",
-  no_enquiries: "Ọ dịghị onye jụrụ gbasara ebe gị ugbu a.",
   reply_to_them: "Zaghachi",
   they_want_to_see_it: "Ha chọrọ ịhụ ya",
   what_will_you_charge: "Ego ole ka ị ga-ana igosi ya?",
@@ -1159,7 +1127,6 @@ export const IG: Readonly<Record<Phrase, string>> = {
   tab_settings: "Ntọala",
   appearance: "Ọdịdị",
   language_setting: "Asụsụ",
-  waiting_to_send: "na-echere izipu",
   check_a_number_hint: "0803 123 4567",
   check_a_number_help: "Ụdị ọ bụla. 0803…, +234 803…, ma ọ bụ 803….",
   not_a_nigerian_number: "Nke a adịghị ka nọmba ekwentị Naịjirịa.",
@@ -1169,7 +1136,6 @@ export const IG: Readonly<Record<Phrase, string>> = {
   upheld_reports: "akụkọ akwadoro",
   one_upheld_report: "Otu akụkọ akwadoro megide nọmba a.",
   report_this_number: "Kọọ nọmba a",
-  no_reports_yet_detail: "Pịnye nọmba n’elu ka ị lelee ya. Ọ dịghị akaụntụ achọrọ.",
   lede_registry: "Akụkọ aghụghọ mgbazinye ụlọ na Naịjirịa. Mmadụ na-enyocha nke ọ bụla tupu o gosi ebe a.",
   claims_note: "Keys na-elele ikike ịgbazinye ụlọ, ọ bụghị inwe ụlọ, ọ naghịkwa ejide ego.",
   category_fake_listing: "Ụlọ ahụ adịghị",

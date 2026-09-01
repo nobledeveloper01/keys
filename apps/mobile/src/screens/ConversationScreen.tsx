@@ -116,10 +116,10 @@ export function ConversationScreen({
     void work()
       .then((result) => {
         if (result.ok) refresh();
-        else setProblem(result.why ?? t('no_signal_saved_here'));
+        else setProblem(result.why ?? t('no_signal_nothing_sent'));
       })
       .catch((error: unknown) =>
-        setProblem(error instanceof Error ? error.message : t('no_signal_saved_here')),
+        setProblem(error instanceof Error ? error.message : t('no_signal_nothing_sent')),
       )
       .finally(() => setBusy(null));
   }

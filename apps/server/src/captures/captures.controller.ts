@@ -19,7 +19,10 @@ import {
   type CaptureClaim,
   type Grey,
   type Match,
+  MAX_CAPTURE_BYTES,
   capturedAtIsPlausible,
+  isTooLarge,
+  megabytes,
 } from '@keys/domain';
 
 import { AgentGuard, type RequestWithAgent } from '../agents/agent.guard';
@@ -157,6 +160,21 @@ export class CapturesController {
     let bytesMatch = false;
     if (typeof body?.pixels === 'string' && body.pixels.length > 0) {
       const bytes = Buffer.from(body.pixels, 'base64');
+      /*
+        The cap is enforced here as well as on the phone, because a cap that
+        only the client checks is a suggestion.
+
+        Refused rather than downscaled: re-encoding somebody's evidence would
+        make the signature stop matching the bytes it was taken over, and the
+        signature is the only reason a capture proves anything. A phone that
+        recorded something enormous has to record it again, and the message
+        says so.
+      */
+      if (isTooLarge(bytes.byteLength)) {
+        throw new BadRequestException(
+          `That is ${megabytes(bytes.byteLength)}, and the limit is ${megabytes(MAX_CAPTURE_BYTES)}. Record a shorter walkthrough.`,
+        );
+      }
       bytesMatch = createHash('sha256').update(bytes).digest('hex') === claim.sha256;
       try {
         image = readGrid(bytes);

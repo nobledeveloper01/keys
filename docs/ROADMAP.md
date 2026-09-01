@@ -273,7 +273,7 @@ structured data validating. All three are about a deployment nobody has stood up
 it was written, because `provesPresence` needs a distance and nothing knew where a property
 *was*. Properties get coordinates here, which is the same thing search needs.
 
-## Phase 5 — Marketplace Loop (Weeks 24–27) · **current**
+## Phase 5 — Marketplace Loop (Weeks 24–27)
 Messaging with deferred contact exchange, inspection requests with fee policy, outcome recording
 with the automatic Verified suspension on `didn't exist`, listing reports, featured placement
 (Verified-only, capped).
@@ -297,10 +297,26 @@ shipping is a gate that either blocks forever or gets waived — [ADR-0004](adr/
 applies to gates that cannot *pass* for the same reason. The web equivalent is a release
 gate if it is anything.
 
-## Phase 6 — Launch Hardening (Weeks 28–32)
+## Phase 6 — Launch Hardening (Weeks 28–32) · **current**
 Media pipeline budgets enforced, data-saver, offline saved listings, device matrix, accessibility
 audit on mobile and web, legal review of agreement templates and report policy, **Lagos-only
 launch paced to review-console capacity**.
+
+**Phase gate.** *The app never spends somebody's data without saying what it will cost, and
+never claims to have kept something it has not.*
+
+Two halves of the same discipline, and both are about a market where data is bought in
+bundles and the network drops in a lift. A walkthrough video is the most expensive thing this
+product asks anybody to do; an app that uploads one on cellular without saying so has spent
+somebody's money on their behalf. And a failure message that implies work was saved, on a
+phone where nothing was, is the same lie as a badge nobody earned.
+
+**Already found, before the phase started.** The phrase used on eleven screens when a request
+fails is keyed `no_signal_saved_here`. Its text, in all four languages, honestly says only
+"No signal" — but the *name* describes a queue this app does not have, and a name is how the
+next person decides what already exists. Renamed as the first thing in this phase, because a
+gate about not claiming to have kept something should not be built on top of an identifier
+that claims exactly that.
 
 **v1.0 ships.**
 

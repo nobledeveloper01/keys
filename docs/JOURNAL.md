@@ -6,6 +6,75 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-01 — Sentences for a feature that does not exist
+
+**Did.** Started phase 6 by looking for places the app claims something it cannot do, and by
+making an upload say what it will cost before it costs it.
+
+### What was in the dictionary
+
+Sitting in `language.ts`, in all four languages, translated and paid for:
+
+> **"Saved on this phone. It will send when you have signal."**
+
+There is no queue. Nothing in this app has ever saved anything to send later. Beside it,
+`waiting_to_send`, and an `OfflineBanner` component wired to render *"3 waiting to send"* —
+a component nothing mounted, whose doc comment was about drivers on northern corridors,
+copied wholesale from a different product.
+
+If that banner had ever been mounted it would have told somebody their listing draft was
+safe, on a phone where it was already gone.
+
+### The gate that found it
+
+`scripts/phrase-check.py`: every phrase declared in four languages reaches a screen, or it
+is a promise nobody kept. Sixteen were dead. Most were harmless leftovers from screens that
+were redesigned; two were the ones above.
+
+It has to understand phrases that are *assembled* — `condition_${c}`, `outcome_${o}` — and
+the prefixes are discovered rather than listed, because a hand-maintained list of exceptions
+goes stale exactly the way the thing it is checking does.
+
+**And it has a hole, written into the file.** A phrase used only by a component that nothing
+mounts counts as used — which is how `waiting_to_send` survived the first run. `wired-check`
+exempts components deliberately, and the two exemptions line up to leave a gap. Named in the
+source so nobody trusts the check further than it goes.
+
+**A test went stale the same way.** `every face of the app has words` asserted six
+hand-written phrase names exist, and failed when one of them was correctly deleted — a list
+of what must exist, maintained separately from what exists, is a second place to be wrong.
+It derives its own list now.
+
+### Data is money here
+
+A walkthrough video is the most expensive thing this product asks anybody to do, and data in
+this market is bought in bundles that run out. So an upload says what it will cost *before*
+it starts — "This will use about 4.2 MB", in the reader's language — and stops for an answer
+when the connection is metered and the upload is large enough to matter.
+
+Small things that took a moment to get right:
+
+- **It defaults to metered.** A phone that cannot say what it is on is treated as costing
+  money, because the failure that matters is spending somebody's bundle by assuming wifi.
+- **The cap refuses rather than downscales.** Re-encoding somebody's evidence would make the
+  signature stop matching the bytes it was taken over, and the signature is the only reason
+  a capture proves anything.
+- **Declining is not a failure.** It has its own outcome in the return type, because falling
+  through to "No signal" would blame the network for a decision somebody made deliberately —
+  and the next time they saw that message they would have no reason to believe it.
+- **The question is not a system dialog.** `Alert.alert` cannot be translated by this app's
+  dictionary, so the one sentence about money would have been the one sentence in English.
+
+### And the name that ran ahead of the feature
+
+The phrase shown on eleven screens when a request fails was keyed `no_signal_saved_here`.
+Its text was honest in all four languages — "No signal", nothing more — but the *name*
+described the queue. Renamed to `no_signal_nothing_sent`, which collided with an existing
+`no_signal` that had different words in Yoruba and Igbo, so the new name had to say what
+actually happens.
+
+---
+
 ## 2026-09-01 — A slot, not a thumb on the scale
 
 **Did.** Featured placement, which is the last thing in phase 5 and the one that could have

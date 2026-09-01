@@ -3,7 +3,12 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { attempt, client, type Conversation, type Listing } from '@keys/api';
-import { VERIFIED_CONDITIONS, conditionPhrase, conditionStepPhrase } from '@keys/domain';
+import {
+  VERIFIED_CONDITIONS,
+  conditionPhrase,
+  conditionStepPhrase,
+  megabytes,
+} from '@keys/domain';
 
 import { Button } from '../components/Button';
 import { Field } from '../components/Field';
@@ -54,6 +59,29 @@ export function PropertyScreen({
   const [landlordPhone, setLandlordPhone] = useState('');
 
   /*
+    An upload waiting on somebody's answer about their own data.
+
+    Held as state rather than shown through `Alert.alert`, because a system
+    dialog cannot be translated by this app's own dictionary — it would be the
+    one sentence on the screen in English while everything around it is in
+    Hausa, and it would be the sentence about money.
+  */
+  const [spend, setSpend] = useState<{ bytes: number; decide: (yes: boolean) => void } | null>(
+    null,
+  );
+
+  const askToSpend = (bytes: number) =>
+    new Promise<boolean>((resolve) => {
+      setSpend({
+        bytes,
+        decide: (yes) => {
+          setSpend(null);
+          resolve(yes);
+        },
+      });
+    });
+
+  /*
     People asking about *this* property.
 
     Fetched here rather than listed on the account screen, for the reason that
@@ -100,8 +128,9 @@ export function PropertyScreen({
   const left = steps.filter((step) => !step.done).length;
 
   function refuse(detail: string | null) {
-    setProblem(detail ?? t('no_signal_saved_here'));
+    setProblem(detail ?? t('no_signal_nothing_sent'));
   }
+
 
   async function device(): Promise<string | null> {
     const remembered = await AsyncStorage.getItem('keys.device.id').catch(() => null);
@@ -153,6 +182,22 @@ export function PropertyScreen({
         <Text variant="body" tone="alarm" accessibilityRole="alert" style={styles.row}>
           {problem}
         </Text>
+      )}
+
+      {/*
+        What this will cost, before it costs it.
+
+        Data here is bought in bundles that run out, and a walkthrough is the
+        most expensive thing this product asks anybody to do. A progress bar
+        afterwards tells somebody what they have already spent; this asks them
+        first, which is the only version where the answer can be no.
+      */}
+      {spend !== null && (
+        <Glass style={styles.card}>
+          <Text variant="title">{`${t('this_will_use_data')} ${megabytes(spend.bytes)}`}</Text>
+          <Button label={t('send_it')} onPress={() => spend.decide(true)} />
+          <Button label={t('not_now')} quiet onPress={() => spend.decide(false)} />
+        </Glass>
       )}
 
       {/*
@@ -215,7 +260,21 @@ export function PropertyScreen({
                 async () => {
                   const id = await device();
                   if (id === null) return { ok: false, why: null };
-                  const result = await captureFor(baseUrl, token, listing.id, 'photo', id);
+                  const result = await captureFor(
+                    baseUrl,
+                    token,
+                    listing.id,
+                    'photo',
+                    id,
+                    askToSpend,
+                  );
+                  /*
+                    Declining is not a failure, and it does not fall through to
+                    "No signal" — which would blame the network for a decision
+                    somebody made deliberately, and give them a reason to
+                    disbelieve that message the next time it is true.
+                  */
+                  if ('declined' in result) return { ok: false, why: t('capture_cancelled') };
                   return result.ok ? { ok: true, why: null } : { ok: false, why: result.why };
                 },
                 t('capture_accepted'),
@@ -232,7 +291,21 @@ export function PropertyScreen({
                 async () => {
                   const id = await device();
                   if (id === null) return { ok: false, why: null };
-                  const result = await captureFor(baseUrl, token, listing.id, 'video', id);
+                  const result = await captureFor(
+                    baseUrl,
+                    token,
+                    listing.id,
+                    'video',
+                    id,
+                    askToSpend,
+                  );
+                  /*
+                    Declining is not a failure, and it does not fall through to
+                    "No signal" — which would blame the network for a decision
+                    somebody made deliberately, and give them a reason to
+                    disbelieve that message the next time it is true.
+                  */
+                  if ('declined' in result) return { ok: false, why: t('capture_cancelled') };
                   return result.ok ? { ok: true, why: null } : { ok: false, why: result.why };
                 },
                 t('capture_accepted'),

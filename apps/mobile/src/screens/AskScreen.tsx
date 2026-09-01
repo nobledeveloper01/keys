@@ -117,12 +117,12 @@ export function AskScreen({
 
 function refusal(
   result: { ok: false; failure: { kind: string; detail?: string } } | { ok: true },
-  t: (key: 'no_signal_saved_here') => string,
+  t: (key: 'no_signal_nothing_sent') => string,
 ): string {
   if (result.ok) return '';
   return result.failure.kind === 'refused'
-    ? (result.failure.detail ?? t('no_signal_saved_here'))
-    : t('no_signal_saved_here');
+    ? (result.failure.detail ?? t('no_signal_nothing_sent'))
+    : t('no_signal_nothing_sent');
 }
 
 const styles = StyleSheet.create({

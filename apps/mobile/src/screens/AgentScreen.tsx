@@ -236,7 +236,7 @@ function SignUp({
           ).then((result) => {
             setBusy(false);
             if (result.ok) onSignedIn(result.value.token);
-            else setProblem(result.failure.kind === 'refused' ? result.failure.detail : t('no_signal_saved_here'));
+            else setProblem(result.failure.kind === 'refused' ? result.failure.detail : t('no_signal_nothing_sent'));
           });
         }}
       />
@@ -424,7 +424,7 @@ function AddProperty({
               setProblem(
                 result.failure.kind === 'refused'
                   ? result.failure.detail
-                  : t('no_signal_saved_here'),
+                  : t('no_signal_nothing_sent'),
               );
           });
         }}

@@ -41,6 +41,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **An upload says what it will cost before it costs it.** "This will use about
+  4.2 MB", in your language, and it waits for an answer when you are on mobile
+  data. Saying so in a progress bar afterwards is saying so after the money is
+  gone. A capture too large to send is refused rather than quietly re-encoded,
+  because re-encoding would break the signature the whole capture rests on.
+- **Deleted sentences for things Keys cannot do.** The dictionary contained
+  "Saved on this phone. It will send when you have signal." in four languages,
+  and a banner ready to render "3 waiting to send" — for a queue that does not
+  exist. A new gate now fails the build when a phrase is written in four
+  languages and used on no screen.
 - **Paid placement that cannot buy a ranking.** Featured listings appear in a
   band above the results, labelled "These agents paid to appear here", and are
   taken out of the list below so nobody appears twice. They must be Verified,

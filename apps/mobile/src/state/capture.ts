@@ -1,10 +1,29 @@
 import { attempt, client, type ApiResult } from '@keys/api';
-import { claimMessage, type CaptureClaim } from '@keys/domain';
+import {
+  MAX_CAPTURE_BYTES,
+  claimMessage,
+  isTooLarge,
+  megabytes,
+  shouldAskBeforeSpending,
+  type CaptureClaim,
+} from '@keys/domain';
 
 import KeysCapture from '../native/NativeKeysCapture';
 import KeysSigning from '../native/NativeKeysSigning';
 import { decodeBase64 } from './base64';
 import { sha256 } from './sha256';
+
+/**
+ * What happened when somebody tried to capture something.
+ *
+ * Three outcomes, not two. "It failed" and "they said no" are different things
+ * to put in front of a person, and collapsing them means one of the two gets
+ * the wrong words.
+ */
+export type CaptureOutcome =
+  | { readonly ok: true }
+  | { readonly ok: false; readonly why: string }
+  | { readonly declined: true };
 
 /**
  * Take a photograph or a walkthrough for a listing, and send it signed.
@@ -24,7 +43,13 @@ export async function captureFor(
   listingId: string,
   kind: 'photo' | 'video',
   deviceId: string,
-): Promise<{ ok: true } | { ok: false; why: string }> {
+  /**
+   * Asked before anything is uploaded, when the upload is big enough and the
+   * connection is metered. Returning false is somebody saying no, not an error.
+   */
+  confirmSpend: (bytes: number) => Promise<boolean> = () => Promise.resolve(true),
+  metered = true,
+): Promise<CaptureOutcome> {
   let taken: Awaited<ReturnType<typeof KeysCapture.capture>>;
   try {
     taken = await KeysCapture.capture(kind);
@@ -32,8 +57,48 @@ export async function captureFor(
     return { ok: false, why: error instanceof Error ? error.message : 'The camera did not open.' };
   }
 
+  const bytes = decodeBase64(taken.pixels);
+
+  /*
+    Too big is refused here as well as on the server, so somebody finds out
+    before they have paid to send it rather than after.
+
+    Not downscaled. Re-encoding would make the signature stop matching the
+    bytes it was taken over, and the signature is the only reason a capture
+    proves anything.
+  */
+  if (isTooLarge(bytes.length)) {
+    return {
+      ok: false,
+      why: `That is ${megabytes(bytes.length)}. Keys can send up to ${megabytes(MAX_CAPTURE_BYTES)} — record a shorter walkthrough.`,
+    };
+  }
+
+  /*
+    Ask before spending somebody's bundle.
+
+    A walkthrough is the most expensive thing this product asks anybody to do,
+    and data here is bought in bundles that run out. Saying so afterwards, in a
+    progress bar, is saying so after the money is gone.
+
+    Defaults to metered. A phone that cannot tell us what it is on is a phone we
+    treat as costing money, because the failure that matters is spending
+    somebody's data by assuming wifi.
+  */
+  if (shouldAskBeforeSpending(bytes.length, metered) && !(await confirmSpend(bytes.length))) {
+    /*
+      Its own outcome, not a failure with no reason.
+
+      Every other `ok: false` here carries a sentence, and a caller with no
+      sentence falls through to "No signal" — which would blame the network for
+      a decision somebody made deliberately. The next time they saw that
+      message they would have no reason to believe it.
+    */
+    return { declined: true };
+  }
+
   const claim: CaptureClaim = {
-    sha256: sha256(decodeBase64(taken.pixels)),
+    sha256: sha256(bytes),
     listingId,
     // The camera's time and place, not this function's. A capture that says
     // where the phone was when it uploaded rather than when it photographed
