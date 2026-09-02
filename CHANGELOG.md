@@ -41,6 +41,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **The screens document shows the app that exists.** It had stopped at the
+  registry lookup in August — no Find tab, no listing page, no costs, no
+  messaging, and seven of its seventeen screens were web. Seven mobile screens
+  added, including one at iOS's largest accessibility size, because a deck at
+  the default text size is a deck of the easy case.
 - **The documents say what the code does.** A new gate fails the build when a
   document states a fact the code contradicts — a condition count, a route that
   does not exist. It found seven stale counts and a backend specification whose

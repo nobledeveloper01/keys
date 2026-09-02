@@ -80,6 +80,41 @@ WEB = [
      'registry about itself. The endpoint behind it has no field that could name a reporter, a '
      'reviewer or a report — checked by the same test that checks no unreviewed report is '
      'reachable by any route.'),
+
+    # Phases 4 to 6. The deck stopped at the registry, which was the whole
+    # product in August and is now the second tab — a tenant arrives here to
+    # *find a flat*, and checks a number when somebody has already found them.
+    ('18-find-a-place', 'Find a place',
+     'Checked places only, by default, and turning that off is a deliberate act. Each row carries '
+     'what the place costs to move into rather than its advertised rent, because two flats '
+     'advertising ₦800,000 are not the same price.'),
+    ('19-listing-what-it-costs', 'What it costs to move in',
+     'The advert says ₦800,000; the tenant pays ₦1,100,000. None of the difference is secret — '
+     'agency fee, agreement fee, deposit, service charge — it is simply never added up anywhere '
+     'before somebody is asked for it. A fee above the customary ten per cent is named as such, '
+     'where the reader is already looking.'),
+    ('20-listing-what-was-checked', 'What was checked',
+     'Not a badge and not a score: the nine conditions, ticked or not, in the reader’s language, '
+     'recomputed on this request from evidence. A screen reader now hears the state of each row — '
+     'until the accessibility pass it heard only the names, which is the whole content of the '
+     'page.'),
+    ('21-messages-empty', 'Messages',
+     'The empty state states the mechanism, because it is the reason to use this rather than the '
+     'phone number in an advert: Keys holds both numbers back until each side offers theirs.'),
+    ('22-ask-about-this-place', 'Asking, and the account that comes with it',
+     'The account is part of the question rather than a gate in front of it. Somebody who has '
+     'found a flat has a reason to give a name; somebody who has just opened the app has none. '
+     'The number is hashed on arrival and no agent ever sees it — said here, where somebody '
+     'wonders, rather than in a policy page.'),
+    ('23-agent-account', 'The agent’s own account',
+     'What a tenant sees when they check this number, then the properties. Everything an agent '
+     'can *do* lives on a property’s own screen, which is also where the actions stop needing to '
+     'ask which property they apply to.'),
+    ('24-largest-text-size', 'At iOS’s largest accessibility size',
+     'Checked rather than assumed, which is what the definition of done asks. At this setting the '
+     'tab bar had been wrapping to three lines and taking forty per cent of the screen, listing '
+     'titles truncated, and the cost breakdown collapsed to one word per line beside a figure — '
+     'none of which overflowed or truncated in a way any automated check would have caught.'),
 ]
 
 
@@ -135,7 +170,19 @@ def main() -> int:
   .page {{ page-break-inside: avoid; page-break-after: always; }}
   .page.app {{ display:grid; grid-template-columns: 62mm 1fr; gap: 10mm; align-items:start; }}
   .page.web .shot {{ margin-bottom: 6mm; }}
-  .shot img {{ width:100%; display:block; border-radius: 3mm; border:.3mm solid #E7E7EC; }}
+  /*
+    Bounded by height, not width.
+
+    A phone screenshot is about one to two, so `width:100%` on A4 made every
+    image taller than the page it was on — `page-break-inside: avoid` cannot
+    hold together an element that does not fit — and every screen came out as a
+    fragment with its caption orphaned overleaf. Constraining the height leaves
+    room for the caption underneath, which is the only reason to bind these
+    into a document rather than hand somebody the folder.
+  */
+  .shot {{ text-align:center; }}
+  .shot img {{ max-height: 216mm; max-width:100%; width:auto; display:inline-block;
+    border-radius: 3mm; border:.3mm solid #E7E7EC; }}
   .page.app .shot img {{ border-radius: 5mm; }}
   h2 {{ font-size: 14pt; letter-spacing:-.02em; margin:0 0 2mm; }}
   .caption p {{ margin:0; color:#4A4F63; max-width: 150mm; }}

@@ -6,6 +6,46 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — The deck showed a product that no longer existed
+
+**Did.** Brought the screens document up to what the app is.
+
+### What it was showing
+
+Seventeen screens, captured on 31 August, before phases 4, 5 and 6. No Find tab, no listing
+page, no costs, no messaging, no saved places, no agent property screen. **Seven of the
+seventeen were web** — the surface that had been explicitly set aside as not the product.
+
+So the visual record of Keys was a registry lookup and a web page, which is what Keys was in
+August and is now the second tab.
+
+### Seven screens added
+
+Find, the cost breakdown, the evidence panel, Messages, asking about a place, the agent's own
+account, and one at iOS's largest accessibility size. The captions say *why* each screen looks
+the way it does, which is the only reason to bind screenshots into a document rather than hand
+somebody a folder.
+
+The accessibility screen is in there deliberately. A deck of screenshots at the default text
+size is a deck of the easy case.
+
+### A layout fault the deck has always had
+
+Every screen spanned two pages, with its caption orphaned overleaf under a fragment. `.shot
+img { width: 100% }` on A4: a phone screenshot is about one to two, so a full-width image is
+taller than the page, and `page-break-inside: avoid` cannot hold together an element that does
+not fit. Bounded by height instead — 33 pages became 26, one per screen with its caption
+under it.
+
+### Smaller
+
+`pngquant` is not on this machine, so the first three captures went through the `sips`
+fallback twice and came out 276 px wide against the deck's 414. Recaptured at one consistent
+size. The fallback is fine; running it twice is not, and nothing said so — the files just
+looked small.
+
+---
+
 ## 2026-09-02 — The specification described a product that had moved
 
 **Did.** A documentation pass, starting with a gate so that fixing it once means something.
