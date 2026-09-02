@@ -17,20 +17,6 @@ See [`docs/00-PRODUCT-STATEMENT.md`](docs/00-PRODUCT-STATEMENT.md) for the full 
 
 ---
 
-## What it looks like
-
-| | | |
-|:--:|:--:|:--:|
-| <img src="docs/screens/18-find-a-place.png" width="220"> | <img src="docs/screens/19-listing-what-it-costs.png" width="220"> | <img src="docs/screens/20-listing-what-was-checked.png" width="220"> |
-| **Find a place** — checked places only by default, priced by what it costs to *move in* rather than the advertised rent | **What it costs** — ₦800,000 advertised, ₦1,100,000 to move in. The gap is never added up anywhere else | **What was checked** — nine conditions, ticked or not, recomputed on this request from evidence |
-| <img src="docs/screens/22-ask-about-this-place.png" width="220"> | <img src="docs/screens/23-agent-account.png" width="220"> | <img src="docs/screens/24-largest-text-size.png" width="220"> |
-| **Asking** — the account is part of the question, not a gate in front of it. Keys holds both numbers back until each side offers | **The agent's side** — what a tenant sees when they check this number, then the properties | **At the largest text size** — checked rather than assumed, which is what found three broken layouts |
-
-The full deck, with the reasoning under each screen, is
-[`docs/Keys-screens.pdf`](docs/Keys-screens.pdf).
-
----
-
 ## Status
 
 **Phase 6 of 8 — launch hardening.** `PHASE` holds the number,
@@ -50,6 +36,18 @@ physical device or a person, not more code. See
 | Rules | `packages/domain`, pure TypeScript, three consumers, [Apache-2.0](packages/domain/LICENSE) |
 | Wire | `packages/api`, generated from the controllers, [gated against drift](scripts/api-fresh.sh) |
 | Languages | English, Hausa, Yoruba and Igbo, in every string the app renders |
+
+| | |
+|---|---|
+| Domain tests | **179** passing, no build step — Node runs the TypeScript directly |
+| Server tests | **258**, every suite against in-memory *and* real PostgreSQL |
+| App tests | **23** passing |
+| Verified against real PostgreSQL | yes, including a process restart |
+| Faces | tenant, agent, landlord, reviewer — one app and a web console |
+| Screens | **24** documented, four languages, both themes |
+| Conditions behind the badge | **9**, computed on every read, never stored |
+| Decisions written down | **8** ADRs |
+| Gates that must pass | **15**, each one broken on purpose to prove it fires |
 
 **There is no parity suite here, and that is the point.** The last project in
 this portfolio had a C# server mirroring a TypeScript domain, held together by
@@ -209,6 +207,85 @@ previous project and were scanning directories that do not exist here, or
 returning zero unconditionally. That is written up in
 [ADR-0004](docs/adr/0004-a-gate-that-cannot-fail-is-not-a-gate.md), and every
 gate now fails when it examines nothing.
+
+## Finding a place
+
+| Find a place | What it costs to move in | What was checked |
+|---|---|---|
+| ![Search results, checked places only](docs/screens/18-find-a-place.png) | ![The cost breakdown](docs/screens/19-listing-what-it-costs.png) | ![The nine conditions](docs/screens/20-listing-what-was-checked.png) |
+
+**Checked places only, by default.** Turning that off is a deliberate act, and
+what comes back then still says, per listing, that it has not been checked. A
+product whose default is *show me everything* has a badge nobody has any reason
+to earn.
+
+Each row is priced by what it costs to **move in**, not by the advertised rent.
+Two flats advertising ₦800,000 are not the same price, and a list showing only
+rent hides exactly the difference somebody opened the app to compare. The
+breakdown is the second screen: ₦800,000 advertised, ₦1,100,000 to move in, and
+a fee above the customary ten per cent named as such where the reader is already
+looking. None of that gap is secret — agency fee, agreement fee, deposit,
+service charge — it is simply never added up anywhere before somebody is asked
+for it.
+
+The third screen is the one the product is about. Not a badge and not a score:
+the nine conditions, ticked or not, in the reader's own language, **recomputed on
+that request from evidence**. A listing that lost its badge an hour ago is
+already gone; there is no `is_verified` column to be stale. A tenant can read
+the list and disagree with it, which a badge does not allow.
+
+## Talking to an agent
+
+| Asking about a place | Messages |
+|---|---|
+| ![Asking, with the account inside the question](docs/screens/22-ask-about-this-place.png) | ![The messages tab](docs/screens/21-messages-empty.png) |
+
+**The number is the last thing exchanged, not the first.** The default in every
+Nigerian property listing is a phone number in the advert, and everything bad
+follows from it: enquire about one flat and you are called about six others for
+a year. Keys holds both numbers back until each side offers theirs, and a
+message with a number in it is *refused* rather than quietly stripped — somebody
+who thinks they sent their number waits for a call that never comes.
+
+The account is part of the question rather than a gate in front of it. Somebody
+who has found a flat has a reason to give a name; somebody who has just opened
+the app has none, and asking then is how a product teaches people to close it.
+The number is hashed on arrival and no agent ever sees it — said on the screen
+that asks for it, where somebody wonders, rather than in a policy page.
+
+## The agent's side
+
+| Your account |
+|---|
+| ![The agent's account and properties](docs/screens/23-agent-account.png) |
+
+What a tenant sees when they check this number, first — before the properties,
+because that is the thing an agent is actually building. Everything an agent can
+*do* lives on a property's own screen, which is also where those actions stop
+needing to ask which property they apply to.
+
+An agent photographs and films the flat in the app, signed by a key the phone
+cannot export, states what it costs, and publishes only what a landlord has
+confirmed. At v1.0 that confirmation is a reviewer telephoning the landlord and
+recording what was said under their own name.
+
+## At the largest text size
+
+| iOS accessibility XXXL |
+|---|
+| ![The app at iOS's largest accessibility text size](docs/screens/24-largest-text-size.png) |
+
+Checked rather than assumed, which is what the definition of done asks for and
+what nobody had done. At this setting the tab bar had been wrapping to three
+lines and taking forty per cent of the screen, listing titles truncated to
+"Two bedroom flat, Ya…", and the cost breakdown collapsed to one word per line
+beside a figure with the rest of the screen to itself.
+
+**None of that overflowed or truncated in a way an automated check would have
+caught.** It was simply unreadable, and only looking found it.
+
+The full deck, with the reasoning under every screen, is
+[`docs/Keys-screens.pdf`](docs/Keys-screens.pdf).
 
 ## The insight
 

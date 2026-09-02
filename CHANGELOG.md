@@ -41,6 +41,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **The review console shows the listing a report is about.** The server had
+  been sending it since reports could be filed from a listing page; nothing
+  rendered it, so a reviewer judging whether a place is fiction still could not
+  see it.
 - **The README shows the app.** A grid of six screens at the top, and the
   status rewritten from "Phase 1 of 8, the scam registry works" — which it had
   said for five phases — to what is actually built, what blocks v1.0, and why

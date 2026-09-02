@@ -134,6 +134,21 @@ describe.each(STORES)('no unreviewed report escapes (%s)', (_name, databaseUrl) 
     delete process.env.KEYS_DATABASE_URL;
   });
 
+  /*
+    A minute, not jest's five seconds.
+
+    This walks *every* route the router serves, and the router has grown from
+    eleven to forty-five since the number was last thought about. A route walk
+    gets slower every time the product gains a door, so at some point it starts
+    failing for length rather than for correctness — and a timeout in this file
+    reads exactly like a security regression, which is the worst possible way
+    for a suite to be wrong.
+
+    The budget is generous on purpose: it is here to stop a false alarm, not to
+    measure anything.
+  */
+  const WALKS_EVERY_ROUTE = 60_000;
+
   it('texts the reported party their right of reply, and it is a link', async () => {
     /*
       The promise this product makes on every surface, actually kept.
@@ -185,7 +200,7 @@ describe.each(STORES)('no unreviewed report escapes (%s)', (_name, databaseUrl) 
         .query({ phone: PHONE });
       expect(JSON.stringify(response.body)).not.toContain(token);
     }
-  });
+  }, WALKS_EVERY_ROUTE);
 
   it('has routes to test, and knows how many', () => {
     /*
@@ -232,7 +247,7 @@ describe.each(STORES)('no unreviewed report escapes (%s)', (_name, databaseUrl) 
     }
 
     expect(leaks).toEqual([]);
-  });
+  }, WALKS_EVERY_ROUTE);
 
   it('the review console refuses a caller with no token, a wrong token, and a short token', async () => {
     for (const headers of [{}, { 'x-reviewer-token': 'wrong' }, { 'x-reviewer-token': 'x'.repeat(47) }]) {

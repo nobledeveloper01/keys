@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import type { AgentUnderReview, DuplicatePair, ReviewItem, ReviewMetrics } from '@keys/api';
+import type {
+  AgentUnderReview,
+  DuplicatePair,
+  ListingView,
+  ReviewItem,
+  ReviewMetrics,
+} from '@keys/api';
 
 import { categoryWords } from '../../categories';
 
@@ -54,6 +60,9 @@ export function Console() {
   const [agents, setAgents] = useState<AgentUnderReview[]>([]);
   const [duplicates, setDuplicates] = useState<DuplicatePair[]>([]);
   const [open, setOpen] = useState<(QueueItem & { history?: HistoryEntry[] }) | null>(null);
+  /** The listing a report was filed about, when it was filed about one. */
+  const [listing, setListing] = useState<ListingView | null>(null);
+  /** The listing a report was filed about, when it was filed about one. */
 
   /*
     Back to the top whenever the view changes.
@@ -157,6 +166,7 @@ export function Console() {
   if (open) {
     return (
       <One
+        listing={listing}
         report={open}
         token={token}
         onDone={() => {
@@ -206,7 +216,25 @@ export function Console() {
           key={report.id}
           onClick={() => {
             void call<QueueItem & { history: HistoryEntry[] }>(token, `/v1/review/${report.id}`)
-              .then(setOpen)
+              .then((full) => {
+                setOpen(full);
+                setListing(null);
+                /*
+                  Fetched when the report is opened, not with the queue.
+
+                  Most reports have no listing, and pulling one for every row
+                  would be a request per queue item to answer a question nobody
+                  asked yet.
+                */
+                if (full.listingId) {
+                  void call<ListingView>(token, `/v1/listings/${full.listingId}`)
+                    .then(setListing)
+                    // A listing that has since been unpublished is a 404, and
+                    // that is information rather than an error: the report
+                    // stands, and the reviewer sees no panel.
+                    .catch(() => setListing(null));
+                }
+              })
               .catch((e: unknown) =>
                 setProblem(e instanceof Error ? e.message : 'That did not work.'),
               );
@@ -501,10 +529,19 @@ function Agents({
 
 function One({
   report,
+  listing,
   token,
   onDone,
 }: {
   report: QueueItem & { history?: HistoryEntry[] };
+  /**
+   * The listing this report is about, when it is about one.
+   *
+   * Fetched by the caller when the report is opened rather than here, because
+   * most reports have no listing and this component should not decide when to
+   * make a request.
+   */
+  listing: ListingView | null;
   token: string;
   onDone: () => void;
 }) {
@@ -549,6 +586,45 @@ function One({
       <div className="verdict">
         <p>{report.description}</p>
       </div>
+
+      {/*
+        The listing this was filed about, shown rather than linked.
+
+        `fake_listing` has been a category since phase 1, and until this a
+        reviewer was being asked whether a property is fiction with no way to
+        look at it. The server has sent `listingId` since a report could be
+        filed from a listing page; nothing rendered it, so the field existed and
+        the reviewer still could not see the flat.
+
+        Not a link. The console never talks to the API from the browser — every
+        call goes through `/api/review` so the reviewer token stays on the
+        server — and a link to a web listing page would be a link to a route
+        that does not exist. What is shown is what the *reporter* saw: the same
+        nine conditions, from the same public endpoint.
+      */}
+      {listing && (
+        <>
+          <h2>The listing this is about</h2>
+          <div className="verdict">
+            <p>
+              <strong>{listing.title}</strong>
+              <br />
+              {listing.address}
+            </p>
+            <ul className="checks">
+              {listing.checks.map((check) => (
+                <li key={check.condition}>
+                  {check.met ? '✓' : '✗'} {check.label}
+                </li>
+              ))}
+            </ul>
+            <p className="quiet small">
+              Listed by {listing.agentName}. This is the page the reporter was reading, and it
+              is recomputed now — a listing that has since lost its badge shows that here.
+            </p>
+          </div>
+        </>
+      )}
 
       <h2>Their answer</h2>
       {report.hasReply ? (

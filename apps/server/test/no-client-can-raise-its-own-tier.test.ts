@@ -187,6 +187,21 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
     delete process.env.KEYS_DATABASE_URL;
   });
 
+  /*
+    A minute, not jest's five seconds.
+
+    This walks *every* route the router serves, and the router has grown from
+    eleven to forty-five since the number was last thought about. A route walk
+    gets slower every time the product gains a door, so at some point it starts
+    failing for length rather than for correctness — and a timeout in this file
+    reads exactly like a security regression, which is the worst possible way
+    for a suite to be wrong.
+
+    The budget is generous on purpose: it is here to stop a false alarm, not to
+    measure anything.
+  */
+  const WALKS_EVERY_ROUTE = 60_000;
+
   it('has routes to test, and knows how many', () => {
     /*
       The gate's own liveness check, and it is not decoration — this repo has
@@ -339,7 +354,7 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
     // And the store agrees — not only the read the app happens to serve.
     const evidence = await agents.evidenceFor(agentId);
     expect(evidence).toHaveLength(0);
-  });
+  }, WALKS_EVERY_ROUTE);
 
   it('will not let an agent post their own identity check', async () => {
     // The KYC route is the bottom rung: forge an attestation there and every
@@ -397,7 +412,7 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
       expect(body).not.toMatch(/\b\d{6}\b/);
     }
     expect(asked.body.delivered).toBe(false);
-  });
+  }, WALKS_EVERY_ROUTE);
 
   it('will not publish a listing on a property no landlord confirmed', async () => {
     const draft = await request(app.getHttpServer())

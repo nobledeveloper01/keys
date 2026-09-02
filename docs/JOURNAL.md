@@ -6,6 +6,58 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — Following the house style instead of inventing one
+
+**Did.** Redid the README screens in the convention the sibling projects already use, checked
+the web surface for drift, and found two tests failing for length rather than for truth.
+
+### The grid I wrote was not the grid
+
+I put six screenshots in one block at the top of the README, as `<img width="220">` with the
+caption in a table cell underneath. Backhaul and Grid — the two projects in this portfolio
+that have screen grids — do something different and better:
+
+- Markdown `![alt](path)`, not HTML with a hard-coded width.
+- **The caption is the table header**, so the grid reads as a labelled row rather than a
+  picture with a caption bolted under it.
+- Grids are *interleaved through the document* under topical headings, each followed by the
+  prose explaining why the screen is that way — not lumped into a gallery at the top.
+
+The lump-at-the-top version is what you write when the screenshots are decoration. The
+interleaved version is what you write when they are the argument. Keys' README now has
+"Finding a place", "Talking to an agent", "The agent's side" and "At the largest text size",
+each with its grid and its reasoning.
+
+Also added the numbers table the siblings carry — tests, faces, screens, ADRs, gates — which
+gives a reader the scale in ten seconds.
+
+### The web console had a field it never rendered
+
+The server has sent `listingId` on a report since a report could be filed from a listing
+page. The web review console never rendered it, so a reviewer judging `fake_listing` still
+could not see which listing — the exact gap that was fixed server-side, still open on the
+only surface that consumes it.
+
+It shows the evidence panel inline now, fetched through the same proxy as everything else.
+My first attempt linked to `/listing/{id}`, **a route that does not exist on web** — written
+by me, in the same hour I finished a gate for documents that name routes the server does not
+serve. The gate does not read TSX.
+
+Otherwise the registry pages have not drifted at all: the home page is pixel-identical to
+August's capture, because nothing I built in phases 4 to 6 touched the registry.
+
+### Two tests were failing for length
+
+`no client can raise its own tier` and `no unreviewed report escapes` both walk *every* route
+the router serves, and the router has gone from eleven routes to forty-five. Under load they
+now exceed jest's five-second default.
+
+A timeout in either of those files reads exactly like a security regression, which is the
+worst possible way for a suite to be wrong. They have an explicit, generous budget now, and a
+comment saying it is there to stop a false alarm rather than to measure anything.
+
+---
+
 ## 2026-09-02 — The README was a phase-1 document
 
 **Did.** A screen grid at the top of the README, and the rewrite that had to come with it.
