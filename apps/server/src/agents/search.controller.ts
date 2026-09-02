@@ -7,6 +7,8 @@ import {
   VERIFIED_CONDITIONS,
   conditionStepPhrase,
   isPlausiblePoint,
+  DISTANCE_HORIZON_M,
+  boundingBox,
   featuredAmong,
   matches,
   moveInCostKobo,
@@ -62,14 +64,32 @@ export class SearchController {
     @Query('verifiedOnly') verifiedOnly?: string,
   ) {
     const now = new Date();
-    const published = await this.store.publishedListings();
-
     const typed = (q ?? '').slice(0, 120);
-    const wanted = published.filter((l) => matches([l.title, l.propertyId], typed));
+    const near = this.pointFrom(latitude, longitude);
+
+    /*
+      Narrowed in SQL, decided here. ADR-0008.
+
+      The store is given the words and a box and returns a *superset*: every
+      listing the domain would keep, plus some it will not. `matches()` is
+      still the only definition of a match and `metresBetween` is still the
+      only definition of distance — the query makes them fast, it does not
+      replace them.
+
+      The box is the ranking horizon rather than a filter the caller chose. A
+      listing beyond it scores zero for closeness anyway, so fetching it costs
+      a row and changes no answer; a smaller box would start deciding.
+    */
+    const words = typed.trim().toLowerCase().split(/\s+/).filter((word) => word.length > 0);
+    const wanted = (
+      await this.store.searchable({
+        words,
+        box: near ? boundingBox(near, DISTANCE_HORIZON_M) : null,
+      })
+    ).filter((l) => matches([l.title, l.propertyId], typed));
 
     const assessed = await Promise.all(wanted.map((l) => this.assess(l, now)));
 
-    const near = this.pointFrom(latitude, longitude);
     /*
       Filtered *after* assessing, not before.
 

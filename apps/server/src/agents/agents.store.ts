@@ -275,6 +275,24 @@ export abstract class AgentsStore {
   }): Await<boolean>;
   abstract publishedListings(): Await<readonly Listing[]>;
 
+  /**
+   * Published listings a search might want, narrowed but not decided.
+   *
+   * The contract, and it is the whole of ADR-0008: what comes back is a
+   * **superset** of what the search will show. Every row the domain would keep
+   * is in here; some rows the domain will discard are too. `matches()` and
+   * `metresBetween` still decide, and `assessListing` still decides what is
+   * Verified — nothing here narrows on that, ever.
+   *
+   * A store may ignore the hints entirely and return everything published. That
+   * is what the in-memory one does, and it is a correct implementation: the
+   * hints are permission to be fast, not permission to be different.
+   */
+  abstract searchable(hints: {
+    readonly words: readonly string[];
+    readonly box: { north: number; south: number; east: number; west: number } | null;
+  }): Await<readonly Listing[]>;
+
   /** Every agent named by a set of listings, in one go. */
   abstract agentsByIds(ids: readonly string[]): Await<readonly StoredAgent[]>;
 }
@@ -589,6 +607,19 @@ export class InMemoryAgentsStore extends AgentsStore {
 
   publishedListings() {
     return [...this.listings.values()].filter((l) => l.publishedAt !== null);
+  }
+
+  /*
+    Ignores the hints, deliberately.
+
+    A superset is all the contract asks for, and everything published is a
+    superset. Reimplementing the narrowing here would be a second place for
+    "which listings might match" to be decided, and the two would eventually
+    disagree about a search — which is the divergence ADR-0008 exists to
+    prevent, arriving through the door it was meant to close.
+  */
+  searchable() {
+    return this.publishedListings();
   }
 
   agentsByIds(ids: readonly string[]) {

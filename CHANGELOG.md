@@ -41,6 +41,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Search that scales without changing its answers.** A trigram index and a
+  bounding box narrow the query in Postgres; the domain still decides what
+  matches and what is near. Not full-text search, which matches whole words and
+  would have stopped finding Yaba when you typed "yab", and not PostGIS, which
+  would have been a second implementation of distance. Nothing is narrowed on
+  whether a listing is Verified — that answer is recomputed on every request and
+  is not allowed to live in a WHERE clause.
 - **Somewhere for actual photographs to live.** A capture was a 40×32 greyscale
   grid and nothing else — enough for a perceptual hash, and not enough for
   anybody to look at the flat. Media is stored under its own hash, served only

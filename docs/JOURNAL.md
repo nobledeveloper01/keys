@@ -6,6 +6,76 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — The roadmap asked for the wrong thing
+
+**Did.** Made search fast without letting it answer any of the questions it was making fast.
+
+### Postgres FTS and PostGIS were both wrong
+
+The roadmap said "Postgres FTS + PostGIS" and both turn out to be mistakes, for the same
+reason, and it is a reason this repo has already paid for twice.
+
+**PostGIS would be a second implementation of distance.** `ST_DWithin` and `metresBetween`
+are two functions answering *is this within 200 m*, and this codebase's whole history is two
+implementations of one rule disagreeing invisibly — `assessListing` exists because of it,
+and the Postgres captures store rebuilds a BK-tree per query rather than repeat it.
+
+**Full-text search would be a second implementation of matching.** `matches()` requires every
+typed word as a *substring*, so "yab" finds Yaba. A `tsvector` matches lexemes, so "yab"
+finds nothing — and the in-memory store and the durable one would return different sets for
+a query somebody is halfway through typing. Every suite here runs against both stores
+precisely so that passing in memory is evidence about production; that premise dies the
+moment they disagree.
+
+Stemming is also wrong on its own merits: `to_tsvector('english', 'Ikeja')` is guessing at
+the morphology of a Yoruba place name.
+
+### So: SQL narrows, the domain decides
+
+ADR-0008. A trigram GIN index over the same two fields `matches()` reads, queried with
+`ILIKE '%word%'` — which has *exactly* the substring semantics the domain has, so the index
+makes the existing rule fast instead of replacing it. A bounding box that is a superset of
+the radius, with `metresBetween` still deciding what is inside it.
+
+The rule for anybody extending this, and it is the whole ADR: **a SQL predicate may only
+remove rows the domain would also have removed.** If it can remove a row the domain would
+have kept, it is not narrowing — it is a second opinion.
+
+The test asserts the superset property rather than an expected list: for a set of queries,
+every listing the domain would keep is in what the store handed back. That is a property
+that stays true as the fixtures change, and it fails under all three ways of getting this
+wrong — lexeme matching, a box that drops unplaced listings, and a predicate on the badge.
+
+### The line that matters most
+
+**Nothing narrows on verification.** SQL may narrow on what a listing *says* — its words,
+its coordinates — never on what Keys *concluded*. Adding
+`last_confirmed_at > now() - interval '14 days'` to the query is the tempting version: it is
+correct today, it is fast, and it fails every assertion in the file. Phase 4's gate exists
+because that answer is recomputed on every request and must never be cached anywhere,
+including inside a WHERE clause.
+
+### Smaller things
+
+**The bounding box is deliberately too big.** A degree of longitude shrinks towards the
+poles, so the box is computed from the *furthest* edge rather than the centre. A box a few
+metres too wide costs a handful of rows; a box a few metres too narrow silently loses a
+result nobody can tell is missing, and that asymmetry decides which way to be wrong.
+
+**A listing with no coordinates stays in a near-me search.** It cannot be ranked by
+closeness, but dropping it in SQL would hide every unplaced listing from anybody who shared
+their location — a decision the domain never made and nobody asked for.
+
+**The in-memory store ignores the hints entirely**, and that is a correct implementation. The
+contract asks for a superset; everything published is a superset. Reimplementing the
+narrowing there would be a second place for "which listings might match" to be decided.
+
+**A test believed it had published something.** It created a listing under an invented
+`propertyId`, which `publishListing` silently refuses because no landlord confirmed that
+property — so the assertion was about a draft. The guard was right; the fixture was wrong.
+
+---
+
 ## 2026-09-02 — There were no photographs
 
 **Did.** Object storage, and the signature change it forced.

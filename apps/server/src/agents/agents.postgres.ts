@@ -662,4 +662,62 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     );
     return result.rows.map((r) => this.hydrateListing(r));
   }
+
+  /**
+   * The narrowing half of ADR-0008.
+   *
+   * Every predicate here can only remove a row the domain would also have
+   * removed:
+   *
+   *  - `ILIKE '%word%'` over the same two fields `matches()` reads, with the
+   *    same substring semantics, served by a trigram index. A row this drops is
+   *    a row `matches()` would have dropped.
+   *  - A bounding box that is a superset of the radius, so a row this drops is
+   *    outside the circle too. `metresBetween` still decides.
+   *
+   * Nothing here narrows on verification, and nothing can: `is_verified` is not
+   * a column, which is what makes that structural rather than remembered.
+   */
+  async searchable(hints: {
+    words: readonly string[];
+    box: { north: number; south: number; east: number; west: number } | null;
+  }) {
+    const clauses = ['published_at IS NOT NULL'];
+    const values: unknown[] = [];
+
+    for (const word of hints.words) {
+      values.push(`%${word}%`);
+      clauses.push(
+        `(coalesce(title, '') || ' ' || coalesce(property_id, '')) ILIKE $${values.length}`,
+      );
+    }
+
+    if (hints.box) {
+      values.push(hints.box.south, hints.box.north, hints.box.west, hints.box.east);
+      const [south, north, west, east] = [
+        values.length - 3,
+        values.length - 2,
+        values.length - 1,
+        values.length,
+      ];
+      /*
+        A listing with no coordinates stays in.
+
+        It cannot be *ranked* by closeness — `metresBetween` has nothing to
+        measure — but excluding it here would mean a near-me search silently
+        hides every unplaced listing, which is a decision the domain never
+        made and nobody asked for.
+      */
+      clauses.push(
+        `(latitude IS NULL OR longitude IS NULL OR ` +
+          `(latitude BETWEEN $${south} AND $${north} AND longitude BETWEEN $${west} AND $${east}))`,
+      );
+    }
+
+    const result = await this.pool.query<ListingRow>(
+      `SELECT ${LISTING_COLUMNS} FROM listings WHERE ${clauses.join(' AND ')}`,
+      values,
+    );
+    return result.rows.map((r) => this.hydrateListing(r));
+  }
 }

@@ -47,3 +47,36 @@ export function isPlausiblePoint(point: Point): boolean {
   if (Math.abs(point.latitude) > 90 || Math.abs(point.longitude) > 180) return false;
   return !(point.latitude === 0 && point.longitude === 0);
 }
+
+
+/**
+ * A box that certainly contains every point within `metres` of here.
+ *
+ * For narrowing a query before `metresBetween` decides — see ADR-0008. It is
+ * deliberately a little too big: a degree of longitude shrinks towards the
+ * poles, and using the latitude at the centre would make the box too narrow at
+ * its own top and bottom edges. Lagos is six degrees from the equator so the
+ * error is small either way, and the direction to be wrong in is *outwards*.
+ * A box a few metres too wide costs a handful of rows; a box a few metres too
+ * narrow silently loses a result nobody can tell is missing.
+ */
+export function boundingBox(
+  centre: Point,
+  metres: number,
+): { north: number; south: number; east: number; west: number } {
+  const latDegrees = metres / 111_320;
+  /*
+    The narrowest line of longitude the box can touch, not the one at its
+    centre. `cos` shrinks as you move away from the equator, so the widest
+    degree-span is needed at whichever edge is furthest from it.
+  */
+  const furthest = Math.min(89, Math.abs(centre.latitude) + latDegrees);
+  const lngDegrees = metres / (111_320 * Math.max(0.01, Math.cos((furthest * Math.PI) / 180)));
+
+  return {
+    north: centre.latitude + latDegrees,
+    south: centre.latitude - latDegrees,
+    east: centre.longitude + lngDegrees,
+    west: centre.longitude - lngDegrees,
+  };
+}
