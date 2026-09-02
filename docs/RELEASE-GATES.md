@@ -30,9 +30,14 @@ Seven gates left the v1.0 path that way, and **not one was closed by pretending*
 |---|---|---|---|
 | R2 | Review console throughput measured against real reports | A reviewer doing the job | Phase 6, Lagos launch |
 | R4 | An Android build somebody has watched succeed | A JDK on a build machine | Phase 2 |
-| R8 | The agent's session token is in the Keychain / Android Keystore, not `AsyncStorage`. **No agent account reaches a real phone until this moves** | A secure-storage native module | Phase 4 |
 | R11 | A photograph taken on a real phone, at a real property, accepted as a capture. A simulator has no camera, so every path *except* taking the photograph has been exercised — the refusal, the permission prompt, the signing, the hash, the upload | A phone and somebody standing at a property | Phase 6 |
 | R14 | The capture module emits a real photograph alongside the greyscale grid. The server accepts media and binds *both* hashes inside one signature (`keys.capture.v3`); the phone has nothing to put in the media field, because `KeysCapture` produces only the grid. Until the Swift side emits a JPEG and an MP4, every listing's "photograph" is still a 40×32 grid nobody can look at | AVFoundation writing the still and the clip beside the grid it already derives, and `MAX_CAPTURE_BYTES` checked against the real file | Phase 6 |
+
+## Blocks v1.0 — Android
+
+| # | Gate | Waiting on | Expected to clear in |
+|---|---|---|---|
+| R16 | The same, on Android: session tokens in the Keystore rather than unencrypted shared preferences. The JS side is ready — `available()` reports false where there is no module and sign-up is refused with a sentence, rather than falling back to a file — so Android cannot open an account at all until this exists. Worse for Android, and honest about which | An `EncryptedSharedPreferences` module, and R4's build machine to watch it work | Phase 6 |
 
 ## Blocks v1.1
 
@@ -56,6 +61,7 @@ replaces.
 | # | Gate | How |
 |---|---|---|
 | R5 | Dark mode reachable in the app | A settings screen mounts `ThemeToggle`, and the dark half of the generated palette has now been on a screen. Open for two phases because `wired-check` exempts components — the exemption is right, and this was its price. |
+| R8 | The agent's and tenant's session tokens are in the iOS Keychain | **Done, and watched.** `KeysSecrets`, a Keychain module, with `AfterFirstUnlockThisDeviceOnly` — a rebooted phone does not sign an agent out, and a token does not travel to a replacement handset in a backup. Verified on the simulator: signed up, killed the app, relaunched still signed in, and nothing resembling a token anywhere in the app container. Any existing token is lifted out of `AsyncStorage` on first launch and the old copy deleted. **There is deliberately no fallback** — a phone with nowhere safe refuses to open an account and says so in Settings, because a fallback would make this look closed while the exact thing it names carried on |
 | R6 | Agents can complete an ID check | **Done by hand.** A reviewer looks at the document and records what they saw under their own name, instead of Smile ID's API answering. Not a relaxation: the evidence is still evidence a claimant cannot write, and the attestation says which kind it was. See [`V1-SCOPE.md`](V1-SCOPE.md) |
 
 ## How a gate leaves this list

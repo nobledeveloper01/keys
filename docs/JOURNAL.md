@@ -6,6 +6,68 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — The token is in the Keychain
+
+**Did.** R8, closed on iOS and watched: a Keychain module, both sessions moved into it, and
+the old copies swept out of the app container.
+
+### What it was
+
+`AsyncStorage` — a plain file inside the app container on iOS. Fine for a language choice
+and not fine for a bearer token that lets somebody publish listings under an agent's name:
+readable on a jailbroken phone, present in an unencrypted backup, available to anything with
+file access. It was written down as a release gate the day it was introduced, with the note
+that no agent account should reach a real phone until it moved, and then it sat there for
+five phases while I cited it in comments as the counterexample.
+
+### The choices inside the Keychain
+
+`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, and both halves matter.
+`AfterFirstUnlock` rather than `WhenUnlocked` because an agent's phone that reboots in their
+pocket should not sign them out. `ThisDeviceOnly` because a session token has no business
+riding an iCloud backup onto a handset the agent may no longer own.
+
+No Face ID prompt, deliberately. A biometric check on every request would make somebody
+standing in a flat with one bar wait for a face scan to upload a photograph, and the failure
+that actually happens here is a lost or stolen phone, which `ThisDeviceOnly` plus revocation
+answers.
+
+### No fallback, and that is the whole point
+
+The tempting shape is: Keychain if present, `AsyncStorage` if not. That makes every platform
+work and makes this gate *look* closed while the exact thing it names carries on happening
+wherever the module is missing.
+
+So `available()` says whether a token can be kept, and a phone that cannot keep one refuses
+to open an account and says so in Settings. Android fails that way today — which is worse
+for Android and honest about which. It is R16 now, not a footnote in a closed gate.
+
+That decision propagated: `signIn` returns a boolean and both sign-up paths read it. A screen
+showing an account over a token that was never stored has produced a session that vanishes on
+the next launch with nothing to explain it.
+
+### What surprised us
+
+**`TurboModuleRegistry.get` returned null for a module that was in the binary.** `get` is the
+method whose signature says "null when absent", which is exactly what this needed — and it
+resolved nothing, next to two modules registered the same way that resolve fine. These are
+legacy `RCT_EXTERN_MODULE` modules reached through the bridgeless interop layer, and that
+layer is consulted on the *enforcing* path. So: `getEnforcing` in a try/catch, with the catch
+as the platform check. Half an hour, and the second time this codebase has lost time to how
+these modules are reached rather than to what they do.
+
+**My migration left the token behind on every launch after the first.** It read the Keychain,
+found the token already there, and returned early — never deleting the file copy. The write
+and the delete are not one operation: a phone killed between them, or one failed delete,
+would keep a readable token in the container for ever while the function reported success.
+It sweeps on every launch now, which is cheap and is the only version that converges.
+
+I found that by looking at the file rather than by trusting the screen. The screen said
+"Kept in the phone's secure storage", which was true, and told me nothing about whether the
+old copy was gone.
+
+---
+
 ## 2026-09-02 — Counting the list instead of adding to it
 
 **Did.** Stopped building surface. Counted the release gates, found the pattern, and cut

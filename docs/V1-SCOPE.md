@@ -106,8 +106,9 @@ Four, and they are all real:
   know the console works. More urgent now, not less: at v1.0 reviewers *are* the
   KYC vendor and the SMS provider.
 - **R4** — an Android build somebody has watched succeed.
-- **R8** — the session token in the Keychain, not `AsyncStorage`. A hard blocker
-  on any real agent account and always was.
+- **R16** — the same on Android. iOS is done (R8, closed): tokens are in the
+  Keychain, verified across a restart, with no fallback — so an Android phone
+  refuses to open an account rather than quietly keeping one in a file.
 - **R11 / R14** — a photograph taken on a real phone, at a real property,
   accepted as a capture. Until then every listing's "photograph" is a 40×32
   greyscale grid, and `capture_on_site` is a condition met by an artefact nobody

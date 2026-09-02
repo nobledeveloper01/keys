@@ -101,7 +101,13 @@ export function AskScreen({
                 return;
               }
               mine = opened.value.token;
-              signIn(mine);
+              // Only signed in if the token was actually kept — there is no
+              // fallback to a plain file, so a phone with nowhere safe to put
+              // one gets a sentence rather than a session that disappears.
+              if (!(await signIn(mine))) {
+                setProblem(t('cannot_keep_a_session'));
+                return;
+              }
             }
             const started = await attempt(() =>
               client({ baseUrl, tenantToken: mine }).tenant.ask(listingId, said.trim()),

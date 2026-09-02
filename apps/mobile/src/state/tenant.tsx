@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   createContext,
   useCallback,
@@ -8,6 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+
+import { available, migrate, remove, set } from './secrets';
 
 const STORAGE_KEY = 'keys.tenant.token';
 
@@ -28,8 +29,20 @@ const STORAGE_KEY = 'keys.tenant.token';
 interface TenantSession {
   readonly token: string | null;
   readonly ready: boolean;
-  readonly signIn: (token: string) => void;
+  /**
+   * Store a token. Resolves false when this phone has nowhere safe to put one,
+   * in which case nothing was stored and nobody is signed in.
+   */
+  readonly signIn: (token: string) => Promise<boolean>;
   readonly signOut: () => void;
+  /**
+   * Whether this phone can keep a session at all.
+   *
+   * False where there is no Keychain module — Android, today. There is
+   * deliberately no fallback to `AsyncStorage`: that would make this look
+   * closed while the exact thing it guards against carried on happening.
+   */
+  readonly canKeepASession: boolean;
 }
 
 const Context = createContext<TenantSession | null>(null);
@@ -42,7 +55,9 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     let live = true;
     void (async () => {
       try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        // Lifts an existing token out of `AsyncStorage` on the first launch
+        // after the upgrade, then reads from the Keychain thereafter.
+        const stored = await migrate(STORAGE_KEY);
         if (live && stored) setToken(stored);
       } catch {
         // Storage unavailable is a phone that is signed out, not one that
@@ -56,18 +71,26 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = useCallback((next: string) => {
-    setToken(next);
-    void AsyncStorage.setItem(STORAGE_KEY, next).catch(() => {});
+  /*
+    Signing in can fail, and the caller has to be able to see that.
+
+    A screen that shows an account over a token which was never stored has
+    produced a session that vanishes on the next launch with no explanation —
+    so this returns whether it worked rather than swallowing it.
+  */
+  const signIn = useCallback(async (next: string) => {
+    const stored = await set(STORAGE_KEY, next);
+    if (stored) setToken(next);
+    return stored;
   }, []);
 
   const signOut = useCallback(() => {
     setToken(null);
-    void AsyncStorage.removeItem(STORAGE_KEY).catch(() => {});
+    void remove(STORAGE_KEY);
   }, []);
 
   const value = useMemo(
-    () => ({ token, ready, signIn, signOut }),
+    () => ({ token, ready, signIn, signOut, canKeepASession: available() }),
     [token, ready, signIn, signOut],
   );
 

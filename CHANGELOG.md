@@ -41,6 +41,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Session tokens are in the iOS Keychain.** They were in a plain file in the
+  app container — readable on a jailbroken phone, present in an unencrypted
+  backup. Any existing token moves across on first launch and the old copy is
+  deleted. There is no fallback: a phone with nowhere safe to keep an account
+  refuses to open one and says so, because a fallback would have looked like
+  this was fixed while it was not.
 - **v1.0 has a scope now.** Where it has no vendor, Keys does the work by hand
   and says so: a reviewer telephones the landlord and looks at the identity
   document, recorded under their own name with an account of what they saw.

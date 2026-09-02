@@ -7,6 +7,7 @@ import { Text } from '../components/Text';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { space } from '../design/tokens';
 import { useLanguage } from '../state/language';
+import { useSession } from '../state/session';
 import { LANGUAGE_NAMES } from '../state/languageNames';
 
 
@@ -26,11 +27,26 @@ import { LANGUAGE_NAMES } from '../state/languageNames';
  * choice made once on installation is not a setting.
  */
 export function SettingsScreen() {
+  const { canKeepASession } = useSession();
   const { t, language, setLanguage } = useLanguage();
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Text variant="headline">{t('tab_settings')}</Text>
+
+      {/*
+        Where the session is kept, said plainly.
+
+        Not a diagnostic. A phone that has nowhere safe to hold an account
+        cannot open one, and somebody who has just been refused a sign-up
+        deserves to find out why here rather than concluding the app is broken.
+      */}
+      <Text variant="title" style={styles.heading}>
+        {t('where_your_session_lives')}
+      </Text>
+      <Text variant="body" tone="secondary">
+        {canKeepASession ? t('session_in_keychain') : t('session_nowhere_safe')}
+      </Text>
 
       <Text variant="title" style={styles.heading}>
         {t('appearance')}

@@ -104,6 +104,7 @@ export type Phrase =
   | 'your_name_label'
   | 'your_number_label'
   | 'open_an_account'
+  | 'cannot_keep_a_session'
   | 'what_tenants_see'
   | 'ask_a_landlord'
   | 'ask_a_landlord_help'
@@ -144,6 +145,9 @@ export type Phrase =
   | 'go_back'
   | 'tab_settings'
   | 'appearance'
+  | 'where_your_session_lives'
+  | 'session_in_keychain'
+  | 'session_nowhere_safe'
   | 'language_setting'
   | 'report_too_short'
   | 'only_report_what_happened_to_you'
@@ -337,6 +341,7 @@ export const EN: Readonly<Record<Phrase, string>> = {
   account_proves_nothing: "An account is a name and a number. It proves nothing on its own, and we would rather say that here than after you have signed up.",
   your_name_label: "Your name, as tenants will see it",
   your_number_label: "Your business number",
+  cannot_keep_a_session: "This phone cannot keep an account safely, so Keys will not open one on it.",
   open_an_account: "Open an account",
   what_tenants_see: "What a tenant sees when they check your number",
   ask_a_landlord: "Ask a landlord to confirm you",
@@ -499,6 +504,9 @@ export const EN: Readonly<Record<Phrase, string>> = {
   report_too_short: "Say more. Nobody can assess this yet.",
   go_back: "Back",
   tab_settings: "Settings",
+  where_your_session_lives: "Your account on this phone",
+  session_in_keychain: "Kept in the phone's secure storage.",
+  session_nowhere_safe: "This phone has nowhere safe to keep an account.",
   appearance: "Appearance",
   language_setting: "Language",
   check_a_number_hint: "0803 123 4567",
@@ -559,6 +567,7 @@ export const HA: Readonly<Record<Phrase, string>> = {
   account_proves_nothing: "Asusu suna ne da lamba kawai. Ba ya tabbatar da kome shi kaɗai, kuma mun fi so mu faɗa maka yanzu da bayan ka yi rajista.",
   your_name_label: "Sunanka, kamar yadda masu haya za su gani",
   your_number_label: "Lambar kasuwancinka",
+  cannot_keep_a_session: "Wannan wayar ba za ta iya adana asusu lafiya ba, don haka Keys ba zai buɗe ɗaya a kanta ba.",
   open_an_account: "Buɗe asusu",
   what_tenants_see: "Abin da mai haya ke gani idan ya duba lambarka",
   ask_a_landlord: "Ka roƙi mai gida ya tabbatar da kai",
@@ -721,6 +730,9 @@ export const HA: Readonly<Record<Phrase, string>> = {
   report_too_short: "Ƙara bayani. Babu wanda zai iya tantance wannan yanzu.",
   go_back: "Koma baya",
   tab_settings: "Saituna",
+  where_your_session_lives: "Asusunka a wannan wayar",
+  session_in_keychain: "An ajiye a wurin ajiya mai tsaro na wayar.",
+  session_nowhere_safe: "Wannan wayar ba ta da wurin da zai kiyaye asusu.",
   appearance: "Kamanni",
   language_setting: "Harshe",
   check_a_number_hint: "0803 123 4567",
@@ -781,6 +793,7 @@ export const YO: Readonly<Record<Phrase, string>> = {
   account_proves_nothing: "Àkántì jẹ́ orúkọ àti nọ́mbà. Kò fi ohunkóhun hàn fúnra rẹ̀, a sì fẹ́ sọ èyí fún ọ nísinsìnyí ju lẹ́yìn tí o ti forúkọ sílẹ̀.",
   your_name_label: "Orúkọ rẹ, gẹ́gẹ́ bí àwọn agbatọ́jú yóò ti rí i",
   your_number_label: "Nọ́mbà iṣẹ́ rẹ",
+  cannot_keep_a_session: "Fóònù yìí kò lè pa àkántì mọ́ láìséwu, nítorí náà Keys kò ní ṣí ọ̀kan sí i.",
   open_an_account: "Ṣí àkántì",
   what_tenants_see: "Ohun tí agbatọ́jú rí nígbà tí ó bá ṣàyẹ̀wò nọ́mbà rẹ",
   ask_a_landlord: "Béèrè lọ́wọ́ onílé kí ó fọwọ́ sí ọ",
@@ -943,6 +956,9 @@ export const YO: Readonly<Record<Phrase, string>> = {
   report_too_short: "Sọ síwájú sí i. Kò sí ẹni tí ó lè ṣàyẹ̀wò èyí síbẹ̀.",
   go_back: "Padà sẹ́yìn",
   tab_settings: "Ètò",
+  where_your_session_lives: "Àkántì rẹ lórí fóònù yìí",
+  session_in_keychain: "A pa á mọ́ nínú ibi ìpamọ́ ààbò fóònù náà.",
+  session_nowhere_safe: "Fóònù yìí kò ní ibi tí ó lè pa àkántì mọ́ láìséwu.",
   appearance: "Ìrísí",
   language_setting: "Èdè",
   check_a_number_hint: "0803 123 4567",
@@ -1003,6 +1019,7 @@ export const IG: Readonly<Record<Phrase, string>> = {
   account_proves_nothing: "Akaụntụ bụ aha na nọmba. Ọ naghị egosi ihe ọ bụla n'onwe ya, anyị chọrọ ikwu ya ugbu a karịa mgbe ị debanyesịrị aha.",
   your_name_label: "Aha gị, dịka ndị mgbazinye ga-ahụ ya",
   your_number_label: "Nọmba azụmahịa gị",
+  cannot_keep_a_session: "Ekwentị a enweghị ike ichekwa akaụntụ nʼudo, ya mere Keys agaghị emepe otu na ya.",
   open_an_account: "Meghee akaụntụ",
   what_tenants_see: "Ihe onye mgbazinye na-ahụ mgbe ọ nyochara nọmba gị",
   ask_a_landlord: "Rịọ onye nwe ụlọ ka ọ kwado gị",
@@ -1165,6 +1182,9 @@ export const IG: Readonly<Record<Phrase, string>> = {
   report_too_short: "Kwuo karịa. Ọ dịghị onye nwere ike inyocha nke a ugbu a.",
   go_back: "Laghachi azụ",
   tab_settings: "Ntọala",
+  where_your_session_lives: "Akaụntụ gị na ekwentị a",
+  session_in_keychain: "Echekwara ya nʼebe nchekwa ekwentị.",
+  session_nowhere_safe: "Ekwentị a enweghị ebe nchekwa maka akaụntụ.",
   appearance: "Ọdịdị",
   language_setting: "Asụsụ",
   check_a_number_hint: "0803 123 4567",

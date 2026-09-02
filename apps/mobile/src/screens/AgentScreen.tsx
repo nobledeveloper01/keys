@@ -189,7 +189,7 @@ function SignUp({
   onSignedIn,
 }: {
   baseUrl: string;
-  onSignedIn: (token: string) => void;
+  onSignedIn: (token: string) => Promise<boolean>;
 }) {
   const { t } = useLanguage();
   const [displayName, setDisplayName] = useState('');
@@ -235,7 +235,20 @@ function SignUp({
             client({ baseUrl }).signUp(displayName.trim(), phone.trim()),
           ).then((result) => {
             setBusy(false);
-            if (result.ok) onSignedIn(result.value.token);
+            if (result.ok) {
+              /*
+                An account is only open if the token was actually kept.
+
+                `signIn` resolves false where this phone has nowhere safe to
+                put one — there is deliberately no fallback to a plain file —
+                and showing an account over a token that was never stored
+                would produce a session that vanishes on the next launch with
+                nothing to explain it.
+              */
+              void onSignedIn(result.value.token).then((kept) => {
+                if (!kept) setProblem(t('cannot_keep_a_session'));
+              });
+            }
             else setProblem(result.failure.kind === 'refused' ? result.failure.detail : t('no_signal_nothing_sent'));
           });
         }}
