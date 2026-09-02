@@ -75,7 +75,38 @@ export function Tabs({
                 size="md"
                 colour={on ? colours.accent : colours.textSecondary}
               />
-              <Text variant="label" tone={on ? 'accent' : 'secondary'} style={styles.label}>
+              {/*
+                Two lines at most, and a tighter cap than `label` elsewhere.
+
+                Five destinations across a phone is the tightest slot in this
+                app. At the largest accessibility size these wrapped to three
+                lines each and the bar took forty per cent of the screen — so
+                the label is bounded here rather than everywhere `label` is
+                used, because a field label has room that a tab does not.
+
+                Both icon *and* words are kept: an icon alone is a guess a
+                first-time reader makes in a language that may not be theirs,
+                and that is truer at 200% text, not less true.
+              */}
+              <Text
+                variant="label"
+                tone={on ? 'accent' : 'secondary'}
+                style={styles.label}
+                /*
+                  One line, shrinking to fit rather than breaking.
+
+                  At two lines the longest label — "Messages" — wrapped to an
+                  orphaned "s", which is worse than a slightly smaller word:
+                  the reader has to reassemble it. `adjustsFontSizeToFit` keeps
+                  the word whole inside the slot it has, and `minimumFontScale`
+                  stops it shrinking past legibility. A tab label that does not
+                  fit is not accessible either.
+                */
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.75}
+                maxScale={1.3}
+              >
                 {tab.label}
               </Text>
             </View>

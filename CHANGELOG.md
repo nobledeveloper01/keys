@@ -41,6 +41,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **The evidence panel can be read by a screen reader.** It announced the nine
+  conditions with no indication of which were met — the whole content of the
+  page — because the tick is an image and the row had no label. Each row now
+  says its state in words.
+- **Nothing breaks at the largest text size.** Tab labels stay on one line,
+  listing titles and addresses wrap instead of truncating, and the cost
+  breakdown stacks label above figure when two columns stop fitting.
 - **Session tokens are in the iOS Keychain.** They were in a plain file in the
   app container — readable on a jailbroken phone, present in an unencrypted
   backup. Any existing token moves across on first launch and the old copy is

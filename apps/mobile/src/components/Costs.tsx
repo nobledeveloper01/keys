@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { Text } from './Text';
 import { mono, radius, space } from '../design/tokens';
@@ -37,6 +37,23 @@ export function Costs({ costs }: { costs: CostFigures | null }) {
   const { t: say } = useLanguage();
   const colours = useColours();
 
+  /*
+    Stacked once the text is large enough that a label and a figure cannot
+    share a line.
+
+    Side by side, at the largest accessibility size, the amount claimed its
+    full width and the label column collapsed to a sliver — "Higher than the
+    usual ten per cent" came out one word per line beside a ₦250,000 that had
+    the rest of the screen. Nothing was truncated, so nothing looked broken to
+    a check that only greps for ellipses; it was simply unreadable.
+
+    There is no container query in React Native, so this reads the reader's own
+    font scale. 1.5 is where two columns stop fitting on the narrowest phone
+    this product targets.
+  */
+  const { fontScale } = useWindowDimensions();
+  const stacked = fontScale > 1.5;
+
   if (costs === null) {
     return (
       <View style={[styles.card, { backgroundColor: colours.surfaceDim }]}>
@@ -69,7 +86,7 @@ export function Costs({ costs }: { costs: CostFigures | null }) {
       </Text>
 
       {rows.map((row) => (
-        <View key={row.label} style={styles.row}>
+        <View key={row.label} style={[styles.row, stacked && styles.stacked]}>
           <View style={styles.labels}>
             <Text variant="body" tone="secondary">
               {row.label}
@@ -91,7 +108,7 @@ export function Costs({ costs }: { costs: CostFigures | null }) {
         </View>
       ))}
 
-      <View style={[styles.total, { borderTopColor: colours.outline }]}>
+      <View style={[styles.total, stacked && styles.stacked, { borderTopColor: colours.outline }]}>
         <View style={styles.labels}>
           <Text variant="title">{say('costs_move_in_total')}</Text>
           {/*
@@ -115,7 +132,16 @@ export function Costs({ costs }: { costs: CostFigures | null }) {
 const styles = StyleSheet.create({
   card: { borderRadius: radius.lg, padding: space.lg, gap: space.sm },
   row: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: space.md },
-  labels: { flexShrink: 1, gap: 2 },
+  /*
+    `flex: 1`, not `flexShrink: 1`.
+
+    Shrink alone let the figure take its full intrinsic width first and left
+    the labels whatever remained, which at large text was almost nothing.
+    Taking the remaining space is what a label column is for.
+  */
+  labels: { flex: 1, gap: 2 },
+  /** Label above figure, for a reader whose text will not fit two columns. */
+  stacked: { flexDirection: 'column', alignItems: 'flex-start', gap: space.xs },
   // Tabular figures, so the naira column lines up and a bigger number reads as
   // bigger rather than merely wider.
   figure: { ...mono, fontVariant: [...mono.fontVariant] },

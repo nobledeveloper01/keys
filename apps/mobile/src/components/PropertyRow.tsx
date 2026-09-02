@@ -50,10 +50,22 @@ export function PropertyRow({
         ]}
       >
         <View style={styles.body}>
-          <Text variant="title" numberOfLines={1}>
+          {/*
+            Two lines, not one.
+
+            At the largest accessibility text size a single line truncated
+            every title — "Two bedroom flat, Ya…", which could be Yaba or
+            anywhere — and the definition of done says 200% scaling *without
+            truncation*. A title and an address are content, not furniture:
+            they are how somebody tells one listing from another.
+
+            At ordinary sizes both still fit on one line, so nothing changes
+            for the scannability this row was shaped for.
+          */}
+          <Text variant="title" numberOfLines={2}>
             {title}
           </Text>
-          <Text variant="label" tone="secondary" numberOfLines={1} style={styles.address}>
+          <Text variant="label" tone="secondary" numberOfLines={2} style={styles.address}>
             {address}
           </Text>
           <View style={styles.status}>

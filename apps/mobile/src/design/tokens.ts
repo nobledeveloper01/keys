@@ -192,6 +192,22 @@ export type Variant = keyof typeof type;
   deliberate act with a failing test in front of it rather than a plausible
   one-line edit.
 */
+/**
+ * How far each variant may grow with the reader's text setting.
+ *
+ * **Every entry is `undefined`, and that is the decision.** A cap on one
+ * variant and not another inverts the type scale: cap `title` at 1.8 while
+ * `body` is uncapped and at iOS's largest size a heading renders below the
+ * paragraph it introduces. Capping *every* variant equally is a cap on `body`,
+ * which is the text a low-vision reader most needs enlarged.
+ *
+ * `type-scale-stays-ordered.test.ts` asserts this record is empty, and it
+ * caught me putting `title: 1.8` back — the exact inversion its own comment
+ * describes — while fixing a tab bar that broke at 200%. The tab bar was a real
+ * defect; a variant cap was the wrong instrument for it. Furniture in a fixed
+ * slot uses `Text`'s per-call `maxScale`, which applies to one call site rather
+ * than to every use of a variant across the product.
+ */
 export const MAX_SCALE: Record<Variant, number | undefined> = {
   display: undefined,
   headline: undefined,

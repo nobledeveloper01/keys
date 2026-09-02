@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Icon } from './Icon';
+import { useLanguage } from '../state/language';
 import { Text } from './Text';
 import { radius, space } from '../design/tokens';
 import { useColours } from '../design/theme';
@@ -34,6 +35,7 @@ export interface Step {
  */
 export function Progress({ steps }: { steps: readonly Step[] }) {
   const colours = useColours();
+  const { t } = useLanguage();
   const next = steps.find((step) => !step.done);
 
   return (
@@ -41,8 +43,34 @@ export function Progress({ steps }: { steps: readonly Step[] }) {
       {steps.map((step) => {
         const isNext = step.id === next?.id;
         return (
-          <View key={step.id} style={styles.row}>
+          /*
+            One accessibility element per row, saying the state in words.
+
+            Before this, a screen reader read "ID check", "Landlord
+            confirmation", and so on — with no indication of which were met.
+            The tick is an SVG with no text and the row had no label, so the
+            *entire content* of the evidence panel was invisible to anybody not
+            looking at it. That page is the product's whole claim.
+
+            The state is in this app's own words rather than
+            `accessibilityState={{ checked }}`, which announces as a tick box:
+            these rows are not interactive, and telling somebody they can toggle
+            what Keys has verified would be worse than saying nothing.
+          */
+          <View
+            key={step.id}
+            style={styles.row}
+            accessible
+            accessibilityRole="text"
+            accessibilityLabel={`${step.label}. ${step.done ? t('check_met') : t('check_not_met')}${
+              isNext && step.detail ? `. ${step.detail}` : ''
+            }`}
+          >
             <View
+              // The tick carries no information a screen reader needs; the row
+              // above says it in words, and reading both would say it twice.
+              importantForAccessibility="no-hide-descendants"
+              accessibilityElementsHidden
               style={[
                 styles.mark,
                 {

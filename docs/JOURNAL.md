@@ -6,6 +6,63 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — Looking at it at 310%
+
+**Did.** The accessibility audit phase 6 named and this repo's definition of done demands:
+*200% text scaling without truncation — check it, do not assume it.* Nobody had checked.
+
+### The screen reader could not read the evidence panel
+
+`Progress` renders the nine Verified conditions. The tick is an SVG with no text and the row
+had no label, so VoiceOver announced "ID check", "Landlord confirmation", "Photo at the
+property" — **with no indication of which were met**. The entire content of that page is
+which ones are ticked. It was invisible to anybody not looking at it.
+
+Each row is one accessibility element now, saying the state in this app's own words in the
+reader's own language. Not `accessibilityState={{ checked }}`, which announces as a tick box:
+these rows are not interactive, and telling somebody they can toggle what Keys has verified
+would be worse than saying nothing.
+
+### Three layouts broke at the largest size, and none of them truncated
+
+At `accessibility-extra-extra-extra-large` the tab bar wrapped to three lines per label and
+took forty per cent of the screen. Listing titles truncated to "Two bedroom flat, Ya…" —
+which could be Yaba or anywhere. And the costs card collapsed: the figure claimed its full
+width and the label column shrank to a sliver, so "Higher than the usual ten per cent" came
+out one word per line beside a ₦250,000 with the rest of the screen to itself.
+
+That last one is the instructive failure. **Nothing was truncated and nothing overflowed**, so
+a check that greps for ellipses would have passed it. It was simply unreadable, and only
+looking found it.
+
+Fixes: tab labels shrink to fit one line rather than wrapping; titles and addresses take two
+lines because they are *content* and content must not truncate; cost rows stack label-above-
+figure past 1.5× because there is no container query in React Native and two columns stop
+fitting.
+
+### The thing I got wrong, and what caught it
+
+I found `MAX_SCALE` with every entry `undefined` and called it a mechanism somebody had built
+and never populated. I filled it in: `title: 1.8`, `body` uncapped.
+
+That is the exact inversion `type-scale-stays-ordered.test.ts` was written to catch, described
+in its own doc comment, in those words — a capped title renders *below* the uncapped body it
+introduces. The empty record was a decision, tested, with the reasoning written down, and I
+read it as an oversight because it looked like one.
+
+The test was the only thing that said so, and it said so immediately.
+
+The real fix is a per-call `maxScale` on `Text`, used by the tab bar alone. It applies to one
+call site rather than to every use of a variant, so five tab labels sharing a cap invert
+nothing against each other — and a tab label is not part of the reading hierarchy of the page
+behind it.
+
+**What this says about reading a codebase:** an unpopulated table looks identical to a
+deliberate one. The difference was a test file I had not opened, holding the reasoning. I
+should have looked for who depended on it before deciding it was unfinished.
+
+---
+
 ## 2026-09-02 — The token is in the Keychain
 
 **Did.** R8, closed on iOS and watched: a Keychain module, both sessions moved into it, and

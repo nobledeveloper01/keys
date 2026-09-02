@@ -201,6 +201,8 @@ export type Phrase =
   | 'keys_cannot_check_offline'
   | 'nothing_found'
   | 'nothing_found_detail'
+  | 'check_met'
+  | 'check_not_met'
   | 'what_was_checked_here'
   | 'listed_by'
   | 'not_verified_listing'
@@ -424,6 +426,8 @@ export const EN: Readonly<Record<Phrase, string>> = {
   verified_only: "Checked places only",
   nothing_found: "Nothing here yet",
   nothing_found_detail: "Keys is new. Try fewer words, or turn off the filter to see everything that has been posted.",
+  check_met: "checked",
+  check_not_met: "not checked",
   what_was_checked_here: "What was checked",
   listed_by: "Listed by",
   not_verified_listing: "Keys has not checked this place. Pay nothing before you have seen it and met the person.",
@@ -650,6 +654,8 @@ export const HA: Readonly<Record<Phrase, string>> = {
   verified_only: "Wuraren da aka duba kawai",
   nothing_found: "Babu kome a nan tukuna",
   nothing_found_detail: "Keys sabo ne. Gwada kalmomi kaɗan, ko kashe tacewa don ganin duk abin da aka sanya.",
+  check_met: "an duba",
+  check_not_met: "ba a duba ba",
   what_was_checked_here: "Abin da aka duba",
   listed_by: "Wanda ya sanya",
   not_verified_listing: "Keys bai duba wannan wurin ba. Kada ka biya kafin ka gani ka kuma sadu da mutumin.",
@@ -876,6 +882,8 @@ export const YO: Readonly<Record<Phrase, string>> = {
   verified_only: "Àwọn ibi tí a ṣàyẹ̀wò nìkan",
   nothing_found: "Kò sí nǹkan níbí síbẹ̀",
   nothing_found_detail: "Keys ṣì jẹ́ tuntun. Gbìyànjú ọ̀rọ̀ díẹ̀, tàbí pa àyẹ̀wò náà kí o rí gbogbo ohun tí a ti fi sí.",
+  check_met: "a ti ṣàyẹ̀wò",
+  check_not_met: "kò tíì ṣàyẹ̀wò",
   what_was_checked_here: "Ohun tí a ṣàyẹ̀wò",
   listed_by: "Ẹni tí ó fi sí",
   not_verified_listing: "Keys kò ṣàyẹ̀wò ibí yìí. Má sanwó kí o tó rí i kí o sì bá ẹni náà pàdé.",
@@ -1102,6 +1110,8 @@ export const IG: Readonly<Record<Phrase, string>> = {
   verified_only: "Naanị ebe e nyochara",
   nothing_found: "Ọ dịghị ihe ebe a ugbu a",
   nothing_found_detail: "Keys bụ ihe ọhụrụ. Nwaa okwu ole na ole, ma ọ bụ gbanyụọ nzacha ka ị hụ ihe niile etinyere.",
+  check_met: "enyochara",
+  check_not_met: "anyochabeghị",
   what_was_checked_here: "Ihe e nyochara",
   listed_by: "Onye tinyere ya",
   not_verified_listing: "Keys enyochabeghị ebe a. Akwụla ụgwọ tupu ị hụ ya ma zute onye ahụ.",

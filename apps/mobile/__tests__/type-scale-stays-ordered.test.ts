@@ -54,6 +54,16 @@ describe('the type scale stays in order at every text size', () => {
 
       Stated here so that adding one back is a deliberate act with a failing
       test in front of it rather than a plausible-looking edit.
+
+      It worked. An accessibility pass at iOS's largest size found the tab bar
+      wrapping to three lines, diagnosed the empty record as a mechanism nobody
+      had populated, and filled it in — `title: 1.8`, `body` uncapped, which is
+      the inversion described at the top of this file, verbatim. This test was
+      the only thing that said so.
+
+      Furniture in a fixed slot uses `Text`'s per-call `maxScale` instead. That
+      applies to one call site rather than to every use of a variant, so five
+      tab labels sharing a cap invert nothing against each other.
     */
     const capped = VARIANTS.filter((v) => MAX_SCALE[v] !== undefined);
     expect(capped).toEqual([]);
