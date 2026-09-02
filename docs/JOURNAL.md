@@ -6,6 +6,30 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — Deleting a cache found a file nobody was checking
+
+**Did.** Stopped the dev servers, cleared about a gigabyte of build caches, and discovered
+that one of them had been holding up a green lint.
+
+`apps/web/src/app/.well-known/apple-app-site-association/route.ts` — the file that will make
+universal links work (R9) — was not in the web tsconfig's program. TypeScript's `**` does not
+descend into a directory whose name begins with a dot, so `src/app/.well-known/**` matched
+nothing.
+
+It had been reaching the program through a generated file under `.next`, which meant the
+route was type-checked and linted **only while a build cache happened to exist**. Deleting
+`.next` turned a passing lint into a parsing error, and the honest reading is that the file
+had never really been checked at all.
+
+Included explicitly now. What is uncomfortable is that this was invisible from inside a
+working tree: every gate was green, on a file the compiler could not see, for as long as the
+cache lived.
+
+I have said several times this week that a gate which cannot fail is not a gate. This is the
+inverse and it is nastier — a gate that passes for a reason unrelated to the thing it checks.
+
+---
+
 ## 2026-09-02 — Following the house style instead of inventing one
 
 **Did.** Redid the README screens in the convention the sibling projects already use, checked
