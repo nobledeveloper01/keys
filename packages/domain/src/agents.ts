@@ -55,7 +55,26 @@ export type Tier = (typeof TIERS)[number];
 export type Attestor =
   | { readonly kind: 'vendor'; readonly vendor: string; readonly reference: string }
   | { readonly kind: 'landlord'; readonly phoneHash: string }
-  | { readonly kind: 'registry' };
+  | { readonly kind: 'registry' }
+  /**
+   * Keys itself, by hand, with the person named.
+   *
+   * v1.0 ships without a KYC vendor and without an SMS provider, so a reviewer
+   * looks at the identity document and telephones the landlord — see
+   * `docs/V1-SCOPE.md`. That is a genuinely different attestor from an API
+   * returning a reference, and it says so rather than borrowing `vendor` and
+   * putting the word "keys" in a free-text field nobody validates.
+   *
+   * `reviewer` is required and not optional. An attestation by Keys with nobody
+   * named is the thing [ADR-0006](../../../docs/adr/0006-a-reviewer-is-not-an-answer-to-who-decided-this.md)
+   * exists to refuse: a year from now somebody has to be able to ask the person
+   * who made the call what the landlord said.
+   *
+   * `saw` is what they actually observed — "NIN card, name and photograph match
+   * the account" — because a decision with no account of the evidence is a
+   * decision nobody can audit and nobody can overturn.
+   */
+  | { readonly kind: 'keys'; readonly reviewer: string; readonly saw: string };
 
 export const EVIDENCE_KINDS = ['identity', 'authority', 'standing'] as const;
 export type EvidenceKind = (typeof EVIDENCE_KINDS)[number];

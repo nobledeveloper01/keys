@@ -38,6 +38,8 @@ interface EvidenceRow {
   property_id: string | null;
   attested_at: Date;
   revoked_at: Date | null;
+  attestor_reviewer: string | null;
+  attestor_saw: string | null;
 }
 
 function hydrate(row: EvidenceRow): Evidence {
@@ -50,7 +52,13 @@ function hydrate(row: EvidenceRow): Evidence {
         })
       : row.attestor_kind === 'landlord'
         ? ({ kind: 'landlord' as const, phoneHash: row.attestor_phone_hash! })
-        : ({ kind: 'registry' as const });
+        : row.attestor_kind === 'keys'
+          ? ({
+              kind: 'keys' as const,
+              reviewer: row.attestor_reviewer!,
+              saw: row.attestor_saw!,
+            })
+          : ({ kind: 'registry' as const });
 
   return {
     kind: row.kind as Evidence['kind'],
@@ -90,6 +98,7 @@ const LISTING_COLUMNS =
 
 const EVIDENCE_COLUMNS = `
   agent_id, kind, attestor_kind, attestor_vendor, attestor_reference,
+  attestor_reviewer, attestor_saw,
   attestor_phone_hash, property_id, attested_at, revoked_at
 `;
 
@@ -215,6 +224,22 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
          (agent_id, kind, attestor_kind, attestor_vendor, attestor_reference, attested_at)
        VALUES ($1,'identity','vendor',$2,$3,$4)`,
       [input.agentId, input.vendor, input.reference, input.now],
+    );
+  }
+
+  async recordByHand(input: {
+    agentId: string;
+    kind: 'identity' | 'authority';
+    propertyId: string | null;
+    reviewer: string;
+    saw: string;
+    now: Date;
+  }) {
+    await this.pool.query(
+      `INSERT INTO agent_evidence
+         (agent_id, kind, attestor_kind, attestor_reviewer, attestor_saw, property_id, attested_at)
+       VALUES ($1,$2,'keys',$3,$4,$5,$6)`,
+      [input.agentId, input.kind, input.reviewer, input.saw, input.propertyId, input.now],
     );
   }
 

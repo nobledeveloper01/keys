@@ -41,6 +41,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **v1.0 has a scope now.** Where it has no vendor, Keys does the work by hand
+  and says so: a reviewer telephones the landlord and looks at the identity
+  document, recorded under their own name with an account of what they saw.
+  Published reports and paid placement are out of v1.0. Seven release gates left
+  the launch path, none of them by pretending.
 - **Saved places you can read without signal.** Save a listing and the address,
   the price and what had been checked stay on the phone. It never shows the
   badge — not even for a copy saved thirty seconds ago — because a badge means

@@ -876,6 +876,35 @@
         ]
       }
     },
+    "/v1/agent-review/{id}/checked-by-hand": {
+      "post": {
+        "operationId": "AgentReviewController_checkedByHand",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What was recorded, and who recorded it."
+          }
+        },
+        "security": [
+          {
+            "reviewer-token": []
+          }
+        ],
+        "summary": "Record an identity check or a landlord confirmation a reviewer did by hand. The v1.0 path — see docs/V1-SCOPE.md.",
+        "tags": [
+          "review"
+        ]
+      }
+    },
     "/v1/listings": {
       "get": {
         "operationId": "SearchController_search",

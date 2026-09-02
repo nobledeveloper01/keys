@@ -415,6 +415,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/agent-review/{id}/checked-by-hand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record an identity check or a landlord confirmation a reviewer did by hand. The v1.0 path — see docs/V1-SCOPE.md. */
+        post: operations["AgentReviewController_checkedByHand"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/listings": {
         parameters: {
             query?: never;
@@ -1825,6 +1842,26 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description What went dark. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AgentReviewController_checkedByHand: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description What was recorded, and who recorded it. */
             200: {
                 headers: {
                     [name: string]: unknown;

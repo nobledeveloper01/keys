@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 
 import {
   type Costs,
+  type EvidenceKind,
   MAX_AGENTS_PER_LANDLORD,
   cascade,
   landlordIsNotTheAgent,
@@ -151,6 +152,27 @@ export abstract class AgentsStore {
     agentId: string;
     vendor: string;
     reference: string;
+    now: Date;
+  }): Await<void>;
+
+  /**
+   * Evidence a person at Keys produced, by hand, with their name on it.
+   *
+   * v1.0 has no KYC vendor and no SMS provider, so a reviewer looks at the
+   * document and telephones the landlord — `docs/V1-SCOPE.md`. This is the door
+   * that path goes through, and it is a different door from the vendor's on
+   * purpose: the evidence records who checked and what they saw, which an API
+   * reference cannot.
+   *
+   * `propertyId` is set for an authority and null for an identity, the same as
+   * every other evidence row.
+   */
+  abstract recordByHand(input: {
+    agentId: string;
+    kind: Extract<EvidenceKind, 'identity' | 'authority'>;
+    propertyId: string | null;
+    reviewer: string;
+    saw: string;
     now: Date;
   }): Await<void>;
 
@@ -364,6 +386,24 @@ export class InMemoryAgentsStore extends AgentsStore {
       at: input.now,
       revokedAt: null,
       propertyId: null,
+    });
+  }
+
+  recordByHand(input: {
+    agentId: string;
+    kind: 'identity' | 'authority';
+    propertyId: string | null;
+    reviewer: string;
+    saw: string;
+    now: Date;
+  }) {
+    this.evidence.push({
+      kind: input.kind,
+      agentId: input.agentId,
+      attestor: { kind: 'keys', reviewer: input.reviewer, saw: input.saw },
+      at: input.now,
+      revokedAt: null,
+      propertyId: input.propertyId,
     });
   }
 

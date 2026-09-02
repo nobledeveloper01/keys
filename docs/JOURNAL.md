@@ -6,6 +6,77 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — Counting the list instead of adding to it
+
+**Did.** Stopped building surface. Counted the release gates, found the pattern, and cut
+v1.0 to what ships without a vendor.
+
+### The count
+
+Fifteen open, one closed. **Six of the fifteen added in the previous two days** — not by
+discovering old debt, by the work itself. Nine of the fifteen could not be closed by writing
+any amount of code: they needed somebody to sign a contract, buy a service, or provision a
+machine.
+
+The ledger's own header had predicted this, in phase 1:
+
+> If it grows past what one screen holds, the product is being built past the point anybody
+> can honestly ship it.
+
+It grew past one screen and nobody looked, including me. I had been reporting the list as a
+single thing — "here is what is left" — when it was two things, and only one of them was
+mine.
+
+### The pattern, named
+
+Build the shape of a feature. Log a gate for the half that needs a vendor. Move on.
+`MediaStore` with no bucket. Featured placement with no payment. Right of reply with no SMS.
+Each defensible alone; together, a launch that recedes as fast as it is approached.
+
+### The cut
+
+`docs/V1-SCOPE.md`. **Where v1.0 has no vendor, Keys does the work by hand, and the product
+says so.** A reviewer telephones the landlord and looks at the identity document. Published
+reports and paid placement leave v1.0 entirely — the first because no lawyer has read the
+policy and the right of reply cannot be delivered, the second because a product with three
+hundred listings has nothing worth advertising against.
+
+Seven gates left the v1.0 path. **Four remain**, and three of them need a physical phone or
+a person: an Android build, a reviewer doing the job, the Keychain, and a photograph taken
+on a real phone.
+
+### Not one of them was closed by pretending
+
+That was the thing to get right. "We will do it manually" is one sentence away from "we will
+skip it", so the manual path is real code with its own guards:
+
+- A new `Attestor` variant, `{ kind: 'keys', reviewer, saw }`. Not `vendor` with the word
+  "keys" written into a free-text field nobody validates — an API reference and a person's
+  recollection are different kinds of evidence and the row says which.
+- **The reviewer is named or the attestation is refused.** Every other reviewer route falls
+  back to a reviewer called `unattributed`; for a decision that is tolerable, because the
+  decision is still recorded. Here it is not — at v1.0 this row is the *only* evidence a
+  check happened, and evidence attributed to nobody is what ADR-0006 refuses.
+- **What they saw is mandatory and twenty characters.** "Checked" is not an account of
+  anything.
+- The tier ladder is untouched. `tierOf` reads the *kind* of evidence, not who attested it,
+  so a check by hand climbs the same rung and no rung got easier.
+
+### What surprised us
+
+**The database refused the first row.** `evidence_attestor_matches_kind` pairs each evidence
+kind with the attestor allowed to produce it, and it had never heard of `keys`. The
+constraint was right and I had forgotten it existed. Rewritten rather than dropped: that
+pairing is what stops a landlord "confirming" an identity, and losing it to add a row type
+would be paying for a feature with a guarantee.
+
+**My own test could not fail, again.** The unattributed-reviewer refusal was unreachable
+because `beforeAll` set `KEYS_REVIEWERS` and never unset it — so the assertion guarding the
+most important new rule in the file was decorative. Tenth ADR-0004 instance, and the third
+this week in a test I wrote the same hour.
+
+---
+
 ## 2026-09-02 — A saved copy does not get to say Verified
 
 **Did.** Offline saved listings, and the rule that decides what one is allowed to claim.

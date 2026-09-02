@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  Body,
   Controller,
   Get,
   NotFoundException,
@@ -117,5 +119,85 @@ export class AgentReviewController {
       by: request.reviewer?.name ?? 'unattributed',
       unpublishedListings: [...unpublished],
     };
+  }
+
+  @Post(':id/checked-by-hand')
+  @ApiOperation({
+    summary:
+      'Record an identity check or a landlord confirmation a reviewer did by hand. The v1.0 path — see docs/V1-SCOPE.md.',
+  })
+  @ApiOkResponse({ description: 'What was recorded, and who recorded it.' })
+  async checkedByHand(
+    @Param('id') id: string,
+    @Body() body: { kind?: string; propertyId?: string; saw?: string },
+    @Req() request: RequestWithReviewer,
+  ) {
+    const agent = await this.store.agentById(id);
+    if (!agent) throw new NotFoundException('No such agent.');
+
+    const kind = body?.kind === 'authority' ? 'authority' : body?.kind === 'identity' ? null : undefined;
+    if (kind === undefined) {
+      throw new BadRequestException("Say whether this is an 'identity' or an 'authority'.");
+    }
+
+    const propertyId = (body?.propertyId ?? '').trim();
+    /*
+      An authority is about a flat; an identity is about a person.
+
+      The same shape every other evidence row has, and enforced here rather
+      than left to the caller — an authority with no property would be a
+      landlord confirming nothing in particular, which `mayList` would then
+      never match against any listing.
+    */
+    if (body?.kind === 'authority' && propertyId.length === 0) {
+      throw new BadRequestException('Say which property the landlord confirmed.');
+    }
+
+    const saw = (body?.saw ?? '').trim();
+    /*
+      What they actually observed, and it is mandatory.
+
+      "Checked" is not an account of anything. A year from now somebody has to
+      be able to read this and know whether the person on the phone was asked
+      the right question — ADR-0006 — and at v1.0 this row is the *only* record
+      that a check happened at all, because there is no vendor reference behind
+      it.
+    */
+    if (saw.length < 20) {
+      throw new BadRequestException(
+        'Say what you saw or what they said, in at least twenty characters. This is the whole record.',
+      );
+    }
+
+    /*
+      An unattributed reviewer may not attest by hand.
+
+      Every other reviewer route falls back to `'unattributed'` when the server
+      is configured with a single shared token, and for a *decision* that is
+      tolerable — the decision is recorded and the deployment is misconfigured.
+      Here it is not: at v1.0 this row is the only evidence that a check
+      happened, and evidence attributed to nobody is what ADR-0006 refuses.
+
+      Configure `KEYS_REVIEWERS` as `name:token` and this works.
+    */
+    const reviewer = request.reviewer?.name ?? 'unattributed';
+    if (reviewer === 'unattributed') {
+      throw new BadRequestException(
+        'A check by hand has to be attributed to a person. This server is configured with a shared reviewer token.',
+      );
+    }
+
+    await this.store.recordByHand({
+      agentId: id,
+      kind: body?.kind === 'authority' ? 'authority' : 'identity',
+      propertyId: body?.kind === 'authority' ? propertyId : null,
+      // Named, always. An attestation by Keys with nobody on it is the thing
+      // ADR-0006 refuses, and the guard above makes that structural.
+      reviewer,
+      saw,
+      now: new Date(),
+    });
+
+    return { recorded: true, by: reviewer };
   }
 }
