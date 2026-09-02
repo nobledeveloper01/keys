@@ -41,6 +41,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **The README shows the app.** A grid of six screens at the top, and the
+  status rewritten from "Phase 1 of 8, the scam registry works" — which it had
+  said for five phases — to what is actually built, what blocks v1.0, and why
+  the landlord confirmation is a telephone call.
 - **The screens document shows the app that exists.** It had stopped at the
   registry lookup in August — no Find tab, no listing page, no costs, no
   messaging, and seven of its seventeen screens were web. Seven mobile screens

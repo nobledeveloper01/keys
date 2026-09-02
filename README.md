@@ -17,18 +17,36 @@ See [`docs/00-PRODUCT-STATEMENT.md`](docs/00-PRODUCT-STATEMENT.md) for the full 
 
 ---
 
+## What it looks like
+
+| | | |
+|:--:|:--:|:--:|
+| <img src="docs/screens/18-find-a-place.png" width="220"> | <img src="docs/screens/19-listing-what-it-costs.png" width="220"> | <img src="docs/screens/20-listing-what-was-checked.png" width="220"> |
+| **Find a place** — checked places only by default, priced by what it costs to *move in* rather than the advertised rent | **What it costs** — ₦800,000 advertised, ₦1,100,000 to move in. The gap is never added up anywhere else | **What was checked** — nine conditions, ticked or not, recomputed on this request from evidence |
+| <img src="docs/screens/22-ask-about-this-place.png" width="220"> | <img src="docs/screens/23-agent-account.png" width="220"> | <img src="docs/screens/24-largest-text-size.png" width="220"> |
+| **Asking** — the account is part of the question, not a gate in front of it. Keys holds both numbers back until each side offers | **The agent's side** — what a tenant sees when they check this number, then the properties | **At the largest text size** — checked rather than assumed, which is what found three broken layouts |
+
+The full deck, with the reasoning under each screen, is
+[`docs/Keys-screens.pdf`](docs/Keys-screens.pdf).
+
+---
+
 ## Status
 
-**Phase 1 of 8. The scam registry works; nothing is deployed.** `PHASE` holds
-the number and [`docs/ROADMAP.md`](docs/ROADMAP.md) holds the gates, each one
-split into what blocks the next phase and what blocks a release.
+**Phase 6 of 8 — launch hardening.** `PHASE` holds the number,
+[`docs/ROADMAP.md`](docs/ROADMAP.md) holds the phase gates, and
+[`docs/V1-SCOPE.md`](docs/V1-SCOPE.md) says what v1.0 is.
+
+**Nothing is deployed, and five gates block v1.0** — every one of them needs a
+physical device or a person, not more code. See
+[`docs/RELEASE-GATES.md`](docs/RELEASE-GATES.md).
 
 | | |
 |---|---|
 | Mobile | React Native 0.87, New Architecture, TypeScript strict |
-| Web | Next.js 15 with SSR — listing pages are a business requirement, not a roadmap item |
+| Web | Next.js 15 with SSR — the registry surface. The marketplace is mobile |
 | Server | **NestJS 11 on Node 22**, importing the same rules the phone runs |
-| Data | PostgreSQL 16 — durable, with the publication rule as `CHECK` constraints. **PostGIS is not installed yet**; nothing needs it until listings |
+| Data | PostgreSQL 16 — durable, with the publication rule as `CHECK` constraints. **No PostGIS**, deliberately: `ST_DWithin` would be a second implementation of distance ([ADR-0008](docs/adr/0008-sql-narrows-the-domain-decides.md)) |
 | Rules | `packages/domain`, pure TypeScript, three consumers, [Apache-2.0](packages/domain/LICENSE) |
 | Wire | `packages/api`, generated from the controllers, [gated against drift](scripts/api-fresh.sh) |
 | Languages | English, Hausa, Yoruba and Igbo, in every string the app renders |
@@ -41,56 +59,58 @@ there is only one of it. See
 
 ### What works end to end
 
-Run the server and the web app (below) and you can, right now:
+Run the server and the app (below) and you can, right now:
 
-- **Check a number.** `0803…`, `+234 803…` and `803…` all normalise to the same
-  number, because a registry that treats them as three answers *nothing found*
-  about a number it holds — which on this product is not an empty result, it is
-  a false all-clear.
-- **Report one.** The page states what happens next *before* it asks for
-  anything: a person reads it, the number gets seven days to answer, it appears
-  only if upheld, and only for two years.
-- **Watch it not be published.** The report is submitted, the lookup still says
-  zero, and the review console refuses to uphold it — first for having no
-  evidence, then because the reply window is open. Both refusals come from
-  `packages/domain`, not from the console.
-- **Answer one.** `/reply?token=…` shows the reported party what was said, with
-  *nothing has been published* above the accusation rather than below it, and
-  never the reporter.
+**As a tenant**
 
-- **Review it.** `/review` is the console: the queue with its depth and its
-  oldest waiting report, one report at a time with everything needed to decide,
-  and no way to decide without naming yourself and saying why. Every action goes
-  to an append-only audit table.
+- **Find a place.** Search narrows in SQL and the domain decides — Verified
+  first, checked places only unless you ask otherwise, each row priced by what
+  it costs to move in.
+- **Read what was checked.** Nine conditions, ticked or not, in your language,
+  computed on the request from evidence. Not a badge: the list you can disagree
+  with.
+- **Ask the agent, without giving them your number.** Keys holds both back until
+  each side offers theirs. A message with a number in it is refused rather than
+  quietly stripped.
+- **Arrange a viewing at a fee named in advance**, then say what happened. *There
+  was nothing there* takes the badge off the listing on the very next search.
+- **Save a place and read it with no signal.** It never shows the badge — not
+  even for a copy saved thirty seconds ago — because a phone with no signal has
+  checked nothing.
+- **Check or report a number**, and report a listing without knowing whose it is.
 
-And on the phone: the language picker, then the lookup screen, in whichever of
-the four languages was chosen.
+**As an agent**
+
+- Open an account, draft a property, mark where it is, photograph and film it in
+  the app — signed by a key the phone cannot export — state what it costs, and
+  publish only what a landlord has confirmed.
+- Every upload says what it will cost in data before it spends it.
+
+**As a reviewer**
+
+- The queue, one report at a time, with no way to decide without naming yourself
+  and saying why. Identity checks and landlord confirmations done by hand, which
+  is how v1.0 ships without a KYC vendor or an SMS provider.
 
 ### What is not built
 
-Named here rather than left to be discovered:
+Named here rather than left to be discovered. Each is a
+[release gate](docs/RELEASE-GATES.md) with a number.
 
-- **Android is unverified on this machine.** `ios/` and `android/` are the
-  official React Native 0.87.1 projects, adjusted for the monorepo. **iOS
-  compiles** — `xcodebuild ... -sdk iphonesimulator` reports `BUILD SUCCEEDED`.
-  Android has never been compiled here, because there is no JDK installed and
-  installing a toolchain was not mine to do. The Gradle project is the
-  unmodified template, so there is no specific reason to expect it to fail, but
-  nobody has watched it succeed either. `make bundle-check` does prove the
-  JavaScript half builds for Android.
-- **No PostGIS.** Reports need no geospatial index; listings will, in phase 3.
-  Postgres itself is wired: reports survive a restart, and `/healthz` asks the
-  store rather than the environment, so it cannot claim durability a running
-  server does not have.
-- **No SMS**, so the reply token is generated and honoured but never delivered.
-  This is phase 1's second exit gate and it is open.
-- **No file upload.** Object storage is phase 3, and the domain refuses to
-  uphold a report with no evidence, so a reviewer records what they saw and how
-  it reached them — keyed `reviewer-attested:` so an audit can tell the
-  difference. See [the roadmap](docs/ROADMAP.md#phase-1--the-scam-registry-weeks-48--the-wedge--current).
-- **No legal review.** Phase 1 carries a human gate — a Nigerian lawyer reading
-  the report policy — and it blocks public launch outright. No test result
-  substitutes for it.
+- **There is no photograph anywhere in this product** (R11, R14). A capture is a
+  40×32 greyscale grid — enough for a perceptual hash, enough for every gate
+  here to pass, and not enough to look at the flat. The server accepts real media
+  and binds it into the signature; the camera does not yet produce any.
+- **Android is unverified** (R4, R16). iOS compiles and runs; Android has never
+  been built on this machine, and its session tokens have nowhere safe to live,
+  so it refuses to open an account at all rather than keeping one in a file.
+- **No SMS provider** (R7, R12), so landlord confirmation is a telephone call a
+  reviewer makes. The outbox holds only a phone *hash*, so no message in this
+  product can currently be delivered to anybody.
+- **No KYC vendor** (R6, closed by hand), **no payment provider** (R13), **no
+  object-storage bucket** (R15).
+- **No legal review** (R3). It blocks publishing reports about named people,
+  which is why that is out of v1.0 entirely. No test result substitutes for it.
 
 ### Running it
 
@@ -225,15 +245,32 @@ queue can sustain.
 
 ## How a listing is verified
 
-Four independent mechanisms, so defeating one does not defeat the system:
+[Nine conditions](packages/domain/src/listings.ts), and the badge is the
+statement that every one of them holds. It is computed on every read — there is
+no `is_verified` column — so a listing that loses one is gone from the *very
+next* search rather than the next sweep.
 
-1. **Geotagged on-device capture** — at least one photo taken in-app, within 200 m of the stated
-   address, signed on-device and verified server-side. EXIF is not trusted; it is trivially forged.
-2. **Perceptual hashing** — every image compared against every image ever uploaded, across agents,
-   cities and time. Recycled photographs are the signature of a fake listing.
-3. **Proof of authority** — the landlord confirms the agent by OTP, or a reviewed document does.
-4. **Forced 14-day expiry** — confirmed by a deliberate per-listing action. There is deliberately
-   **no bulk-confirm**: the friction is the feature.
+Six independent mechanisms behind them, so defeating one does not defeat the
+system:
+
+1. **Geotagged on-device capture** — a photo *and* a walkthrough taken in-app,
+   within 200 m of the stated address, signed by a key the phone cannot export
+   and verified server-side. EXIF is not trusted; it is trivially forged.
+2. **Perceptual hashing** — every image compared against every image ever
+   uploaded, across agents, cities and time. Recycled photographs are the
+   signature of a fake listing.
+3. **Proof of authority** — a landlord confirms the agent. At v1.0 that is a
+   reviewer telephoning them and recording what was said under their own name;
+   the texted code is written and waits on an SMS provider.
+4. **Forced 14-day confirmation** — a deliberate per-listing action. There is
+   deliberately **no bulk-confirm**: the friction is the feature.
+5. **What it costs, stated** — a listing that has not said what it costs to move
+   in is not Verified. An explicit zero is a claim an agent can be held to;
+   silence is not.
+6. **What happened when somebody went** — *there was nothing there*, from a
+   tenant whose viewing this agent agreed to, suspends the badge at once. The
+   remedy is a fresh signed capture at the property: ten minutes for an agent who
+   has the flat, impossible for one who never did.
 
 ## What it does not claim
 
@@ -243,11 +280,21 @@ columns.
 
 ## Platforms
 
-Android 8.0+, iOS 14+, **and web at v1.0** — property search is a search-engine-discovered
-activity, so server-rendered listing pages are a business requirement, not a roadmap item.
+**iOS is where the product is.** The marketplace — finding a place, the evidence
+panel, messaging, viewings — is built and runs there.
 
-Geotagged capture is deliberately impossible on web. That limitation *is* the guarantee: a
-verified listing requires that a person physically stood at the property.
+**Android does not open an account yet.** Its session tokens have nowhere safe to
+live, so it refuses rather than keeping one in a plain file (R16), and nothing has
+been built on this machine (R4). Worse for Android, and honest about which.
+
+**Web is the registry surface**: the lookup, reporting, the right of reply, the
+review console and the transparency figures. Server-rendered listing pages remain
+the right answer for search-engine discovery and are a release gate rather than
+something shipped — the marketplace was built for the phone.
+
+Geotagged capture is deliberately impossible on web. That limitation *is* the
+guarantee: a verified listing requires that a person physically stood at the
+property.
 
 
 ---

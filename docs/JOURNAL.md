@@ -6,6 +6,48 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — The README was a phase-1 document
+
+**Did.** A screen grid at the top of the README, and the rewrite that had to come with it.
+
+### What it said
+
+> **Phase 1 of 8. The scam registry works; nothing is deployed.**
+
+Five phases out of date, and confidently so. "What works end to end" described the registry
+and nothing else — no search, no evidence panel, no messaging, no viewings, no saved places.
+"What is not built" listed phase-3 concerns as though they were next.
+
+Two claims were not merely stale but wrong:
+
+- *"The landlord confirms the agent by OTP"* — at v1.0 that is a reviewer telephoning them
+  and recording what was said under their own name. The texted code is written and waiting
+  on a provider.
+- *"Android 8.0+, iOS 14+, **and web at v1.0**"* — which contradicts `V1-SCOPE.md`, written
+  the same day. Android does not open an account at all yet; it refuses rather than keeping
+  a token in a plain file.
+
+The verification section counted four mechanisms. There are six, and nine conditions.
+
+### The grid
+
+Six screens across the top of the README with a line under each saying what it is for. The
+one at iOS's largest accessibility size is in there deliberately: a grid at the default text
+size is a grid of the easy case, and that setting is what found three broken layouts.
+
+### What this says about the drift gate
+
+`doc-drift.py` passed the README the whole time. It checks condition counts and route names —
+facts with a single mechanical source — and the README's worst claims were a phase number, a
+mechanism that had changed, and a platform statement contradicting another document.
+
+None of those has a mechanical source, and I do not think they can be given one honestly. The
+gate catches what it can catch; the rest needs somebody to read the thing. What I can say is
+that the two documents contradicting each other were written a day apart, which is not a
+staleness problem — it is a not-looking problem.
+
+---
+
 ## 2026-09-02 — The deck showed a product that no longer existed
 
 **Did.** Brought the screens document up to what the app is.
