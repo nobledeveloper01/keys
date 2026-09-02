@@ -41,6 +41,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **Saved places you can read without signal.** Save a listing and the address,
+  the price and what had been checked stay on the phone. It never shows the
+  badge — not even for a copy saved thirty seconds ago — because a badge means
+  Keys checked this, and a phone with no signal has checked nothing. It says
+  what Keys *had* checked, when you saved it, and that it cannot check again
+  until you have signal.
 - **Search that scales without changing its answers.** A trigram index and a
   bounding box narrow the query in Postgres; the domain still decides what
   matches and what is near. Not full-text search, which matches whole words and

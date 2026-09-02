@@ -23,5 +23,6 @@ export * from './conversations.ts';
 export * from './money.ts';
 export * from './phone.ts';
 export * from './places.ts';
+export * from './saved.ts';
 export * from './search.ts';
 export * from './reports.ts';

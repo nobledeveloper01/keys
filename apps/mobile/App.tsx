@@ -9,6 +9,7 @@ import { useColours, useTheme, ThemeProvider } from './src/design/theme';
 import { useDeepLink } from './src/state/deepLink';
 import { LanguageProvider, useLanguage } from './src/state/language';
 import { SessionProvider } from './src/state/session';
+import { SavedProvider } from './src/state/saved';
 import { TenantProvider } from './src/state/tenant';
 import { AgentScreen } from './src/screens/AgentScreen';
 import { FindScreen } from './src/screens/FindScreen';
@@ -358,9 +359,11 @@ export default function App() {
         <LanguageProvider>
           <SessionProvider>
             <TenantProvider>
+              <SavedProvider>
               <View style={styles.root}>
                 <Shell />
               </View>
+              </SavedProvider>
             </TenantProvider>
           </SessionProvider>
         </LanguageProvider>

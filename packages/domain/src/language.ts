@@ -187,6 +187,14 @@ export type Phrase =
   | 'find_a_place_lede'
   | 'search_places_hint'
   | 'verified_only'
+  | 'saved_places'
+  | 'save_this_place'
+  | 'saved_already'
+  | 'saved_copy_heading'
+  | 'saved_today'
+  | 'saved_recently'
+  | 'saved_a_while_ago'
+  | 'keys_cannot_check_offline'
   | 'nothing_found'
   | 'nothing_found_detail'
   | 'what_was_checked_here'
@@ -400,6 +408,14 @@ export const EN: Readonly<Record<Phrase, string>> = {
   find_a_place: "Find a place",
   find_a_place_lede: "Only places Keys has checked, unless you ask for the rest.",
   search_places_hint: "Yaba, two bedroom, Herbert Macaulay",
+  saved_places: "Saved",
+  save_this_place: "Save this place",
+  saved_already: "Saved",
+  saved_copy_heading: "What Keys had checked when you saved this",
+  saved_today: "saved today",
+  saved_recently: "saved in the last fortnight",
+  saved_a_while_ago: "saved more than a fortnight ago",
+  keys_cannot_check_offline: "Keys cannot check this again until you have signal, so it does not say whether it is still checked.",
   verified_only: "Checked places only",
   nothing_found: "Nothing here yet",
   nothing_found_detail: "Keys is new. Try fewer words, or turn off the filter to see everything that has been posted.",
@@ -614,6 +630,14 @@ export const HA: Readonly<Record<Phrase, string>> = {
   find_a_place: "Nemo wuri",
   find_a_place_lede: "Wuraren da Keys ya duba kawai, sai dai ka nemi sauran.",
   search_places_hint: "Yaba, ɗaki biyu, Herbert Macaulay",
+  saved_places: "An ajiye",
+  save_this_place: "Ajiye wannan wurin",
+  saved_already: "An ajiye",
+  saved_copy_heading: "Abin da Keys ya duba lokacin da ka ajiye wannan",
+  saved_today: "an ajiye yau",
+  saved_recently: "an ajiye cikin makonni biyu",
+  saved_a_while_ago: "an ajiye fiye da makonni biyu",
+  keys_cannot_check_offline: "Keys ba zai iya sake duba wannan ba sai kana da sigina, don haka bai ce ko har yanzu an duba shi ba.",
   verified_only: "Wuraren da aka duba kawai",
   nothing_found: "Babu kome a nan tukuna",
   nothing_found_detail: "Keys sabo ne. Gwada kalmomi kaɗan, ko kashe tacewa don ganin duk abin da aka sanya.",
@@ -828,6 +852,14 @@ export const YO: Readonly<Record<Phrase, string>> = {
   find_a_place: "Wá ibùgbé",
   find_a_place_lede: "Àwọn ibi tí Keys ti ṣàyẹ̀wò nìkan, àyàfi tí o bá béèrè fún àwọn yòókù.",
   search_places_hint: "Yaba, yàrá méjì, Herbert Macaulay",
+  saved_places: "A ti fi pamọ́",
+  save_this_place: "Fi ibí yìí pamọ́",
+  saved_already: "A ti fi pamọ́",
+  saved_copy_heading: "Ohun tí Keys ti ṣàyẹ̀wò nígbà tí o fi èyí pamọ́",
+  saved_today: "a fi pamọ́ lónìí",
+  saved_recently: "a fi pamọ́ láàrin ọ̀sẹ̀ méjì",
+  saved_a_while_ago: "a fi pamọ́ ju ọ̀sẹ̀ méjì lọ",
+  keys_cannot_check_offline: "Keys kò lè ṣàyẹ̀wò èyí mọ́ títí tí o fi ní ìsopọ̀, nítorí náà kò sọ bóyá a ṣì ṣàyẹ̀wò rẹ̀.",
   verified_only: "Àwọn ibi tí a ṣàyẹ̀wò nìkan",
   nothing_found: "Kò sí nǹkan níbí síbẹ̀",
   nothing_found_detail: "Keys ṣì jẹ́ tuntun. Gbìyànjú ọ̀rọ̀ díẹ̀, tàbí pa àyẹ̀wò náà kí o rí gbogbo ohun tí a ti fi sí.",
@@ -1042,6 +1074,14 @@ export const IG: Readonly<Record<Phrase, string>> = {
   find_a_place: "Chọọ ebe obibi",
   find_a_place_lede: "Naanị ebe Keys nyochara, ma ọ bụrụ na ị rịọ maka ndị ọzọ.",
   search_places_hint: "Yaba, ime ụlọ abụọ, Herbert Macaulay",
+  saved_places: "Echekwara",
+  save_this_place: "Chekwaa ebe a",
+  saved_already: "Echekwara",
+  saved_copy_heading: "Ihe Keys nyochara mgbe ị chekwara nke a",
+  saved_today: "echekwara taa",
+  saved_recently: "echekwara nʼime izu abụọ",
+  saved_a_while_ago: "echekwara karịa izu abụọ",
+  keys_cannot_check_offline: "Keys enweghị ike ịnyocha nke a ọzọ ruo mgbe ị nwere netwọk, ya mere ọ naghị ekwu ma a ka nyochara ya.",
   verified_only: "Naanị ebe e nyochara",
   nothing_found: "Ọ dịghị ihe ebe a ugbu a",
   nothing_found_detail: "Keys bụ ihe ọhụrụ. Nwaa okwu ole na ole, ma ọ bụ gbanyụọ nzacha ka ị hụ ihe niile etinyere.",

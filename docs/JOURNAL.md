@@ -6,6 +6,70 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — A saved copy does not get to say Verified
+
+**Did.** Offline saved listings, and the rule that decides what one is allowed to claim.
+
+### The interesting part is not the storage
+
+Keeping a listing on the phone is an afternoon's work. What took the thinking is that
+**Verified is computed on every read**, from evidence that changes between one read and the
+next — a landlord withdraws, a reviewer blocks an image, somebody goes to the address and
+finds nothing. Phase 4's whole gate is that nothing is cached and nothing can be behind.
+
+A saved copy is, by definition, behind.
+
+The tempting version is a one-line change on a screen: render the `verified` boolean that
+was true when it was stored. That is how a badge nobody re-checked ends up in front of
+somebody standing outside a flat that was delisted yesterday.
+
+### So: never, at any age
+
+`mayShowBadgeOffline()` returns `false`. Not "false when it is old" — false for a copy saved
+thirty seconds ago.
+
+A badge means *Keys checked this and stands behind it*, and a phone with no signal has
+checked nothing. Thirty seconds versus thirty days is not a difference in what the app
+knows, only in how likely it is to be wrong, and a claim that is probably right is exactly
+the kind this product refuses everywhere else.
+
+It is a function rather than a comment so that a screen asking the question gets an answer
+instead of a judgement call.
+
+What a saved copy *does* say: the address, the price, and **"What Keys had checked when you
+saved this"**, with an age in words, and a sentence underneath — *Keys cannot check this
+again until you have signal, so it does not say whether it is still checked.* The row in the
+list carries a grey dot, never a green one.
+
+The age boundary is `CONFIRMATION_DAYS`, and not by coincidence: a Verified listing is one
+somebody confirmed within the fortnight, so a copy older than that is older than the freshest
+claim the live product would have made about it.
+
+### The gate caught me one turn after I built it
+
+`phrase-check` failed on `nothing_saved_yet` and `nothing_saved_yet_help` — an empty state I
+wrote words for in four languages and then gave nowhere to appear, because the Saved chip
+only exists when there is something saved. Written yesterday to catch exactly this, and the
+first thing it caught was me.
+
+### Two things the screenshots showed
+
+**The listing page rendered the saved copy and a "we cannot reach Keys" panel underneath
+it.** Two accounts of the same situation, the second blunter than the explanation written
+for it.
+
+**The "Checked places only" chip stayed lit above the saved list.** A filter about a live
+search, sitting over a list of copies — saying Keys had filtered them to checked places,
+which is the claim the card on each of those pages spends a paragraph carefully not making.
+
+### Where it is stored
+
+`AsyncStorage`, and here that is right rather than a compromise. Nothing in it is a secret:
+it is a copy of pages public to anybody with the app — the exact opposite of the session
+token two files away, which is under a release gate for being in the same place.
+
+---
+
 ## 2026-09-02 — The roadmap asked for the wrong thing
 
 **Did.** Made search fast without letting it answer any of the questions it was making fast.
