@@ -178,8 +178,8 @@ written as release blockers before that split existed, and each is testable in s
 today. A listing wrongly marked Verified is the failure everything above it rests on, so
 none of them can wait for launch.*
 
-1. ✅ **Property-based: no input combination yields Verified unless all seven conditions
-   hold.** Exhaustive rather than sampled — 128 combinations, every one enumerated, with the
+1. ✅ **Property-based: no input combination yields Verified unless every condition
+   holds.** Exhaustive rather than sampled — 2^n combinations, every one enumerated, with the
    named reasons asserted to be exactly what was broken. `isVerified` is *defined* as
    "nothing unmet", so the badge and the explanation cannot drift apart.
 2. ✅ **Adversarial hashing corpus.** Nine attacks — rescaling both ways, hard recompression,

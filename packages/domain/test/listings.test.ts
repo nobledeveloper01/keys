@@ -56,8 +56,8 @@ const GOOD: ListingEvidence = {
   Phase 3's first exit gate, and it is exhaustive rather than sampled.
 
   The roadmap asks for property-based tests proving no input combination yields
-  Verified unless all seven conditions hold. Seven independent switches is 128
-  combinations — small enough to enumerate every one, which is strictly stronger
+  Verified unless every condition holds. Each is an independent switch, so the
+  space is 2^n — small enough to enumerate every one, which is strictly stronger
   than generating a few hundred random cases and hoping. Nothing here is left to
   a seed.
 */
@@ -79,7 +79,16 @@ describe('no input combination yields Verified unless all seven hold', () => {
     assert.ok(isVerified(GOOD, NOW));
   });
 
-  test('all 128 combinations agree with the conditions they broke', () => {
+  /*
+    The count comes from `SWITCHES`, not from a number typed here.
+
+    This said "all 128 combinations" — 2^7 — while the loop, which derives its
+    bound from `SWITCHES.length`, had been running 512 since the eighth
+    condition landed. The test was right and its name was two conditions out of
+    date; the failure message would have printed the wrong number at the moment
+    somebody needed it.
+  */
+  test(`all ${1 << SWITCHES.length} combinations agree with the conditions they broke`, () => {
     let verified = 0;
     for (let mask = 0; mask < 1 << SWITCHES.length; mask += 1) {
       let evidence = GOOD;
@@ -106,7 +115,7 @@ describe('no input combination yields Verified unless all seven hold', () => {
       );
       if (isVerified(evidence, NOW)) verified += 1;
     }
-    assert.equal(verified, 1, 'exactly one of the 128 combinations may be Verified');
+    assert.equal(verified, 1, `exactly one of the ${1 << SWITCHES.length} combinations may be Verified`);
   });
 
   test('the badge and the reasons are one computation', () => {

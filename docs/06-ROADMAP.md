@@ -82,7 +82,7 @@ transcoding, perceptual hashing with BK-tree indexing, the duplicate-match pipel
 `is_verified` computation, forced expiry with per-listing confirmation.
 
 *Exit gates — all release blockers:*
-1. **Property-based tests prove no input combination yields Verified unless all seven conditions
+1. **Property-based tests prove no input combination yields Verified unless every condition
    hold.**
 2. **Adversarial hashing corpus** (resize, recompress, crop, watermark, flip, colour-shift) meets
    the detection threshold.

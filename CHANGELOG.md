@@ -41,6 +41,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   their own screen, and it stops being Verified a fortnight later if nobody
   does. Being shown a flat that was let weeks ago is the most common complaint
   in this market; the cost falls on the agent, which is the point.
+- **The documents say what the code does.** A new gate fails the build when a
+  document states a fact the code contradicts — a condition count, a route that
+  does not exist. It found seven stale counts and a backend specification whose
+  background-jobs table described an architecture this product deliberately
+  rejected, promising an hourly recompute of a status that is never stored.
 - **The evidence panel can be read by a screen reader.** It announced the nine
   conditions with no indication of which were met — the whole content of the
   page — because the tick is an image and the row had no label. Each row now

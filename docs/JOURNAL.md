@@ -6,6 +6,63 @@ changelog with worse formatting.
 
 ---
 
+## 2026-09-02 — The specification described a product that had moved
+
+**Did.** A documentation pass, starting with a gate so that fixing it once means something.
+
+### What the gate found
+
+`scripts/doc-drift.py` asks a question `doc-check.sh` does not: not whether a document exists
+and is tracked, but whether what it *says* is still so. Only facts with a single mechanical
+source — the number of Verified conditions, the routes the server actually serves. Prose about
+why is not checkable and is not checked.
+
+Seven documents claimed seven or eight conditions. There are nine.
+
+### The worst of it was not a number
+
+`07-BACKEND-SPEC.md` had a background-jobs table with an entry reading *Verified recompute —
+on any input change + hourly sweep*. That is not stale, it is **the architecture the product
+deliberately rejected**: nothing about a listing's status is stored, so there is nothing to
+recompute, and a listing that loses its badge is gone from the very next search rather than
+the next sweep. Phase 4's exit gate fails on a cache, including one refreshed hourly.
+
+A document promising an hourly sweep is worse than one that is silent, because somebody
+writes code that waits for it. Of the seven jobs that table planned, none exists.
+
+The endpoint list had the same shape of error: eleven endpoints marked as built when
+forty-five existed, and several planned under names that were built differently or replaced
+by another mechanism. A hand-kept mirror of a generated fact is a second source of truth, and
+this one had been wrong for four phases. It says the *shape* now — who may call what, and
+why — and points at `openapi.json`, which `api-fresh` already keeps honest.
+
+### A test that misreported what it did
+
+`listings.test.ts` announced "all 128 combinations agree with the conditions they broke". Its
+loop derives the bound from `SWITCHES.length`, so it had been running 512 since the eighth
+condition landed — the test was right and its name was two conditions out of date, and the
+failure message would have printed the wrong number at the moment somebody needed it. The
+count comes from `SWITCHES` now.
+
+### And the gate could not fail, in half of itself
+
+The route check matched nothing. Its regex excluded a `/v1/...` preceded by a backtick, which
+is how every document in this repo writes a route — so a deliberately broken document passed
+the route half in silence while the condition half caught its planted error. Found by breaking
+it on purpose, which is the only reason I know either half works.
+
+Eleventh instance, and the one I should be least surprised by: I wrote the checker and the
+break in the same hour, and only the break told me.
+
+### What is deliberately not checked
+
+`JOURNAL.md` and `CHANGELOG.md` are exempt. A journal entry saying "seven conditions" was true
+when it was written and is part of the record; rewriting it would falsify the history the
+journal exists to hold. ADR-0001 was edited rather than exempted, because its count was
+incidental to the decision it records — the argument does not turn on there being seven.
+
+---
+
 ## 2026-09-02 — Looking at it at 310%
 
 **Did.** The accessibility audit phase 6 named and this repo's definition of done demands:

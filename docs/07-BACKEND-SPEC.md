@@ -48,50 +48,35 @@ that something a *third party* claimed is true.
 | **Review console** | **Internal React app, first-class** | Listing integrity, authority documents and scam reports all route through people |
 
 ### Endpoint surface
+
 Everything is under `/v1`, because a public registry with no account has no
-client we can ask to upgrade. **Built endpoints are marked ✅**; the rest are the
-plan.
+client we can ask to upgrade.
 
-```
-POST   /auth/otp/request | /auth/otp/verify | /auth/token/refresh
+**The list of what exists is `packages/api/openapi.json`, generated from the
+controllers**, and `make api-fresh` fails the build when it drifts from them.
+This section used to try to be that list: it marked eleven endpoints as built
+when there were forty-five, and planned several — `/listings/:id/media/presign`,
+`/authorities/:id/landlord-verify` — that were built under other names or
+replaced by a different mechanism entirely. A hand-kept mirror of a generated
+fact is a second source of truth, and this one had been wrong for four phases.
 
-✅ GET  /v1/registry/lookup?phone=       PUBLIC, NO AUTH — the wedge
-✅ POST /v1/registry/reports             submission; never auto-published
-✅ GET  /v1/registry/reply?token=        what was said about you
-✅ POST /v1/registry/reply               right of reply, works without a Keys account
-✅ GET  /v1/review/queue                 reviewer-guarded
-✅ GET  /v1/review/:id                   reviewer-guarded
-✅ POST /v1/review/:id/evidence          records evidence obtained out of band (phase 3 replaces it)
-✅ POST /v1/review/:id/decision          the domain refuses what policy forbids; reasoning mandatory
-✅ GET  /v1/review/metrics               decisions by reviewer, queue depth, oldest waiting
-✅ GET  /healthz                         says `durable: false` while the store is in memory
+So what belongs here is the *shape*, which the generated document cannot say:
 
-POST   /agents/verify/start | /callback  KYC vendor
-GET    /agents/:id/profile               tier, record, upheld reports only
+| Group | Who may call it | The point |
+|---|---|---|
+| `/v1/registry/*` | **anybody, no account** | The wedge. A lookup answers about a number without asking who is asking |
+| `/v1/listings`, `/v1/listings/{id}` | anybody, no account | Search and one listing. Drafts are 404, never 403 |
+| `/v1/agents/me/*` | an agent's own token | Their listings, their evidence, their captures |
+| `/v1/conversations/*`, `/v1/inspections/*` | a tenant's own token | The marketplace loop. A separate header from the agent's, deliberately |
+| `/v1/agent/*` | an agent's own token | The same conversations and inspections, from the other side |
+| `/v1/authority/*` | a texted code, or the KYC token | The landlord, who has no account and never gets one |
+| `/v1/review/*`, `/v1/agent-review/*` | the reviewer guard | The console. Every route behind one door |
+| `/v1/captures`, `/v1/duplicates` | an agent's token, or a reviewer's | Signed media in; duplicate pairs out |
 
-POST   /properties | POST /authorities
-POST   /authorities/:id/landlord-verify  OTP link — strongest proof path
-POST   /authorities/:id/revoke           CASCADES: unpublishes dependent listings
-
-POST   /listings                         draft
-POST   /listings/:id/media/presign       returns an upload target
-POST   /listings/:id/media/commit        SIGNATURE VERIFICATION + HASHING happen here
-POST   /listings/:id/publish             runs the seven-condition check
-POST   /listings/:id/confirm-availability  PER LISTING ONLY — no bulk endpoint exists
-POST   /listings/:id/report
-
-GET    /search                           PostGIS + FTS, Verified-first
-GET    /listings/:id                     public payload; address_exact withheld
-
-POST   /enquiries | /enquiries/:id/messages
-POST   /inspections | POST /inspections/:id/outcome
-
-POST   /tenancies | /agreements/sign      (v1.1)
-POST   /rent-payments/record              RECORD ONLY — no payment processing
-POST   /maintenance/tickets | /condition-records
-
-POST   /review/*                          internal console
-```
+Two things that are *not* endpoints and never will be: there is no route that
+reaches the outbox, because a one-time code sitting in a queue is a one-time
+code; and there is no route that accepts a verification outcome, because nothing
+a client sends may decide one.
 
 **Note the absences.** There is no bulk-confirm endpoint, no endpoint accepting `is_verified`, no
 endpoint returning `reporter_id`, and no payment endpoint of any kind. Each absence is a product
@@ -110,15 +95,35 @@ because those two are the same fact and a reader must not take either for a
 clean bill of health.
 
 ### Background jobs
-| Job | Cadence | Purpose |
+
+**There are none, and that is the architecture rather than a gap.**
+
+This table used to plan seven of them, and the entry for *Verified recompute — on
+any input change + hourly sweep* described the design the product then
+deliberately rejected. Nothing about a listing's status is stored, so there is
+nothing to recompute: `assessListing` answers from evidence on every read, which
+is why a listing that loses its badge is gone from the *very next* search rather
+than from the next sweep. That is phase 4's exit gate, and a cache — including
+one refreshed hourly — fails it.
+
+A document promising an hourly sweep is worse than one that is silent, because
+somebody writes code that waits for it.
+
+What actually happens, and when:
+
+| Work | When | Where |
 |---|---|---|
-| Perceptual hashing | on upload | Compute, BK-tree lookup, block or route to review |
-| Video transcoding | on upload | HLS renditions; enforce the 240p size budget |
-| **Verified recompute** | on any input change + hourly sweep | The seven conditions; populate `verification_failed_reasons` |
-| **Listing expiry** | hourly | Expire at 14 days; prompt at 11 and 13 |
-| Review routing | continuous | Distribute integrity, authority and report queues to reviewers |
-| Report lifecycle | daily | Close reply windows, publish upheld, expire at 24 months |
-| Search index refresh | continuous | FTS vectors and materialised ranking inputs |
+| Perceptual hashing | on upload | `indexAndMatch` — compute, BK-tree lookup, open a review pair |
+| Verified status | **on every read** | `assessListing`. Never stored, never swept, no `is_verified` column |
+| Confirmation lapse | **on every read** | A date compared to now inside `unmetConditions`, not an expiry job |
+| Paid placement lapse | **on every read** | `featured_until` compared to now, for the same reason |
+| Expired report purge | on the read that would have returned it | `purgeExpired`, called from the reads rather than a scheduler — the comment above it says why |
+
+Two things on the original list do not exist at all, and are release gates rather
+than jobs: **video transcoding** needs a media pipeline (R14, R15), and **review
+routing** needs more than one reviewer (R2). Search has no index to refresh —
+[ADR-0008](adr/0008-sql-narrows-the-domain-decides.md) narrows in SQL and lets
+the domain decide, so there is nothing materialised to go stale.
 
 ---
 

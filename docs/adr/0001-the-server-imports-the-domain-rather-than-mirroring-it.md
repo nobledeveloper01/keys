@@ -6,8 +6,9 @@ Accepted — 2026-08-29.
 
 ## Context
 
-Keys' central claim is `is_verified`. It is computed from seven conditions and
-it has to mean exactly the same thing in four places: the renter's app, the
+Keys' central claim is `is_verified`. It is computed from a set of conditions
+— seven when this was written, nine now, and the number is not what the decision
+turns on — and it has to mean exactly the same thing in four places: the renter's app, the
 agent's app, a server-rendered listing page a search engine indexed, and the
 server that decides it.
 
