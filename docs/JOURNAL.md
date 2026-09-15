@@ -2322,3 +2322,17 @@ they have to be written deliberately rather than assumed.
 
 ---
 
+
+## 2026-09-15 — the README in Grid's shape
+
+**Did.** Rewrote the README in Grid's twelve sections, at the user's ask
+across the portfolio. Nothing about the product changed; what changed is
+that a reader gets the problem, the mechanism, the layers, the quick start,
+the correctness notes and the status in the same order as every sibling.
+
+**The old README disagreed with itself.** The status table said 179 domain
+tests and 258 server; the gates table, forty lines down, said "85 across the
+four packages: 34 domain, 45 server". Both had been true once. The second
+had not been touched since phase 1, and nothing here counts test totals the
+way `counts-check` does in the Swift projects — a figure quoted twice is a
+figure that drifts once. The rewrite quotes each figure in one place.
