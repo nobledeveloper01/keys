@@ -1,6 +1,10 @@
-pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
+// `../../../node_modules`, not React Native's generated `../node_modules`:
+// pnpm hoists to the repository root, three directories up rather than one.
+// The generated path fails with "Included build ... does not exist", which
+// says nothing about why. Backhaul's settings.gradle has the longer story.
+pluginManagement { includeBuild("../../../node_modules/@react-native/gradle-plugin") }
 plugins { id("com.facebook.react.settings") }
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
 rootProject.name = 'ng.keys.app'
 include ':app'
-includeBuild('../node_modules/@react-native/gradle-plugin')
+includeBuild('../../../node_modules/@react-native/gradle-plugin')
