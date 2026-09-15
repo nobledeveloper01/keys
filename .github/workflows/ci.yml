@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A second push cancels the first: two native toolchains build here, and a
+# superseded commit's run has no value.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The domain package runs its tests through Node's type stripping; below
+  # 22.18 that is a syntax error at the first annotation.
+  NODE_VERSION: '22.18'
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # The gates and the tests, first and fast. The server suites run against a
+  # real Postgres here, because a Map proves something about a Map.
+  # ---------------------------------------------------------------------------
+  gates:
+    name: Gates and tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: keys
+          POSTGRES_PASSWORD: keys
+          POSTGRES_DB: keys_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U keys"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # doc-check asks git what is tracked; doc-drift and the journal
+          # warning compare commit times. A shallow clone answers wrongly.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: The gates
+        # Every blocking check; each has been broken on purpose at least once.
+        run: make gates
+
+      - name: The tests, against Postgres
+        run: KEYS_TEST_DATABASE_URL=postgres://keys:keys@localhost:5432/keys_test pnpm test
+
+  # ---------------------------------------------------------------------------
+  # Both platforms building, which is what Phase 0 promised.
+  # ---------------------------------------------------------------------------
+  android:
+    name: Android build
+    runs-on: ubuntu-latest
+    needs: gates
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: pnpm install --frozen-lockfile
+      - name: Assemble
+        working-directory: apps/mobile/android
+        run: ./gradlew :app:assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v5
+        with:
+          name: app-debug.apk
+          path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+  ios:
+    name: iOS build
+    runs-on: macos-15
+    needs: gates
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Pods
+        working-directory: apps/mobile/ios
+        env:
+          LANG: en_US.UTF-8
+          LC_ALL: en_US.UTF-8
+        run: pod install
+      - name: Build for the simulator
+        working-directory: apps/mobile/ios
+        env:
+          LANG: en_US.UTF-8
+        run: |
+          xcodebuild \
+            -workspace Keys.xcworkspace \
+            -scheme Keys \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -quiet \
+            build
