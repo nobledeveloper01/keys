@@ -74,7 +74,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      # No setup-android step: the runner image carries the SDK, and the
+      # action fails on it now ("Failed to find package 'tools'"). Gradle
+      # fetches any platform it lacks under the image's accepted licences.
       - run: pnpm install --frozen-lockfile
       - name: Assemble
         working-directory: apps/mobile/android
