@@ -267,6 +267,7 @@ describe.each(STORES)('search shows nothing it cannot stand behind (%s)', (_name
     const withdrawal = await agents.openWithdrawal({
       agentId,
       propertyId: (await agents.listing(listingId))!.propertyId,
+      landlordPhone,
       now: new Date(),
     });
     await request(app.getHttpServer())

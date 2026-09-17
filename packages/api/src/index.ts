@@ -482,9 +482,10 @@ export function client(options: ClientOptions) {
         body: { challengeId, code },
       }),
 
-    askToWithdrawAuthority: (agentId: string, propertyId: string) =>
+    /** The number is checked against the one that granted the authority, never used on its own (ADR-0017). */
+    askToWithdrawAuthority: (agentId: string, propertyId: string, landlordPhone: string) =>
       send<ChallengeOpened>(options, 'POST', '/v1/authority/withdrawal', {
-        body: { agentId, propertyId },
+        body: { agentId, propertyId, landlordPhone },
       }),
 
     report: (body: SubmitReport) =>

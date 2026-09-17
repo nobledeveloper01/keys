@@ -51,7 +51,7 @@ import {
 } from './agents.store';
 import { CapturesStore } from '../captures/captures.store';
 import { assessListing } from './assess';
-import { authorityLink } from '../outbox/links';
+import { authorityLink, replyLink } from '../outbox/links';
 import { Outbox } from '../outbox/outbox';
 
 function properties(evidence: readonly Evidence[], now: Date): number {
@@ -166,6 +166,30 @@ export class AgentsController {
     return this.profile(request.agent!, new Date());
   }
 
+  @Get('me/reports')
+  @UseGuards(AgentGuard)
+  @ApiSecurity('agent-token')
+  @ApiOperation({
+    summary: 'What has been said about your number, and where to answer it.',
+    description:
+      'The right of reply, delivered to an account rather than a text (ADR-0017): ' +
+      'an agent\u2019s number is held only as a hash, so nothing here can text them. ' +
+      'Each row carries the same reply link a stranger would be texted. Never the reporter.',
+  })
+  async myReports(@Req() request: RequestWithAgent) {
+    const agent = request.agent!;
+    const rows = await this.reports.allForHash(agent.phoneHash);
+    return rows.map((r) => ({
+      id: r.id,
+      category: r.category,
+      filedAt: r.submittedAt.toISOString(),
+      replyBy: r.replyDeadlineAt.toISOString(),
+      published: r.publishedAt !== null,
+      answered: r.hasReply,
+      reply: replyLink(r.replyToken),
+    }));
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'What is publicly known about an agent. No account required.',
@@ -230,7 +254,8 @@ export class AgentsController {
     */
     this.outbox.queue(
       {
-        toPhoneHash: opened.challenge.landlordPhoneHash,
+        // The number the agent just typed, handed across for this one text and never stored (ADR-0017).
+        to: landlordPhone,
         body:
           `${agent.displayName} says they may let a property of yours on Keys. ` +
           `If that is true, enter ${opened.code} at ` +

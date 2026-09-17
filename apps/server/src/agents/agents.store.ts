@@ -196,21 +196,22 @@ export abstract class AgentsStore {
   /**
    * Open a withdrawal challenge, to the number already on the record.
    *
-   * Separate from `openChallenge` because it must not take a phone number from
-   * a caller. The grant flow can: the agent is signed in, and they are naming
-   * the landlord they claim to act for. The withdrawal flow cannot — it is
-   * reachable by anybody with a link, and a route that accepts both "whose
-   * authority to revoke" and "where to text the code" from the same stranger
-   * is a route that revokes a stranger's authority. The code goes to the phone
-   * that granted it, which is the only number that has any standing here.
+   * Separate from `openChallenge` because the number it takes is *checked*,
+   * not trusted. The grant flow names a landlord; this flow is reachable by
+   * anybody with a link, and a route that accepts both "whose authority to
+   * revoke" and "where to text the code" from the same stranger is a route
+   * that revokes a stranger's authority. So the number typed is hashed and
+   * must equal the hash that granted the authority — the only number with any
+   * standing here — and the caller texts that same number (ADR-0017).
    *
-   * Returns null when no live authority exists for that pair, which is also
-   * the answer for an agent id that does not exist — a caller must not be able
-   * to tell those apart.
+   * Returns null when no live authority exists for that pair, when the number
+   * is not the one that granted it, and for an agent id that does not exist —
+   * a caller must not be able to tell those apart.
    */
   abstract openWithdrawal(input: {
     agentId: string;
     propertyId: string;
+    landlordPhone: string;
     now: Date;
   }): Await<{ challenge: Challenge; code: string } | null>;
 
@@ -476,7 +477,7 @@ export class InMemoryAgentsStore extends AgentsStore {
     return { challenge, code };
   }
 
-  openWithdrawal(input: { agentId: string; propertyId: string; now: Date }) {
+  openWithdrawal(input: { agentId: string; propertyId: string; landlordPhone: string; now: Date }) {
     const granted = this.evidence.find(
       (e) =>
         e.kind === 'authority' &&
@@ -486,6 +487,7 @@ export class InMemoryAgentsStore extends AgentsStore {
         e.attestor.kind === 'landlord',
     );
     if (!granted || granted.attestor.kind !== 'landlord') return null;
+    if (granted.attestor.phoneHash !== hashPhone(input.landlordPhone)) return null;
     return this.issue('revoke', input.agentId, input.propertyId, granted.attestor.phoneHash, input.now);
   }
 

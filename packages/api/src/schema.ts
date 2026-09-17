@@ -210,6 +210,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/agents/me/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What has been said about your number, and where to answer it.
+         * @description The right of reply, delivered to an account rather than a text (ADR-0017): an agent’s number is held only as a hash, so nothing here can text them. Each row carries the same reply link a stranger would be texted. Never the reporter.
+         */
+        get: operations["AgentsController_myReports"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/agents/{id}": {
         parameters: {
             query?: never;
@@ -2336,6 +2356,23 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AgentProfileResponse"];
                 };
+            };
+        };
+    };
+    AgentsController_myReports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

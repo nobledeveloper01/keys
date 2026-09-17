@@ -148,9 +148,13 @@ export class PostgresReportsStore
 
   /** The reviewer's read. Everything, and only reachable behind the reviewer guard. */
   async allFor(phone: string): Promise<readonly StoredReport[]> {
+    return this.allForHash(hashPhone(phone));
+  }
+
+  async allForHash(hash: string): Promise<readonly StoredReport[]> {
     const result = await this.pool.query<Row>(
       `SELECT ${COLUMNS} FROM reports WHERE reported_phone_hash = $1`,
-      [hashPhone(phone)],
+      [hash],
     );
     return result.rows.map(hydrate);
   }

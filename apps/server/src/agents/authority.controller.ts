@@ -47,31 +47,38 @@ export class AuthorityController {
     summary: 'Ask for a code to withdraw an authority. Texted to the landlord who granted it.',
   })
   @ApiCreatedResponse({ type: ChallengeOpenedResponse })
-  async askToWithdraw(@Body() body: { agentId?: string; propertyId?: string }) {
+  async askToWithdraw(@Body() body: { agentId?: string; propertyId?: string; landlordPhone?: string }) {
     const agentId = (body?.agentId ?? '').trim();
     const propertyId = (body?.propertyId ?? '').trim();
-    if (!agentId || !propertyId) {
-      throw new BadRequestException('Name the agent and the property.');
+    const landlordPhone = (body?.landlordPhone ?? '').trim();
+    if (!agentId || !propertyId || landlordPhone.length < 7) {
+      throw new BadRequestException('Name the agent, the property, and the number that confirmed them.');
     }
 
     /*
-      Unauthenticated, and it takes no phone number. Both halves matter.
+      Unauthenticated, and the number it takes is checked, not used. Both
+      halves matter.
 
       Unauthenticated because the landlord has no account and requiring them to
       prove who they are before they may ask to prove who they are is circular.
-      No phone number because the first draft took one, which meant a stranger
-      with the link could have the code sent to *their* number and revoke
-      somebody else's authority — the route would have been a revocation
-      endpoint with a confirmation step that confirmed nothing. The code goes to
-      the number that granted the authority, which is the only number with any
-      standing here.
+      The first draft took a number and texted it, which meant a stranger with
+      the link could have the code sent to *their* number and revoke somebody
+      else's authority. The second draft took none, and could text nobody —
+      the store holds the granting number only as a hash (R12).
 
-      What a stranger can still achieve is an unsolicited text to a landlord.
-      That makes rate limiting the real control, and it is a cost worth paying
-      for a withdrawal that works from a feature phone at ten at night.
+      The number typed here is hashed and compared with the one that granted
+      the authority; only a match opens a challenge, and the text goes to the
+      number just typed, which is then the same number. A stranger who types
+      their own gets the same answer as a pair that does not exist. Nothing is
+      stored (ADR-0017).
+
+      What a stranger can still achieve is an unsolicited text to a landlord
+      whose number they already know. That makes rate limiting the real
+      control, and it is a cost worth paying for a withdrawal that works from
+      a feature phone at ten at night.
     */
     const now = new Date();
-    const opened = await this.store.openWithdrawal({ agentId, propertyId, now });
+    const opened = await this.store.openWithdrawal({ agentId, propertyId, landlordPhone, now });
 
     // The same answer whether the authority does not exist, the property does
     // not, or the agent does not. Otherwise this route reports which pairs are
@@ -82,7 +89,7 @@ export class AuthorityController {
 
     this.outbox.queue(
       {
-        toPhoneHash: opened.challenge.landlordPhoneHash,
+        to: landlordPhone,
         body:
           'Someone asked to withdraw an agent\u2019s authority to let your property ' +
           `on Keys. If that was you, enter ${opened.code} at ` +

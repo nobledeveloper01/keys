@@ -7,6 +7,7 @@ import { CONFIRMATION_DAYS, TIERS, tierOf } from '@keys/domain';
 
 import { AppModule } from '../src/app.module';
 import { AgentsStore } from '../src/agents/agents.store';
+import { Outbox } from '../src/outbox/outbox';
 import { ReportsStore, hashPhone } from '../src/reports/reports.store';
 
 /*
@@ -645,8 +646,12 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
       .expect(201);
 
     // A stranger asks, and supplies their own number in every field a route
-    // like this might read one from.
-    const asked = await request(app.getHttpServer())
+    // like this might read one from. The number is checked against the one
+    // that granted the authority, not used (ADR-0017): a stranger's gets the
+    // same answer as a pair that does not exist, and no text goes anywhere.
+    const outbox = app.get(Outbox);
+    const before = outbox.depth;
+    await request(app.getHttpServer())
       .post('/v1/authority/withdrawal')
       .send({
         agentId,
@@ -655,21 +660,27 @@ describe.each(STORES)('no client can raise its own tier (%s)', (_name, databaseU
         phone: '+2348099990000',
         to: '+2348099990000',
       })
-      .expect(201);
+      .expect(404);
+    expect(outbox.depth).toBe(before);
 
-    // The challenge exists, and it is addressed to the landlord who granted
-    // the authority — not to the number in the request. Checked in the store,
-    // because the response deliberately says nothing about where it went.
+    // The landlord asks with the number that granted it: the challenge exists
+    // and is addressed to that number's hash. Checked in the store, because
+    // the response deliberately says nothing about where it went.
+    const asked = await request(app.getHttpServer())
+      .post('/v1/authority/withdrawal')
+      .send({ agentId, propertyId: 'flat-8', landlordPhone: landlord })
+      .expect(201);
     expect(asked.body.challengeId).toBeTruthy();
     const addressed = await landlordHashOf(asked.body.challengeId as string);
     expect(addressed).toBe(hashPhone(landlord));
-    expect(addressed).not.toBe(hashPhone('+2348099990000'));
+    expect(outbox.depth).toBe(before + 1);
+    expect(outbox.pending().at(-1)!.toPhoneHash).toBe(hashPhone(landlord));
 
     // And a pair with no live authority is refused, with the same answer a
     // nonexistent agent gets.
     await request(app.getHttpServer())
       .post('/v1/authority/withdrawal')
-      .send({ agentId, propertyId: 'a-property-nobody-granted' })
+      .send({ agentId, propertyId: 'a-property-nobody-granted', landlordPhone: landlord })
       .expect(404);
   });
 

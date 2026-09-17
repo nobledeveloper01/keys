@@ -22,6 +22,7 @@ export async function POST(request: Request) {
     code?: unknown;
     agentId?: unknown;
     propertyId?: unknown;
+    landlordPhone?: unknown;
   };
   try {
     body = (await request.json()) as typeof body;
@@ -40,18 +41,24 @@ export async function POST(request: Request) {
     }
 
     if (body.action === 'withdraw') {
-      if (typeof body.agentId !== 'string' || typeof body.propertyId !== 'string') {
+      if (
+        typeof body.agentId !== 'string' ||
+        typeof body.propertyId !== 'string' ||
+        typeof body.landlordPhone !== 'string'
+      ) {
         return NextResponse.json({ detail: 'Malformed request.' }, { status: 400 });
       }
       /*
-        No phone number is forwarded, because none is accepted.
+        The number is forwarded to be checked, not used (ADR-0017).
 
-        The API addresses the code to the number that granted the authority. If
-        this proxy took one and passed it on, it would put the hole back on the
-        other side of the wall.
+        The API hashes it and compares it with the number that granted the
+        authority; only a match opens a challenge, and the text goes to that
+        same number. A stranger's number gets the same answer as a pair that
+        does not exist, so nothing here puts the hole back on the other side
+        of the wall.
       */
       return NextResponse.json(
-        await api().askToWithdrawAuthority(body.agentId, body.propertyId),
+        await api().askToWithdrawAuthority(body.agentId, body.propertyId, body.landlordPhone),
       );
     }
 

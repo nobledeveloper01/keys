@@ -218,29 +218,28 @@ export class ReportsController {
     });
 
     /*
-      The right of reply, actually sent.
+      The right of reply, actually addressed.
 
       Phase 1 shipped a reply token, a route that accepts it, and a page that
       uses it — and nothing anywhere that delivers it to the person being
-      accused. The right of reply this product promises in its own copy, on
-      every surface, has been a column in a database.
-
-      Queued rather than sent, because there is still no provider (R1). What
-      changes is that the message now exists and is addressed: when the
-      provider lands, this flow works rather than needing to be built.
-
-      The number is hashed here for the same reason as everywhere else — the
-      outbox holds a destination, not a directory of who has been reported.
+      accused. Two doors now (ADR-0017). A number the reporter typed goes to
+      the outbox in plain for this one text, and is forgotten when it is sent;
+      the store keeps only the hash. A report against a listing names an
+      agent whose number nobody here holds in plain — and an agent has an
+      account, so the reply reaches them there: `GET /v1/agents/me/reports`
+      lists what has been said about their number, with the same link.
     */
-    this.outbox.queue(
-      {
-        toPhoneHash: row.reportedPhoneHash,
-        body:
-          'Someone has reported this number to Keys. Nothing has been published ' +
-          `and nothing will be until a person reviews it. Your side: ${replyLink(row.replyToken)}`,
-      },
-      new Date(),
-    );
+    if (listing === null) {
+      this.outbox.queue(
+        {
+          to: body.reportedPhone!.trim(),
+          body:
+            'Someone has reported this number to Keys. Nothing has been published ' +
+            `and nothing will be until a person reviews it. Your side: ${replyLink(row.replyToken)}`,
+        },
+        new Date(),
+      );
+    }
 
     /*
       What comes back carries no report content at all.

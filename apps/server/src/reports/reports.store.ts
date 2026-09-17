@@ -136,6 +136,16 @@ export abstract class ReportsStore {
    */
   abstract publishedForHash(hash: string, now?: Date): Promise<readonly StoredReport[]> | readonly StoredReport[];
   abstract allFor(phone: string): Promise<readonly StoredReport[]> | readonly StoredReport[];
+  /**
+   * Every report against a hash, for the person it is about.
+   *
+   * The agent's own door to their right of reply (ADR-0017): an agent's
+   * number is held only as a hash, so the reply link cannot be texted to
+   * them — and they have an account, so it need not be. Strictly what
+   * `allFor` returns for a number, reachable only behind the agent guard for
+   * the agent whose hash it is.
+   */
+  abstract allForHash(hash: string): Promise<readonly StoredReport[]> | readonly StoredReport[];
   abstract byId(id: string): Promise<StoredReport | undefined> | StoredReport | undefined;
   abstract byReplyToken(token: string): Promise<StoredReport | undefined> | StoredReport | undefined;
   abstract queue(now?: Date): Promise<readonly StoredReport[]> | readonly StoredReport[];
@@ -230,7 +240,10 @@ export class InMemoryReportsStore extends ReportsStore {
 
   /** The reviewer's read. Everything, and only reachable behind the reviewer guard. */
   allFor(phone: string): readonly StoredReport[] {
-    const hash = hashPhone(phone);
+    return this.allForHash(hashPhone(phone));
+  }
+
+  allForHash(hash: string): readonly StoredReport[] {
     return [...this.rows.values()].filter((r) => r.reportedPhoneHash === hash);
   }
 

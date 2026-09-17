@@ -446,6 +446,27 @@
         ]
       }
     },
+    "/v1/agents/me/reports": {
+      "get": {
+        "description": "The right of reply, delivered to an account rather than a text (ADR-0017): an agent’s number is held only as a hash, so nothing here can text them. Each row carries the same reply link a stranger would be texted. Never the reporter.",
+        "operationId": "AgentsController_myReports",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "What has been said about your number, and where to answer it.",
+        "tags": [
+          "agents"
+        ]
+      }
+    },
     "/v1/agents/{id}": {
       "get": {
         "operationId": "AgentsController_publicProfile",

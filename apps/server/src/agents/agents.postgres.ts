@@ -283,7 +283,7 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     );
   }
 
-  async openWithdrawal(input: { agentId: string; propertyId: string; now: Date }) {
+  async openWithdrawal(input: { agentId: string; propertyId: string; landlordPhone: string; now: Date }) {
     if (!/^[0-9a-f-]{36}$/i.test(input.agentId)) return null;
     const granted = await this.pool.query<{ attestor_phone_hash: string }>(
       `SELECT attestor_phone_hash FROM agent_evidence
@@ -294,6 +294,8 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     );
     const row = granted.rows[0];
     if (!row) return null;
+    // The typed number has to be the granting number; a stranger's is the same null as no pair at all.
+    if (row.attestor_phone_hash !== hashPhone(input.landlordPhone)) return null;
     return this.issue('revoke', input.agentId, input.propertyId, row.attestor_phone_hash, input.now);
   }
 
