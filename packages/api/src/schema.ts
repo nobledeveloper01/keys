@@ -1095,6 +1095,142 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/cities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The cities Keys serves and their named areas. No account. */
+        get: operations["ReachController_cities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/areas/{areaId}/guide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What tenants in this area answered — counts, above a floor of five, never a verdict. No account. */
+        get: operations["ReachController_guide"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/areas/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer the four questions for the area of a tenancy you hold. Your latest answer is the one that counts. */
+        post: operations["ReachController_answer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/listings/{id}/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply for a listing in your own words. One open application per listing. */
+        post: operations["ReachController_apply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My applications, every status change visible. */
+        get: operations["ReachController_mine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/agent/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Applications for my listings — the tenant’s own words, and nothing Keys computed. */
+        get: operations["ReachController_forAgent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/applications/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The agent moves it forward or declines. A closed list, and the tenant sees every change. */
+        post: operations["ReachController_move"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/applications/{id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Withdraw your application at any open state. */
+        post: operations["ReachController_withdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1428,6 +1564,10 @@ export interface components {
              * @description When this listing's paid placement runs out, or null. Sent so a client can label the band without a second request, and so that a reader poking at the API sees the same fact the page shows.
              */
             featuredUntil: string | null;
+            /** @description Kilometres in a straight line from the place the tenant named, to one decimal — never minutes (ADR-0013). Null when no place was named or the listing has no point. */
+            kmFromPlace: number | null;
+            /** @description The named area the listing belongs to, or null. */
+            areaId: string | null;
         };
         SearchResponse: {
             /** @description Slots somebody paid for. Verified only, capped, and always drawn from listings this search already returned — a paid slot cannot show you a place you did not ask about. Usually empty. */
@@ -1448,6 +1588,8 @@ export interface components {
             address: string;
             verified: boolean;
             agentName: string;
+            /** @description The named area the listing belongs to, for its guide; null outside every city Keys serves. */
+            areaId: string | null;
             /** @description What was checked about the agent, in words a tenant could verify. */
             agentMeaning: string;
             /** @description Every condition, met or not. Not a badge and not a score: the list of things that were checked, which a tenant can read and disagree with. */
@@ -1813,6 +1955,81 @@ export interface components {
             fixed: string[];
             missing: string[];
             added: string[];
+        };
+        AreaView: {
+            id: string;
+            name: string;
+            latitude: number;
+            longitude: number;
+        };
+        CityView: {
+            id: string;
+            name: string;
+            areas: components["schemas"]["AreaView"][];
+        };
+        GuideView: {
+            areaId: string;
+            areaName: string;
+            /** @description Separate tenants whose latest answer counts. Zero means below the floor, and nothing else is sent. */
+            answers: number;
+            floor: number;
+            power?: Record<string, never> | null;
+            water?: Record<string, never> | null;
+            transport?: Record<string, never> | null;
+            market?: Record<string, never> | null;
+        };
+        AnswerBody: {
+            /** @description A tenancy this tenant holds; the answer is for its area. */
+            tenancyId: string;
+            /** @enum {string} */
+            power: "under_4h" | "4_to_8h" | "8_to_16h" | "over_16h";
+            /** @enum {string} */
+            water: "borehole" | "public_supply" | "water_vendor" | "well";
+            transport: ("bus" | "keke" | "okada" | "brt" | "train" | "ferry")[];
+            /** @enum {string} */
+            market: "walking" | "short_ride" | "far";
+        };
+        ApplyBody: {
+            occupation: string;
+            householdSize: number;
+            /** Format: date */
+            moveInBy: string;
+            note?: string;
+        };
+        ProfileView: {
+            occupation: string;
+            householdSize: number;
+            /** Format: date */
+            moveInBy: string;
+            note: string;
+        };
+        TenantStandingView: {
+            accountAgeDays: number;
+            tenanciesRecorded: number;
+        };
+        ApplicationEventView: {
+            /** @enum {string} */
+            kind: "submitted" | "moved";
+            by: string;
+            /** Format: date-time */
+            at: string;
+            /** @enum {string} */
+            to?: "submitted" | "seen" | "shortlisted" | "offered" | "declined" | "withdrawn";
+        };
+        ApplicationView: {
+            id: string;
+            listingId: string;
+            listingTitle: string;
+            /** @enum {string} */
+            state: "submitted" | "seen" | "shortlisted" | "offered" | "declined" | "withdrawn";
+            moves: ("submitted" | "seen" | "shortlisted" | "offered" | "declined" | "withdrawn")[];
+            profile: components["schemas"]["ProfileView"];
+            standing: components["schemas"]["TenantStandingView"];
+            events: components["schemas"]["ApplicationEventView"][];
+        };
+        MoveApplicationBody: {
+            /** @enum {string} */
+            to: "submitted" | "seen" | "shortlisted" | "offered" | "declined" | "withdrawn";
         };
     };
     responses: never;
@@ -2426,6 +2643,10 @@ export interface operations {
                 latitude: string;
                 longitude: string;
                 verifiedOnly: string;
+                city: string;
+                placeLatitude: string;
+                placeLongitude: string;
+                withinKm: string;
             };
             header?: never;
             path?: never;
@@ -3435,6 +3656,176 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RoomChangeView"][];
+                };
+            };
+        };
+    };
+    ReachController_cities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CityView"][];
+                };
+            };
+        };
+    };
+    ReachController_guide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                areaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GuideView"];
+                };
+            };
+        };
+    };
+    ReachController_answer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReachController_apply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationView"];
+                };
+            };
+        };
+    };
+    ReachController_mine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationView"][];
+                };
+            };
+        };
+    };
+    ReachController_forAgent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationView"][];
+                };
+            };
+        };
+    };
+    ReachController_move: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveApplicationBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationView"];
+                };
+            };
+        };
+    };
+    ReachController_withdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationView"];
                 };
             };
         };

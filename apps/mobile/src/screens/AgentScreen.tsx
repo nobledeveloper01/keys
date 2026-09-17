@@ -32,10 +32,12 @@ export function AgentScreen({
   baseUrl,
   onOpenEnquiry,
   onOpenPortfolio,
+  onOpenApplications,
 }: {
   baseUrl: string;
   onOpenEnquiry: (conversationId: string) => void;
   onOpenPortfolio: () => void;
+  onOpenApplications: () => void;
 }) {
   const { t } = useLanguage();
   const { token, signIn, signOut } = useSession();
@@ -174,6 +176,7 @@ export function AgentScreen({
           />
 
           <Button label={t('portfolio')} onPress={onOpenPortfolio} quiet />
+          <Button label={t('applications')} onPress={onOpenApplications} quiet />
 
           <View style={styles.out}>
             <Button label={t('sign_out')} onPress={signOut} quiet />

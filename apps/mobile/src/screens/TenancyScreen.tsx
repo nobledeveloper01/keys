@@ -33,6 +33,7 @@ export function TenancyScreen({
   as,
   id,
   onOpenCondition,
+  onTellArea,
   onBack,
 }: {
   baseUrl: string;
@@ -40,6 +41,7 @@ export function TenancyScreen({
   as: Party;
   id: string;
   onOpenCondition: () => void;
+  onTellArea: () => void;
   onBack: () => void;
 }) {
   const { t } = useLanguage();
@@ -285,6 +287,7 @@ export function TenancyScreen({
           </Card>
 
           <Button label={t('walk_record')} onPress={onOpenCondition} quiet />
+          {as === 'tenant' && tenancy.signed && <Button label={t('tell_about_area')} onPress={onTellArea} quiet />}
           {!ended && <Button label={t('end_tenancy')} onPress={() => void end()} quiet />}
         </>
       )}

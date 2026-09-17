@@ -26,6 +26,9 @@ import { ConditionScreen } from './src/screens/ConditionScreen';
 import { PortfolioScreen } from './src/screens/PortfolioScreen';
 import { TenanciesScreen } from './src/screens/TenanciesScreen';
 import { TenancyScreen } from './src/screens/TenancyScreen';
+import { ApplyScreen } from './src/screens/ApplyScreen';
+import { ApplicationsScreen } from './src/screens/ApplicationsScreen';
+import { AreaAnswerScreen } from './src/screens/AreaAnswerScreen';
 
 /*
   Where the server is, in development.
@@ -129,6 +132,9 @@ function Shell() {
   const [tenancies, setTenancies] = useState<'tenant' | 'letting' | null>(null);
   const [openTenancy, setOpenTenancy] = useState<string | null>(null);
   const [walking, setWalking] = useState(false);
+  const [telling, setTelling] = useState(false);
+  const [applying, setApplying] = useState<string | null>(null);
+  const [applications, setApplications] = useState<'tenant' | 'agent' | null>(null);
   const tenantSession = useTenant();
   const agentSession = useSession();
 
@@ -248,6 +254,8 @@ function Shell() {
               onDone={() => setReportingListing(null)}
               onCancel={() => setReportingListing(null)}
             />
+          ) : applying !== null && tenantSession.token !== null ? (
+            <ApplyScreen baseUrl={API_URL} token={tenantSession.token} listingId={applying} onDone={() => setApplying(null)} onBack={() => setApplying(null)} />
           ) : asking !== null ? (
             <AskScreen
               baseUrl={API_URL}
@@ -296,19 +304,29 @@ function Shell() {
               */
               onMessage={() => setAsking({ listingId: openListing })}
               onReport={() => setReportingListing(openListing)}
+              /*
+                Applying needs an account the way asking does, and gets one
+                the same way: through the ask screen, on a page that names
+                the flat. A tenant without a token is sent to ask first.
+              */
+              onApply={() => (tenantSession.token ? setApplying(openListing) : setAsking({ listingId: openListing }))}
             />
           ))}
         {tab === 'messages' &&
-          (tenancies === 'tenant' && tenantSession.token !== null ? (
+          (applications === 'tenant' && tenantSession.token !== null ? (
+            <ApplicationsScreen baseUrl={API_URL} token={tenantSession.token} as="tenant" onBack={() => setApplications(null)} />
+          ) : tenancies === 'tenant' && tenantSession.token !== null ? (
             openTenancy === null ? (
               <TenanciesScreen baseUrl={API_URL} tenantToken={tenantSession.token} agentToken={null} onOpen={setOpenTenancy} onBack={() => setTenancies(null)} />
             ) : walking ? (
               <ConditionScreen baseUrl={API_URL} token={tenantSession.token} as="tenant" tenancyId={openTenancy} onBack={() => setWalking(false)} />
+            ) : telling ? (
+              <AreaAnswerScreen baseUrl={API_URL} token={tenantSession.token} tenancyId={openTenancy} onDone={() => setTelling(false)} onBack={() => setTelling(false)} />
             ) : (
-              <TenancyScreen baseUrl={API_URL} token={tenantSession.token} as="tenant" id={openTenancy} onOpenCondition={() => setWalking(true)} onBack={() => setOpenTenancy(null)} />
+              <TenancyScreen baseUrl={API_URL} token={tenantSession.token} as="tenant" id={openTenancy} onOpenCondition={() => setWalking(true)} onTellArea={() => setTelling(true)} onBack={() => setOpenTenancy(null)} />
             )
           ) : openConversation === null ? (
-            <MessagesScreen baseUrl={API_URL} onOpen={setOpenConversation} onOpenTenancies={() => setTenancies('tenant')} />
+            <MessagesScreen baseUrl={API_URL} onOpen={setOpenConversation} onOpenTenancies={() => setTenancies('tenant')} onOpenApplications={() => setApplications('tenant')} />
           ) : (
             <ConversationScreen
               baseUrl={API_URL}
@@ -333,16 +351,18 @@ function Shell() {
             />
           ))}
         {tab === 'account' &&
-          (tenancies === 'letting' && agentSession.token !== null ? (
+          (applications === 'agent' && agentSession.token !== null ? (
+            <ApplicationsScreen baseUrl={API_URL} token={agentSession.token} as="agent" onBack={() => setApplications(null)} />
+          ) : tenancies === 'letting' && agentSession.token !== null ? (
             openTenancy === null ? (
               <PortfolioScreen baseUrl={API_URL} token={agentSession.token} onOpen={setOpenTenancy} onBack={() => setTenancies(null)} />
             ) : walking ? (
               <ConditionScreen baseUrl={API_URL} token={agentSession.token} as="letting" tenancyId={openTenancy} onBack={() => setWalking(false)} />
             ) : (
-              <TenancyScreen baseUrl={API_URL} token={agentSession.token} as="letting" id={openTenancy} onOpenCondition={() => setWalking(true)} onBack={() => setOpenTenancy(null)} />
+              <TenancyScreen baseUrl={API_URL} token={agentSession.token} as="letting" id={openTenancy} onOpenCondition={() => setWalking(true)} onTellArea={() => {}} onBack={() => setOpenTenancy(null)} />
             )
           ) : openEnquiry === null ? (
-            <AgentScreen baseUrl={API_URL} onOpenEnquiry={setOpenEnquiry} onOpenPortfolio={() => setTenancies('letting')} />
+            <AgentScreen baseUrl={API_URL} onOpenEnquiry={setOpenEnquiry} onOpenPortfolio={() => setTenancies('letting')} onOpenApplications={() => setApplications('agent')} />
           ) : (
             /*
               The same screen the tenant reads, from the other side.

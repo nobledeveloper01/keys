@@ -5,6 +5,7 @@ import { AgentsModule } from './agents/agents.module';
 import { CapturesModule } from './captures/captures.module';
 import { ReportsModule } from './reports/reports.module';
 import { TenancyModule } from './tenancy/tenancy.module';
+import { ReachModule } from './reach/reach.module';
 
 /**
  * `HealthController` lives in `ReportsModule` rather than here, because it asks
@@ -13,6 +14,6 @@ import { TenancyModule } from './tenancy/tenancy.module';
  */
 @Module({
   imports: [ReportsModule, AgentsModule,
-    MarketModule, CapturesModule, TenancyModule],
+    MarketModule, CapturesModule, TenancyModule, ReachModule],
 })
 export class AppModule {}

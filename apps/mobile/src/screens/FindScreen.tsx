@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { attempt, client, type SearchResponse } from '@keys/api';
 
 import { Chip } from '../components/Chip';
-import { naira } from '@keys/domain';
+import { CITIES, WITHIN_KM_OPTIONS, naira } from '@keys/domain';
 
 import { PropertyRow } from '../components/PropertyRow';
 import { SearchField } from '../components/SearchField';
@@ -39,10 +39,29 @@ export function FindScreen({
   const [verifiedOnly, setVerifiedOnly] = useState(true);
   const [showSaved, setShowSaved] = useState(false);
   const saved = useSaved();
+  /*
+    A city, and a place in it the tenant goes often (ADR-0013, ADR-0016).
+
+    The place is a point on the phone and travels with the search; it is never
+    stored on the server. What comes back is kilometres, never minutes.
+  */
+  const [cityId, setCityId] = useState<string | null>(null);
+  const [placeId, setPlaceId] = useState<string | null>(null);
+  const [within, setWithin] = useState<number>(WITHIN_KM_OPTIONS[1]);
+  const cityChosen = CITIES.find((c) => c.id === cityId) ?? null;
+  const place = cityChosen?.areas.find((a) => a.id === placeId) ?? null;
 
   const { query, refresh } = useQuery<SearchResponse>(
-    () => attempt(() => client({ baseUrl }).search({ q: typed.trim(), verifiedOnly })),
-    [typed, verifiedOnly, baseUrl],
+    () =>
+      attempt(() =>
+        client({ baseUrl }).search({
+          q: typed.trim(),
+          verifiedOnly,
+          ...(cityId ? { city: cityId } : {}),
+          ...(place ? { placeLatitude: place.centre.latitude, placeLongitude: place.centre.longitude, withinKm: within } : {}),
+        }),
+      ),
+    [typed, verifiedOnly, baseUrl, cityId, placeId, within],
   );
 
   const found = query.state === 'ready' ? query.value : null;
@@ -100,6 +119,53 @@ export function FindScreen({
           />
         )}
       </View>
+
+      {!offline && (
+        <View style={styles.filter}>
+          <Text variant="label" tone="secondary">
+            {t('city')}
+          </Text>
+          <Chip
+            label={t('any_city')}
+            selected={cityId === null}
+            onPress={() => {
+              setCityId(null);
+              setPlaceId(null);
+            }}
+          />
+          {CITIES.map((c) => (
+            <Chip
+              key={c.id}
+              label={c.name}
+              selected={cityId === c.id}
+              onPress={() => {
+                setCityId(c.id);
+                setPlaceId(null);
+              }}
+            />
+          ))}
+        </View>
+      )}
+
+      {!offline && cityChosen !== null && (
+        <View style={styles.filter}>
+          <Text variant="label" tone="secondary">
+            {t('distance_from')}
+          </Text>
+          {cityChosen.areas.map((a) => (
+            <Chip key={a.id} label={a.name} selected={placeId === a.id} onPress={() => setPlaceId(placeId === a.id ? null : a.id)} />
+          ))}
+          {place !== null &&
+            WITHIN_KM_OPTIONS.map((km) => (
+              <Chip key={km} label={`${t('within_km')} ${km} km`} selected={within === km} onPress={() => setWithin(km)} />
+            ))}
+          {place === null && (
+            <Text variant="label" tone="secondary">
+              {t('pick_a_place')}
+            </Text>
+          )}
+        </View>
+      )}
 
       {/*
         Loading, unreachable and refused, before any content. An empty list
@@ -271,9 +337,14 @@ export function FindScreen({
                     renders "₦NaN" beside a real address. A price is the one
                     field on this row that must never be guessed at.
                   */
-                  typeof result.moveInKobo === 'number'
-                    ? `${naira(result.moveInKobo)} · ${result.agentName}`
-                    : result.agentName
+                  [
+                    typeof result.moveInKobo === 'number' ? naira(result.moveInKobo) : null,
+                    // Kilometres in a straight line from the place they named. Never minutes.
+                    typeof result.kmFromPlace === 'number' && place !== null ? `${result.kmFromPlace} ${t('km_from')} ${place.name}` : null,
+                    result.agentName,
+                  ]
+                    .filter((part): part is string => part !== null)
+                    .join(' · ')
                 }
                 tone={result.verified ? 'clear' : 'quiet'}
                 onPress={() => onOpen(result.id)}

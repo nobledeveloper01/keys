@@ -296,6 +296,17 @@ export class SearchResult {
       'When this listing\'s paid placement runs out, or null. Sent so a client can label the band without a second request, and so that a reader poking at the API sees the same fact the page shows.',
   })
   featuredUntil!: string | null;
+
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description:
+      'Kilometres in a straight line from the place the tenant named, to one decimal — never minutes (ADR-0013). Null when no place was named or the listing has no point.',
+  })
+  kmFromPlace!: number | null;
+
+  @ApiProperty({ type: String, nullable: true, description: 'The named area the listing belongs to, or null.' })
+  areaId!: string | null;
 }
 
 /**
@@ -339,6 +350,8 @@ export class ListingView {
   @ApiProperty() address!: string;
   @ApiProperty() verified!: boolean;
   @ApiProperty() agentName!: string;
+  @ApiProperty({ type: String, nullable: true, description: 'The named area the listing belongs to, for its guide; null outside every city Keys serves.' })
+  areaId!: string | null;
 
   @ApiProperty({ description: 'What was checked about the agent, in words a tenant could verify.' })
   agentMeaning!: string;

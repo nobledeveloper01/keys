@@ -8,7 +8,13 @@ import {
   conditionStepPhrase,
   isPlausiblePoint,
   DISTANCE_HORIZON_M,
+  areaOf,
   boundingBox,
+  city,
+  cityOf,
+  isCityId,
+  kmFrom,
+  withinKm,
   featuredAmong,
   matches,
   moveInCostKobo,
@@ -62,10 +68,22 @@ export class SearchController {
     @Query('latitude') latitude?: string,
     @Query('longitude') longitude?: string,
     @Query('verifiedOnly') verifiedOnly?: string,
+    @Query('city') cityId?: string,
+    @Query('placeLatitude') placeLatitude?: string,
+    @Query('placeLongitude') placeLongitude?: string,
+    @Query('withinKm') withinKmParam?: string,
   ) {
     const now = new Date();
     const typed = (q ?? '').slice(0, 120);
     const near = this.pointFrom(latitude, longitude);
+    /*
+      A city narrows in SQL with its box and decides here with the same box
+      (ADR-0016); a place the tenant named narrows nothing — it is a distance
+      on every row, and a filter only when they asked for one (ADR-0013).
+    */
+    const inCity = cityId !== undefined && isCityId(cityId) ? city(cityId) : null;
+    const place = this.pointFrom(placeLatitude, placeLongitude);
+    const within = withinKmParam !== undefined && Number.isFinite(Number(withinKmParam)) && Number(withinKmParam) > 0 ? Number(withinKmParam) : null;
 
     /*
       Narrowed in SQL, decided here. ADR-0008.
@@ -84,9 +102,12 @@ export class SearchController {
     const wanted = (
       await this.store.searchable({
         words,
-        box: near ? boundingBox(near, DISTANCE_HORIZON_M) : null,
+        box: inCity ? inCity.box : near ? boundingBox(near, DISTANCE_HORIZON_M) : null,
       })
-    ).filter((l) => matches([l.title, l.propertyId], typed));
+    )
+      .filter((l) => matches([l.title, l.propertyId], typed))
+      .filter((l) => inCity === null || (l.latitude !== null && l.longitude !== null && cityOf({ latitude: l.latitude, longitude: l.longitude })?.id === inCity.id))
+      .filter((l) => place === null || within === null || withinKm(place, l, within));
 
     const assessed = await Promise.all(wanted.map((l) => this.assess(l, now)));
 
@@ -120,6 +141,8 @@ export class SearchController {
       // can interrogate is a ranking somebody will assume was bought.
       because: [...because],
       featuredUntil: listing.featuredUntil,
+      kmFromPlace: kmFrom(place, listing),
+      areaId: listing.latitude !== null && listing.longitude !== null ? (areaOf({ latitude: listing.latitude, longitude: listing.longitude })?.id ?? null) : null,
     }));
 
     /*
@@ -169,6 +192,7 @@ export class SearchController {
       verified: assessed.verified,
       agentName: assessed.agentName,
       agentMeaning: assessed.agentMeaning,
+      areaId: listing.latitude !== null && listing.longitude !== null ? (areaOf({ latitude: listing.latitude, longitude: listing.longitude })?.id ?? null) : null,
       /*
         The evidence panel: every condition, met or not, in the tenant's
         language.

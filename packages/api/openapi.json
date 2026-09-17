@@ -940,6 +940,38 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "city",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "placeLatitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "placeLongitude",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "withinKm",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2609,6 +2641,280 @@
           "tenancy"
         ]
       }
+    },
+    "/v1/cities": {
+      "get": {
+        "operationId": "ReachController_cities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CityView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "The cities Keys serves and their named areas. No account.",
+        "tags": [
+          "reach"
+        ]
+      }
+    },
+    "/v1/areas/{areaId}/guide": {
+      "get": {
+        "operationId": "ReachController_guide",
+        "parameters": [
+          {
+            "name": "areaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "What tenants in this area answered — counts, above a floor of five, never a verdict. No account.",
+        "tags": [
+          "reach"
+        ]
+      }
+    },
+    "/v1/areas/answers": {
+      "post": {
+        "operationId": "ReachController_answer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Answer the four questions for the area of a tenancy you hold. Your latest answer is the one that counts.",
+        "tags": [
+          "reach"
+        ]
+      }
+    },
+    "/v1/listings/{id}/applications": {
+      "post": {
+        "operationId": "ReachController_apply",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Apply for a listing in your own words. One open application per listing.",
+        "tags": [
+          "reach"
+        ]
+      }
+    },
+    "/v1/applications": {
+      "get": {
+        "operationId": "ReachController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApplicationView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "My applications, every status change visible.",
+        "tags": [
+          "reach"
+        ]
+      }
+    },
+    "/v1/agent/applications": {
+      "get": {
+        "operationId": "ReachController_forAgent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApplicationView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Applications for my listings — the tenant’s own words, and nothing Keys computed.",
+        "tags": [
+          "reach"
+        ]
+      }
+    },
+    "/v1/applications/{id}/move": {
+      "post": {
+        "operationId": "ReachController_move",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveApplicationBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "The agent moves it forward or declines. A closed list, and the tenant sees every change.",
+        "tags": [
+          "reach"
+        ]
+      }
+    },
+    "/v1/applications/{id}/withdraw": {
+      "post": {
+        "operationId": "ReachController_withdraw",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Withdraw your application at any open state.",
+        "tags": [
+          "reach"
+        ]
+      }
     }
   },
   "info": {
@@ -3589,6 +3895,16 @@
             "nullable": true,
             "format": "date-time",
             "description": "When this listing's paid placement runs out, or null. Sent so a client can label the band without a second request, and so that a reader poking at the API sees the same fact the page shows."
+          },
+          "kmFromPlace": {
+            "type": "number",
+            "nullable": true,
+            "description": "Kilometres in a straight line from the place the tenant named, to one decimal — never minutes (ADR-0013). Null when no place was named or the listing has no point."
+          },
+          "areaId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The named area the listing belongs to, or null."
           }
         },
         "required": [
@@ -3600,7 +3916,9 @@
           "moveInKobo",
           "annualRentKobo",
           "because",
-          "featuredUntil"
+          "featuredUntil",
+          "kmFromPlace",
+          "areaId"
         ]
       },
       "SearchResponse": {
@@ -3675,6 +3993,11 @@
           "agentName": {
             "type": "string"
           },
+          "areaId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The named area the listing belongs to, for its guide; null outside every city Keys serves."
+          },
           "agentMeaning": {
             "type": "string",
             "description": "What was checked about the agent, in words a tenant could verify."
@@ -3702,6 +4025,7 @@
           "address",
           "verified",
           "agentName",
+          "areaId",
           "agentMeaning",
           "checks",
           "costs"
@@ -4975,6 +5299,325 @@
           "fixed",
           "missing",
           "added"
+        ]
+      },
+      "AreaView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "latitude",
+          "longitude"
+        ]
+      },
+      "CityView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "areas": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AreaView"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "areas"
+        ]
+      },
+      "GuideView": {
+        "type": "object",
+        "properties": {
+          "areaId": {
+            "type": "string"
+          },
+          "areaName": {
+            "type": "string"
+          },
+          "answers": {
+            "type": "number",
+            "description": "Separate tenants whose latest answer counts. Zero means below the floor, and nothing else is sent."
+          },
+          "floor": {
+            "type": "number"
+          },
+          "power": {
+            "type": "object",
+            "nullable": true
+          },
+          "water": {
+            "type": "object",
+            "nullable": true
+          },
+          "transport": {
+            "type": "object",
+            "nullable": true
+          },
+          "market": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "areaId",
+          "areaName",
+          "answers",
+          "floor"
+        ]
+      },
+      "AnswerBody": {
+        "type": "object",
+        "properties": {
+          "tenancyId": {
+            "type": "string",
+            "description": "A tenancy this tenant holds; the answer is for its area."
+          },
+          "power": {
+            "type": "string",
+            "enum": [
+              "under_4h",
+              "4_to_8h",
+              "8_to_16h",
+              "over_16h"
+            ]
+          },
+          "water": {
+            "type": "string",
+            "enum": [
+              "borehole",
+              "public_supply",
+              "water_vendor",
+              "well"
+            ]
+          },
+          "transport": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "bus",
+                "keke",
+                "okada",
+                "brt",
+                "train",
+                "ferry"
+              ]
+            }
+          },
+          "market": {
+            "type": "string",
+            "enum": [
+              "walking",
+              "short_ride",
+              "far"
+            ]
+          }
+        },
+        "required": [
+          "tenancyId",
+          "power",
+          "water",
+          "transport",
+          "market"
+        ]
+      },
+      "ApplyBody": {
+        "type": "object",
+        "properties": {
+          "occupation": {
+            "type": "string"
+          },
+          "householdSize": {
+            "type": "number"
+          },
+          "moveInBy": {
+            "type": "string",
+            "format": "date"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "occupation",
+          "householdSize",
+          "moveInBy"
+        ]
+      },
+      "ProfileView": {
+        "type": "object",
+        "properties": {
+          "occupation": {
+            "type": "string"
+          },
+          "householdSize": {
+            "type": "number"
+          },
+          "moveInBy": {
+            "type": "string",
+            "format": "date"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "occupation",
+          "householdSize",
+          "moveInBy",
+          "note"
+        ]
+      },
+      "TenantStandingView": {
+        "type": "object",
+        "properties": {
+          "accountAgeDays": {
+            "type": "number"
+          },
+          "tenanciesRecorded": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "accountAgeDays",
+          "tenanciesRecorded"
+        ]
+      },
+      "ApplicationEventView": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "moved"
+            ]
+          },
+          "by": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "seen",
+              "shortlisted",
+              "offered",
+              "declined",
+              "withdrawn"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "by",
+          "at"
+        ]
+      },
+      "ApplicationView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "listingId": {
+            "type": "string"
+          },
+          "listingTitle": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "seen",
+              "shortlisted",
+              "offered",
+              "declined",
+              "withdrawn"
+            ]
+          },
+          "moves": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "submitted",
+                "seen",
+                "shortlisted",
+                "offered",
+                "declined",
+                "withdrawn"
+              ]
+            }
+          },
+          "profile": {
+            "$ref": "#/components/schemas/ProfileView"
+          },
+          "standing": {
+            "$ref": "#/components/schemas/TenantStandingView"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApplicationEventView"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "listingId",
+          "listingTitle",
+          "state",
+          "moves",
+          "profile",
+          "standing",
+          "events"
+        ]
+      },
+      "MoveApplicationBody": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "seen",
+              "shortlisted",
+              "offered",
+              "declined",
+              "withdrawn"
+            ]
+          }
+        },
+        "required": [
+          "to"
         ]
       }
     }

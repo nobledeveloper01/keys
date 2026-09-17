@@ -9,6 +9,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Depth and reach, built.** Three cities as data with their named areas,
+  and a search by city that returns only that city; a distance filter from a
+  place the tenant picks, in kilometres and never minutes; area guides from
+  tenants' answers to four fixed questions, shown only above five separate
+  tenants and as counts; applications in the tenant's own words with a
+  closed status list, a withdraw, and nothing computed about anybody; the
+  listing page carries its area's guide and an *apply*. Three server tests
+  against both stores; 15 domain tests.
 - **Depth and reach, decided before it is built.** Four ADRs: a commute is a
   distance in kilometres from a place the tenant named and never a number of
   minutes; an area guide is the distribution of tenants' answers to four

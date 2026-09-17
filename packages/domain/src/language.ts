@@ -353,7 +353,63 @@ export type Phrase =
   | 'ended'
   | 'nothing_recorded'
   | 'period_of'
-  | 'add_a_note';
+  | 'add_a_note'
+  | 'city'
+  | 'any_city'
+  | 'distance_from'
+  | 'pick_a_place'
+  | 'within_km'
+  | 'km_from'
+  | 'area_guide'
+  | 'area_guide_lede'
+  | 'guide_not_enough'
+  | 'guide_answers'
+  | 'q_power'
+  | 'q_water'
+  | 'q_transport'
+  | 'q_market'
+  | 'power_under_4h'
+  | 'power_4_to_8h'
+  | 'power_8_to_16h'
+  | 'power_over_16h'
+  | 'water_borehole'
+  | 'water_public_supply'
+  | 'water_water_vendor'
+  | 'water_well'
+  | 'transport_bus'
+  | 'transport_keke'
+  | 'transport_okada'
+  | 'transport_brt'
+  | 'transport_train'
+  | 'transport_ferry'
+  | 'market_walking'
+  | 'market_short_ride'
+  | 'market_far'
+  | 'tell_about_area'
+  | 'tell_about_area_lede'
+  | 'answer_sent'
+  | 'apply_for_this'
+  | 'apply_lede'
+  | 'occupation'
+  | 'household_size'
+  | 'move_in_by'
+  | 'application_note'
+  | 'send_application'
+  | 'applications'
+  | 'applications_lede'
+  | 'applications_none'
+  | 'agent_applications_lede'
+  | 'on_keys_for_days'
+  | 'days'
+  | 'tenancies_recorded'
+  | 'app_submitted'
+  | 'app_seen'
+  | 'app_shortlisted'
+  | 'app_offered'
+  | 'app_declined'
+  | 'app_withdrawn'
+  | 'withdraw_application'
+  | 'already_applied';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -693,6 +749,62 @@ export const EN: Readonly<Record<Phrase, string>> = {
   nothing_recorded: "Nothing recorded yet.",
   period_of: "Period",
   add_a_note: "Add a note",
+  city: "City",
+  any_city: "Anywhere",
+  distance_from: "Distance from",
+  pick_a_place: "Pick a place you go often — your work, a school, a market",
+  within_km: "Within",
+  km_from: "km from",
+  area_guide: "What tenants here say",
+  area_guide_lede: "Answers from people with a tenancy in this area — counts, not a verdict. Nothing about any person.",
+  guide_not_enough: "Not enough answers yet. The guide shows once five separate tenants have answered.",
+  guide_answers: "tenants answered",
+  q_power: "Power, hours a day",
+  q_water: "Water",
+  q_transport: "How to get here",
+  q_market: "A daily market",
+  power_under_4h: "Under 4 hours",
+  power_4_to_8h: "4 to 8 hours",
+  power_8_to_16h: "8 to 16 hours",
+  power_over_16h: "Over 16 hours",
+  water_borehole: "Borehole",
+  water_public_supply: "Public supply",
+  water_water_vendor: "Water vendor",
+  water_well: "Well",
+  transport_bus: "Bus",
+  transport_keke: "Keke",
+  transport_okada: "Okada",
+  transport_brt: "BRT",
+  transport_train: "Train",
+  transport_ferry: "Ferry",
+  market_walking: "Walking distance",
+  market_short_ride: "A short ride",
+  market_far: "Far",
+  tell_about_area: "Tell others about this area",
+  tell_about_area_lede: "Four questions with fixed answers. Your latest answer is the one that counts, and your name is never on it.",
+  answer_sent: "Thank you. Your answers are counted with the others.",
+  apply_for_this: "Apply for this place",
+  apply_lede: "In your own words, to this agent, for this place. Keys adds only what you can see on your own screen: how long you have been on Keys and how many tenancies it has recorded for you. It computes nothing about you.",
+  occupation: "What you do",
+  household_size: "How many of you will live here",
+  move_in_by: "When you can move in (YYYY-MM-DD)",
+  application_note: "Anything else you want the agent to know",
+  send_application: "Send",
+  applications: "Applications",
+  applications_lede: "Every change of status, as it happened. An agent may decline; Keys never says why, because there is no reason field.",
+  applications_none: "No applications yet.",
+  agent_applications_lede: "The applicant's own words. Keys has computed nothing about them, and offers you nothing it could not show them.",
+  on_keys_for_days: "On Keys for",
+  days: "days",
+  tenancies_recorded: "tenancies recorded",
+  app_submitted: "Sent",
+  app_seen: "Seen",
+  app_shortlisted: "Shortlisted",
+  app_offered: "Offered",
+  app_declined: "Declined",
+  app_withdrawn: "Withdrawn",
+  withdraw_application: "Withdraw",
+  already_applied: "You have an open application for this place.",
 };
 
 export const HA: Readonly<Record<Phrase, string>> = {
@@ -1002,6 +1114,62 @@ export const HA: Readonly<Record<Phrase, string>> = {
   nothing_recorded: "Ba a rubuta komai ba tukuna.",
   period_of: "Lokaci",
   add_a_note: "Ƙara bayani",
+  city: "Birni",
+  any_city: "Ko'ina",
+  distance_from: "Nisa daga",
+  pick_a_place: "Zaɓi wurin da kake zuwa akai-akai — aikinka, makaranta, kasuwa",
+  within_km: "A cikin",
+  km_from: "km daga",
+  area_guide: "Abin da masu haya a nan ke cewa",
+  area_guide_lede: "Amsoshi daga mutanen da ke da haya a wannan yankin — ƙidaya, ba hukunci ba. Babu komai game da kowane mutum.",
+  guide_not_enough: "Babu isassun amsoshi tukuna. Jagorar za ta bayyana idan masu haya biyar daban-daban sun amsa.",
+  guide_answers: "masu haya sun amsa",
+  q_power: "Wutar lantarki, awanni a rana",
+  q_water: "Ruwa",
+  q_transport: "Yadda ake zuwa nan",
+  q_market: "Kasuwar yau da kullum",
+  power_under_4h: "Ƙasa da awa 4",
+  power_4_to_8h: "Awa 4 zuwa 8",
+  power_8_to_16h: "Awa 8 zuwa 16",
+  power_over_16h: "Fiye da awa 16",
+  water_borehole: "Rijiyar burtsatse",
+  water_public_supply: "Ruwan gwamnati",
+  water_water_vendor: "Mai sayar da ruwa",
+  water_well: "Rijiya",
+  transport_bus: "Bas",
+  transport_keke: "Keke",
+  transport_okada: "Okada",
+  transport_brt: "BRT",
+  transport_train: "Jirgin ƙasa",
+  transport_ferry: "Jirgin ruwa",
+  market_walking: "Tafiya a ƙafa",
+  market_short_ride: "Ɗan gajeren tafiya",
+  market_far: "Nesa",
+  tell_about_area: "Faɗa wa wasu game da wannan yankin",
+  tell_about_area_lede: "Tambayoyi huɗu da tsayayyun amsoshi. Amsarka ta ƙarshe ce ake ƙidaya, kuma sunanka ba ya kanta.",
+  answer_sent: "Na gode. An ƙidaya amsoshinka tare da na sauran.",
+  apply_for_this: "Nemi wannan wurin",
+  apply_lede: "Da kalmominka, ga wannan wakili, don wannan wurin. Keys yana ƙara abin da kake iya gani a allonka kawai: tsawon lokacinka a Keys da yawan hayar da ya rubuta maka. Ba ya lissafa komai game da kai.",
+  occupation: "Abin da kake yi",
+  household_size: "Ku nawa za ku zauna a nan",
+  move_in_by: "Lokacin da za ka iya shiga (YYYY-MM-DD)",
+  application_note: "Wani abu kuma da kake son wakilin ya sani",
+  send_application: "Aika",
+  applications: "Buƙatu",
+  applications_lede: "Kowane canjin matsayi, yadda ya faru. Wakili na iya ƙi; Keys ba ya taɓa faɗin dalili, domin babu filin dalili.",
+  applications_none: "Babu buƙatu tukuna.",
+  agent_applications_lede: "Kalmomin mai nema. Keys bai lissafa komai game da su ba, kuma ba ya ba ka abin da ba zai iya nuna musu ba.",
+  on_keys_for_days: "A Keys tsawon",
+  days: "kwanaki",
+  tenancies_recorded: "hayoyin da aka rubuta",
+  app_submitted: "An aika",
+  app_seen: "An gani",
+  app_shortlisted: "An zaɓa",
+  app_offered: "An bayar",
+  app_declined: "An ƙi",
+  app_withdrawn: "An janye",
+  withdraw_application: "Janye",
+  already_applied: "Kana da buƙata a buɗe don wannan wurin.",
 };
 
 export const YO: Readonly<Record<Phrase, string>> = {
@@ -1311,6 +1479,62 @@ export const YO: Readonly<Record<Phrase, string>> = {
   nothing_recorded: "Kò tíì sí ohun tí a kọ sílẹ̀.",
   period_of: "Àkókò",
   add_a_note: "Fi àkọsílẹ̀ kún",
+  city: "Ìlú",
+  any_city: "Níbikíbi",
+  distance_from: "Ìjìnnà láti",
+  pick_a_place: "Yan ibi tí o máa ń lọ déédéé — ibi iṣẹ́ rẹ, ilé ẹ̀kọ́, ọjà",
+  within_km: "Láàrin",
+  km_from: "km láti",
+  area_guide: "Ohun tí àwọn ayálégbé níbí sọ",
+  area_guide_lede: "Ìdáhùn láti ọ̀dọ̀ àwọn tó ní ìgbàlé ní agbègbè yìí — ìkà, kì í ṣe ìdájọ́. Kò sí nǹkan kan nípa ẹnikẹ́ni.",
+  guide_not_enough: "Kò tíì sí ìdáhùn tó pọ̀ tó. Ìtọ́sọ́nà máa hàn nígbà tí ayálégbé márùn-ún ọ̀tọ̀ọ̀tọ̀ bá ti dáhùn.",
+  guide_answers: "ayálégbé dáhùn",
+  q_power: "Iná, wákàtí lójúmọ́",
+  q_water: "Omi",
+  q_transport: "Bí a ṣe ń dé ibí",
+  q_market: "Ọjà ojoojúmọ́",
+  power_under_4h: "Kò tó wákàtí 4",
+  power_4_to_8h: "Wákàtí 4 sí 8",
+  power_8_to_16h: "Wákàtí 8 sí 16",
+  power_over_16h: "Ju wákàtí 16 lọ",
+  water_borehole: "Kànga ẹ̀rọ",
+  water_public_supply: "Omi ìjọba",
+  water_water_vendor: "Olùta omi",
+  water_well: "Kànga",
+  transport_bus: "Bọ́ọ̀sì",
+  transport_keke: "Kẹ̀kẹ́",
+  transport_okada: "Ọkadà",
+  transport_brt: "BRT",
+  transport_train: "Ọkọ̀ ojú irin",
+  transport_ferry: "Ọkọ̀ ojú omi",
+  market_walking: "Ìrìn ẹsẹ̀",
+  market_short_ride: "Ìrìnàjò kúkúrú",
+  market_far: "Ó jìnnà",
+  tell_about_area: "Sọ fún àwọn ẹlòmíràn nípa agbègbè yìí",
+  tell_about_area_lede: "Ìbéèrè mẹ́rin pẹ̀lú ìdáhùn tó wà lẹ́sẹ̀. Ìdáhùn rẹ tó kẹ́yìn ni a ń kà, orúkọ rẹ kò sì sí lórí rẹ̀ láé.",
+  answer_sent: "O ṣeun. A ti ka ìdáhùn rẹ pẹ̀lú ti àwọn yòókù.",
+  apply_for_this: "Bèèrè fún ibí yìí",
+  apply_lede: "Ní ọ̀rọ̀ tìrẹ, sí aṣojú yìí, fún ibí yìí. Keys fi kún ohun tí o lè rí lórí ìbojú rẹ nìkan: bí o ṣe pẹ́ tó lórí Keys àti iye ìgbàlé tí ó ti kọ sílẹ̀ fún ọ. Kò ṣírò ohunkóhun nípa rẹ.",
+  occupation: "Ohun tí o ń ṣe",
+  household_size: "Mélòó nínú yín ni yóò gbé níbí",
+  move_in_by: "Ìgbà tí o lè wọlé (YYYY-MM-DD)",
+  application_note: "Ohun mìíràn tí o fẹ́ kí aṣojú mọ̀",
+  send_application: "Fi ránṣẹ́",
+  applications: "Àwọn ìbéèrè",
+  applications_lede: "Gbogbo ìyípadà ipò, bí ó ti ṣẹlẹ̀. Aṣojú lè kọ̀; Keys kì í sọ ìdí rẹ̀ láé, nítorí kò sí ààyè fún ìdí.",
+  applications_none: "Kò tíì sí ìbéèrè.",
+  agent_applications_lede: "Ọ̀rọ̀ olùbéèrè fúnra rẹ̀. Keys kò ṣírò ohunkóhun nípa wọn, kò sì fún ọ ní ohun tí kò lè fi hàn wọ́n.",
+  on_keys_for_days: "Lórí Keys fún",
+  days: "ọjọ́",
+  tenancies_recorded: "ìgbàlé tí a kọ sílẹ̀",
+  app_submitted: "A ti fi ránṣẹ́",
+  app_seen: "A ti rí i",
+  app_shortlisted: "A ti yàn",
+  app_offered: "A ti fún",
+  app_declined: "A kọ̀",
+  app_withdrawn: "A ti fà sẹ́yìn",
+  withdraw_application: "Fà sẹ́yìn",
+  already_applied: "O ní ìbéèrè tó ṣí sílẹ̀ fún ibí yìí.",
 };
 
 export const IG: Readonly<Record<Phrase, string>> = {
@@ -1620,6 +1844,62 @@ export const IG: Readonly<Record<Phrase, string>> = {
   nothing_recorded: "Edebeghị ihe ọ bụla.",
   period_of: "Oge",
   add_a_note: "Tinye ihe odide",
+  city: "Obodo",
+  any_city: "Ebe ọ bụla",
+  distance_from: "Ebe dị anya site na",
+  pick_a_place: "Họrọ ebe ị na-aga mgbe niile — ọrụ gị, ụlọ akwụkwọ, ahịa",
+  within_km: "N'ime",
+  km_from: "km site na",
+  area_guide: "Ihe ndị bi ebe a na-ekwu",
+  area_guide_lede: "Azịza sitere n'aka ndị nwere mgbazinye na mpaghara a — ọnụ ọgụgụ, ọ bụghị mkpebi. Ọ dịghị ihe gbasara onye ọ bụla.",
+  guide_not_enough: "Azịza ezughị oke. Ntuziaka ga-apụta mgbe mmadụ ise dị iche zara.",
+  guide_answers: "ndị bi ebe a zara",
+  q_power: "Ọkụ, awa kwa ụbọchị",
+  q_water: "Mmiri",
+  q_transport: "Otu e si abịa ebe a",
+  q_market: "Ahịa kwa ụbọchị",
+  power_under_4h: "N'okpuru awa 4",
+  power_4_to_8h: "Awa 4 ruo 8",
+  power_8_to_16h: "Awa 8 ruo 16",
+  power_over_16h: "Karịa awa 16",
+  water_borehole: "Olulu mmiri",
+  water_public_supply: "Mmiri gọọmentị",
+  water_water_vendor: "Onye na-ere mmiri",
+  water_well: "Olulu",
+  transport_bus: "Bọs",
+  transport_keke: "Keke",
+  transport_okada: "Okada",
+  transport_brt: "BRT",
+  transport_train: "Ụgbọ oloko",
+  transport_ferry: "Ụgbọ mmiri",
+  market_walking: "Ije ụkwụ",
+  market_short_ride: "Njem dị mkpụmkpụ",
+  market_far: "Ọ dị anya",
+  tell_about_area: "Gwa ndị ọzọ gbasara mpaghara a",
+  tell_about_area_lede: "Ajụjụ anọ nwere azịza a kara aka. Azịza gị ikpeazụ ka a na-agụ, aha gị adịghịkwa na ya ma ọlị.",
+  answer_sent: "Daalụ. A gụnyere azịza gị na nke ndị ọzọ.",
+  apply_for_this: "Rịọ maka ebe a",
+  apply_lede: "N'okwu nke gị, nye onye nnọchi anya a, maka ebe a. Keys na-agbakwunye naanị ihe ị na-ahụ na ihuenyo gị: ogologo oge ị nọrọ na Keys na ole mgbazinye o dere gị. Ọ naghị agbakọ ihe ọ bụla gbasara gị.",
+  occupation: "Ihe ị na-arụ",
+  household_size: "Mmadụ ole n'ime unu ga-ebi ebe a",
+  move_in_by: "Mgbe ị nwere ike ịbata (YYYY-MM-DD)",
+  application_note: "Ihe ọzọ ị chọrọ ka onye nnọchi anya mara",
+  send_application: "Zipu",
+  applications: "Arịrịọ",
+  applications_lede: "Mgbanwe ọnọdụ ọ bụla, ka o mere. Onye nnọchi anya nwere ike ịjụ; Keys anaghị ekwu ihe kpatara ya, n'ihi na enweghị ebe maka ihe kpatara.",
+  applications_none: "Enwebeghị arịrịọ.",
+  agent_applications_lede: "Okwu onye na-arịọ n'onwe ya. Keys agbakọghị ihe ọ bụla gbasara ha, ọ naghịkwa enye gị ihe ọ na-enweghị ike igosi ha.",
+  on_keys_for_days: "Na Keys ruo",
+  days: "ụbọchị",
+  tenancies_recorded: "mgbazinye e dere",
+  app_submitted: "Ezipụrụ",
+  app_seen: "Ahụla",
+  app_shortlisted: "Ahọrọla",
+  app_offered: "Enyela",
+  app_declined: "Ajụrụ",
+  app_withdrawn: "Ewepụrụ",
+  withdraw_application: "Wepụ",
+  already_applied: "Ị nwere arịrịọ mepere emepe maka ebe a.",
 };
 
 const TABLES: Readonly<Record<Language, Readonly<Record<Phrase, string>>>> = {

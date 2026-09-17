@@ -290,6 +290,37 @@ number ([ADR-0011](docs/adr/0011-the-condition-record-is-snags-and-is-acknowledg
 **The portfolio** is one row per tenancy — the next due, what is recorded
 against it, periods short, tickets waiting — and never a total across them.
 
+### Depth and reach
+
+Phase 8, built ahead of v1.0 and v1.1 shipping. **Three cities** — Lagos,
+Abuja, Port Harcourt — as data with their named areas; a listing belongs to
+the city whose box contains it and to the nearest named area, and a search
+in Abuja returns only Abuja
+([ADR-0016](docs/adr/0016-a-city-is-data-and-a-listing-belongs-to-one-by-its-coordinates.md)).
+
+**Distance, never a time.** A tenant picks a place they go often from the
+city's areas and a radius; every row says *4.2 km from Marina*, and no
+screen, response or source file says minutes — a test greps for the word
+([ADR-0013](docs/adr/0013-a-commute-is-a-distance-and-never-a-time.md)).
+
+**An area guide is what tenants answered.** Four questions with fixed
+answers — power hours, water source, how to get there, how far a daily
+market — answered by tenants who hold a tenancy in the area, once per
+tenancy, latest answer counting; shown only once five separate tenants have
+answered, as counts and never a verdict, with no person and no date finer
+than a month in it
+([ADR-0014](docs/adr/0014-an-area-guide-is-what-tenants-answered-shown-only-above-a-floor.md)).
+
+**An application is the tenant's own words.** Occupation, household, when
+they can move, a note — to one agent for one listing. Keys adds two facts
+the tenant sees on their own screen and computes nothing: no score, no
+ratio, no field named risk, and no reason field on a decline, because a
+reason field becomes a discrimination record. The status is a closed list
+the tenant sees every change of
+([ADR-0015](docs/adr/0015-an-application-is-the-tenants-own-words-and-keys-scores-nobody.md)).
+
+360° tours need a camera the simulator does not have, and are R18.
+
 ### At the largest text size
 
 | iOS accessibility XXXL |
@@ -531,6 +562,9 @@ matters most.
 | Signed by both or by neither | The agreement, the condition record | Each party's phone key over the same bytes; one signature is a draft |
 | Appended, never edited | Payments, corrections, disputes, ticket events | A wrong amount is corrected by a new entry with a reason; the receipt says so |
 | Public only when upheld | A report against a number | Published by a named reviewer with a reason; the accused answers by a texted capability |
+| Never computed | Anything about a tenant | An application is their own words plus two facts they can see; no score, ratio or risk exists in the schema or the source, by test |
+| Never a person | An area guide | Counts of answers above a floor of five, a month and no finer, no account id in what is served |
+| Never stored | The place a tenant named | Travels with the search as a point and is kept nowhere |
 
 ---
 
@@ -593,12 +627,14 @@ and says plainly when it cannot.
 packages/domain/src/       listings and the nine conditions, capture, hashing, money,
                            places, search, featured, conversations, inspections, saved,
                            reports, phone, language; tenancy, maintenance, condition,
-                           portfolio — pure TypeScript, Apache-2.0
+                           portfolio; cities, distance, guides, applications —
+                           pure TypeScript, Apache-2.0
 packages/api/              the wire client, generated from the controllers, gated
 apps/server/src/           NestJS: agents, captures, market, outbox, reports, tenancy,
-                           health; every store in memory and in Postgres
+                           reach, health; every store in memory and in Postgres
 apps/server/test/          one file per rule, each run against both stores
-apps/mobile/src/screens/   the sixteen screens, four of them the tenancy's
+apps/mobile/src/screens/   the nineteen screens: the tenancy's four, applying, applications,
+                           telling others about your area
 apps/mobile/src/native/    KeysSecrets (Keychain) and the capture module
 apps/mobile/src/design/    the tokens and the generated palette
 apps/web/                  Next.js: lookup, report, reply, review, transparency
@@ -619,7 +655,7 @@ scripts/                   the gates
 deployed, and five gates block v1.0** — every one of them needs a physical
 device or a person, not more code.
 
-**196 domain tests, no build step; 270 server tests, every suite against
+**211 domain tests, no build step; 276 server tests, every suite against
 in-memory and real PostgreSQL including a process restart; 23 app tests;
 4 wire tests.**
 
@@ -632,7 +668,7 @@ in-memory and real PostgreSQL including a process restart; 23 app tests;
 | Faces | tenant, agent, landlord, reviewer — one app and a web console |
 | Screens | 24, four languages, both themes |
 | Conditions behind the badge | 9, computed on every read, never stored |
-| ADRs | 12 |
+| ADRs | 16 |
 | Gates | 16, each broken on purpose to prove it fires |
 
 | Phase | State |
@@ -645,7 +681,7 @@ in-memory and real PostgreSQL including a process restart; 23 app tests;
 | **5** Marketplace loop | Done — asking, messaging, viewings, *there was nothing there* |
 | **6** Launch hardening | **current** — the Keychain, offline saved listings, the largest text size; the gates are devices and people |
 | **7** Tenancy → v1.1 | Built ahead — the agreement signed by both, the schedule and what was recorded, receipts that carry their corrections, tickets as history, the condition record, the portfolio; the gate is a lawyer reading the template (R17) |
-| **8** Depth and reach → v1.2 | Not started |
+| **8** Depth and reach → v1.2 | Built ahead — three cities as data, distance from a named place and never a time, area guides above a floor of five, applications without a score; 360° tours need a camera (R18) |
 
 ### What is open, and why it matters
 

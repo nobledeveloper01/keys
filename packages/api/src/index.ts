@@ -81,6 +81,8 @@ export type Ticket = paths['/v1/tickets/{id}/move']['post']['responses'][201]['c
 export type ConditionRecordView = paths['/v1/condition/{recordId}/acknowledge']['post']['responses'][201]['content']['application/json'];
 export type RoomChange = paths['/v1/condition/{recordId}/compare']['get']['responses'][200]['content']['application/json'][number];
 export type PortfolioRow = paths['/v1/tenancies/portfolio']['get']['responses'][200]['content']['application/json'][number];
+export type GuideView = paths['/v1/areas/{areaId}/guide']['get']['responses'][200]['content']['application/json'];
+export type ApplicationView = paths['/v1/applications/{id}/withdraw']['post']['responses'][201]['content']['application/json'];
 export type ReviewMetrics =
   paths['/v1/review/metrics']['get']['responses'][200]['content']['application/json'];
 
@@ -437,7 +439,32 @@ export function client(options: ClientOptions) {
      * it shows only listings Keys can stand behind — the safe direction for a
      * missing parameter to fail in.
      */
-    search: (query: { q?: string; latitude?: number; longitude?: number; verifiedOnly?: boolean }) =>
+    /**
+     * The guide an area's tenants answered. No account.
+     *
+     * The city list itself is not fetched: the phone carries `CITIES` from the
+     * domain, the same data the server serves at `/v1/cities`, and a second
+     * copy arriving over the wire would be a second place for it to differ.
+     */
+    guide: (areaId: string) => send<GuideView>(options, 'GET', `/v1/areas/${encodeURIComponent(areaId)}/guide`),
+
+    /**
+     * Depth and reach, on an account (ADR-0014, ADR-0015). Answers are for
+     * the area of a tenancy the tenant holds; an application is their own
+     * words; the agent moves it along a closed list.
+     */
+    reach: {
+      answer: (body: { tenancyId: string; power: string; water: string; transport: string[]; market: string }) =>
+        send<{ areaId: string }>(options, 'POST', '/v1/areas/answers', { body }),
+      apply: (listingId: string, body: { occupation: string; householdSize: number; moveInBy: string; note?: string }) =>
+        send<ApplicationView>(options, 'POST', `/v1/listings/${listingId}/applications`, { body }),
+      mine: () => send<ApplicationView[]>(options, 'GET', '/v1/applications'),
+      forAgent: () => send<ApplicationView[]>(options, 'GET', '/v1/agent/applications'),
+      move: (id: string, to: string) => send<ApplicationView>(options, 'POST', `/v1/applications/${id}/move`, { body: { to } }),
+      withdraw: (id: string) => send<ApplicationView>(options, 'POST', `/v1/applications/${id}/withdraw`),
+    },
+
+    search: (query: { q?: string; latitude?: number; longitude?: number; verifiedOnly?: boolean; city?: string; placeLatitude?: number; placeLongitude?: number; withinKm?: number }) =>
       send<SearchResponse>(options, 'GET', '/v1/listings', {
         query: Object.fromEntries(
           Object.entries(query)

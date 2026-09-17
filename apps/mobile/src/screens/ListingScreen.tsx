@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { attempt, client, type ListingView } from '@keys/api';
 import { CONFIRMATION_DAYS, savedAge } from '@keys/domain';
 
+import { AreaGuide } from '../components/AreaGuide';
 import { Button } from '../components/Button';
 import { Costs } from '../components/Costs';
 import { Glass } from '../components/Glass';
@@ -35,6 +36,7 @@ export function ListingScreen({
   onCheckAgent,
   onMessage,
   onReport,
+  onApply,
 }: {
   baseUrl: string;
   id: string;
@@ -42,6 +44,7 @@ export function ListingScreen({
   onCheckAgent: () => void;
   onMessage: () => void;
   onReport: () => void;
+  onApply: () => void;
 }) {
   const { t, language } = useLanguage();
   const colours = useColours();
@@ -194,6 +197,7 @@ export function ListingScreen({
               second tab rather than the first.
             */}
             <Button label={t('message_the_agent')} onPress={onMessage} />
+            <Button label={t('apply_for_this')} onPress={onApply} quiet />
             <Button label={t('check_this_agent')} onPress={onCheckAgent} quiet />
             {/*
               Reporting is last and quiet, and it exists at all only because
@@ -211,6 +215,7 @@ export function ListingScreen({
             />
             <Button label={t('report_this_listing')} onPress={onReport} quiet />
           </View>
+          <AreaGuide baseUrl={baseUrl} areaId={listing.areaId ?? null} />
         </>
       )}
     </ScrollView>

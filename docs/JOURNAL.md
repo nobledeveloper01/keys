@@ -2405,3 +2405,33 @@ pointing here. The timeout was not touched.
 **A timeout in a security test reads as a security regression**, which is
 why the morning's entry refused to raise it. The fix is the cause, and the
 comment above the `listen` says how to recognise the symptom next time.
+
+## 2026-09-17 (evening) — Depth and reach
+
+**Did.** Phase 8, the last phase on the roadmap, built ahead of the two
+releases before it. Four ADRs, then cities, distance, guides and
+applications in the domain (fifteen tests, green first run), then the
+search parameters and a `reach` module on the server with both stores,
+three tests through the real routes against memory and Postgres, then the
+find filter, the guide card, the apply flow, the applications list on both
+faces, and the area answers from a tenancy.
+
+**"Commute" became "distance" the moment it was written down.** A minutes
+figure for Lagos would have been a guess with a routing vendor behind it;
+a kilometres figure is a fact. The test greps the module's source for the
+word *minute* so it cannot come back as a helpful addition.
+
+**Keke, okada and BRT are the same word in four languages.** The
+translation test refused them as untranslated copies, which is exactly the
+check it exists to make, and the exemption list gained three entries with
+the argument written beside them. A rule that admits no exceptions is a rule
+somebody will silence.
+
+**The client had a method nothing called.** `cities()` was written because
+the server has the route; the phone carries the same list from the domain,
+and a second copy over the wire would be a second place for it to differ.
+`wired-check` said so and the method went. The route stays, tested, for
+the web and for anybody else.
+
+**An application deliberately has no reason field.** Written into the ADR
+before the DTO, because the DTO is where somebody would have added it.
