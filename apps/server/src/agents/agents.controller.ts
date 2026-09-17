@@ -52,6 +52,7 @@ import {
 import { CapturesStore } from '../captures/captures.store';
 import { assessListing } from './assess';
 import { authorityLink, replyLink } from '../outbox/links';
+import { noteTier } from './tier-watch';
 import { Outbox } from '../outbox/outbox';
 
 function properties(evidence: readonly Evidence[], now: Date): number {
@@ -88,6 +89,7 @@ export class AgentsController {
       joinedAt: agent.joinedAt,
       upheldReports: upheld.length,
     }, now);
+    await noteTier({ agents: this.store, market: this.market }, agent.id, tier, now);
 
     return {
       agentId: agent.id,

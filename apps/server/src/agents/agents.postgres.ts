@@ -12,6 +12,7 @@ import {
   landlordIsNotTheAgent,
   mayList,
   type Evidence,
+  type Tier,
 } from '@keys/domain';
 
 import { hashPhone } from '../reports/reports.store';
@@ -26,6 +27,7 @@ import {
   type ChallengePurpose,
   type Listing,
   type StoredAgent,
+  type TierChange,
 } from './agents.store';
 
 interface EvidenceRow {
@@ -202,6 +204,35 @@ export class PostgresAgentsStore extends AgentsStore implements OnModuleInit, On
     // for a nonsense id is a 404, not a 500.
     if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
     return this.agentWhere('id', id);
+  }
+
+  async observeTier(agentId: string, tier: Tier, now: Date): Promise<TierChange | null> {
+    if (!/^[0-9a-f-]{36}$/i.test(agentId)) return null;
+    const before = await this.pool.query<{ tier: string }>(
+      'SELECT tier FROM tier_observations WHERE agent_id = $1',
+      [agentId],
+    );
+    await this.pool.query(
+      `INSERT INTO tier_observations (agent_id, tier, seen_at) VALUES ($1, $2, $3)
+         ON CONFLICT (agent_id) DO UPDATE SET tier = EXCLUDED.tier, seen_at = EXCLUDED.seen_at`,
+      [agentId, tier, now],
+    );
+    const previous = before.rows[0]?.tier as Tier | undefined;
+    if (previous === undefined || previous === tier) return null;
+    await this.pool.query(
+      'INSERT INTO tier_changes (agent_id, from_tier, to_tier, at) VALUES ($1, $2, $3, $4)',
+      [agentId, previous, tier, now],
+    );
+    return { agentId, from: previous, to: tier, at: now };
+  }
+
+  async tierChangesFor(agentId: string): Promise<readonly TierChange[]> {
+    if (!/^[0-9a-f-]{36}$/i.test(agentId)) return [];
+    const result = await this.pool.query<{ agent_id: string; from_tier: Tier; to_tier: Tier; at: Date }>(
+      'SELECT agent_id, from_tier, to_tier, at FROM tier_changes WHERE agent_id = $1 ORDER BY seq',
+      [agentId],
+    );
+    return result.rows.map((r) => ({ agentId: r.agent_id, from: r.from_tier, to: r.to_tier, at: r.at }));
   }
 
   async evidenceFor(agentId: string) {

@@ -9,6 +9,7 @@ import {
   landlordIsNotTheAgent,
   mayList,
   type Evidence,
+  type Tier,
 } from '@keys/domain';
 
 import { hashPhone } from '../reports/reports.store';
@@ -76,6 +77,14 @@ export interface Listing {
  */
 export const CHALLENGE_PURPOSES = ['grant', 'revoke'] as const;
 export type ChallengePurpose = (typeof CHALLENGE_PURPOSES)[number];
+
+/** A tier the computation observed to have moved (ADR-0019). Appended by the computation, read by nothing that decides. */
+export interface TierChange {
+  readonly agentId: string;
+  readonly from: Tier;
+  readonly to: Tier;
+  readonly at: Date;
+}
 
 /** A challenge waiting on a landlord to answer a text. */
 export interface Challenge {
@@ -147,6 +156,18 @@ export abstract class AgentsStore {
    */
   abstract everyAgent(): Await<readonly StoredAgent[]>;
   abstract evidenceFor(agentId: string): Await<readonly Evidence[]>;
+
+  /**
+   * What the computation last said this agent's tier was (ADR-0019).
+   *
+   * Not the tier — that is computed on every read and stored nowhere. An
+   * observation: the result the computation gave last time, kept so that the
+   * next result can be compared with it. Returns the change when there is
+   * one, having recorded it, and null when nothing moved or nothing had been
+   * observed before. Written by the computation, never by a request body.
+   */
+  abstract observeTier(agentId: string, tier: Tier, now: Date): Await<TierChange | null>;
+  abstract tierChangesFor(agentId: string): Await<readonly TierChange[]>;
 
   abstract recordIdentity(input: {
     agentId: string;
@@ -358,6 +379,22 @@ export class InMemoryAgentsStore extends AgentsStore {
 
   agentById(id: string) {
     return this.agents.get(id) ?? null;
+  }
+
+  private readonly observed = new Map<string, Tier>();
+  private readonly tierChanges: TierChange[] = [];
+
+  observeTier(agentId: string, tier: Tier, now: Date): TierChange | null {
+    const before = this.observed.get(agentId);
+    this.observed.set(agentId, tier);
+    if (before === undefined || before === tier) return null;
+    const change: TierChange = { agentId, from: before, to: tier, at: now };
+    this.tierChanges.push(change);
+    return change;
+  }
+
+  tierChangesFor(agentId: string): readonly TierChange[] {
+    return this.tierChanges.filter((c) => c.agentId === agentId);
   }
 
   agentByPhoneHash(hash: string) {

@@ -17,6 +17,7 @@ import type { CapturesStore } from '../captures/captures.store';
 import type { MarketStore } from '../market/market.store';
 import type { ReportsStore } from '../reports/reports.store';
 import type { AgentsStore, Listing } from './agents.store';
+import { noteTier } from './tier-watch';
 
 /**
  * Whether a listing is Verified, and which conditions are not met.
@@ -60,6 +61,8 @@ export async function assessListing(
   const agentTier: Tier = agent
     ? tierOf(evidence, { joinedAt: agent.joinedAt, upheldReports: upheld.length }, now)
     : 'unverified';
+  // The computation just ran; what it said is compared with what it said last time (ADR-0019).
+  if (agent) await noteTier(stores, agent.id, agentTier, now);
 
   /*
     Mapped once and read twice — by `unmetConditions` for the photo and video

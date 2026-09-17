@@ -10,6 +10,8 @@ import {
   mayList,
   tierOf,
   tierSentence,
+  tierDropNotice,
+  tierDropped,
   type AgentHistory,
   type Evidence,
 } from '../src/agents.ts';
@@ -169,4 +171,17 @@ describe('descending the ladder', () => {
     assert.equal(tierOf(evidence, CLEAN, NOW), 'unverified');
     assert.ok(!mayList(evidence, 'a', NOW));
   });
+});
+
+test('a tier change is a drop only when it goes down the ladder, and the notice says what the badge now means (ADR-0019)', () => {
+  assert.equal(tierDropped('established', 'authority'), true);
+  assert.equal(tierDropped('authority', 'unverified'), true);
+  assert.equal(tierDropped('identity', 'authority'), false);
+  assert.equal(tierDropped('authority', 'authority'), false);
+  const notice = tierDropNotice('established', 'authority');
+  assert.match(notice, /from established to authority/);
+  assert.match(notice, /never that a flat exists/);
+  assert.ok(notice.includes(tierSentence('authority')));
+  // Never a reason: the part before the badge's own meaning names no report and no withdrawal.
+  assert.doesNotMatch(notice.split('what it means now')[0]!, /report|landlord|withdr/i);
 });

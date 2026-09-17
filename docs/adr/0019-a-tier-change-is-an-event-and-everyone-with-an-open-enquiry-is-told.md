@@ -28,8 +28,9 @@ computation said, written by the computation; it can no more be authored by
 the agent than the tier can.
 
 **A drop is told; a rise is not.** For every open conversation the agent is
-party to, a message from `keys` is posted in the tenant's language saying
-the agent's standing changed and what the badge now means. A rise is not
+party to, a message from `keys` is posted — in English, like every message
+`keys` writes into a conversation today; the language table is the app's —
+saying the agent's standing changed and what the badge now means. A rise is not
 announced, because *this agent is now trusted* is the badge overclaiming
 again, in a message.
 

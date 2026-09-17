@@ -281,3 +281,28 @@ export function tierSentence(tier: Tier): string {
       return 'Landlords have confirmed them on several properties over months, with nothing upheld against them.';
   }
 }
+
+/**
+ * Whether a change of tier is a drop (ADR-0019). The order is `TIERS`; the
+ * comparison the file above said would be built on `indexOf` when one was
+ * finally needed.
+ */
+export function tierDropped(from: Tier, to: Tier): boolean {
+  return TIERS.indexOf(to) < TIERS.indexOf(from);
+}
+
+/**
+ * What a tenant with an open enquiry is told when the agent's tier drops.
+ *
+ * Says what the badge now means and nothing about why — the why is a report
+ * somebody else made or an authority a landlord withdrew, and neither is the
+ * tenant's to know. A rise is never announced: *this agent is now trusted* is
+ * the badge overclaiming again, in a message.
+ */
+export function tierDropNotice(from: Tier, to: Tier): string {
+  return (
+    `This agent\u2019s standing on Keys changed from ${from} to ${to}. ` +
+    `A badge says what was checked and never that a flat exists; ` +
+    `what it means now: ${tierSentence(to)}`
+  );
+}
