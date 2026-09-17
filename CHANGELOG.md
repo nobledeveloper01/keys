@@ -9,6 +9,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Depth and reach, decided before it is built.** Four ADRs: a commute is a
+  distance in kilometres from a place the tenant named and never a number of
+  minutes; an area guide is the distribution of tenants' answers to four
+  closed questions, shown only above five separate tenants and never as a
+  verdict; an application is the tenant's own words with a status from a
+  closed list, and Keys computes nothing about a person; a city is data and
+  a listing belongs to one by its coordinates. 360° tours join the ledger
+  (R18) as needing a camera.
+
 - **Tenancy, built.** The agreement from a versioned template, signed by
   each party's phone key over bytes the server hands out — a tenant
   registers the same key an agent's captures use; the schedule the agreement

@@ -341,6 +341,21 @@ screen, in any language, says or implies that Keys holds, moves or asks for mone
 360° tours, commute-time filtering, area guides, application and screening flow, Abuja and Port
 Harcourt.
 
+**Started 2026-09-17, ahead of v1.0 and v1.1 shipping.** Four decisions first: a commute is a
+distance and never a time ([ADR-0013](adr/0013-a-commute-is-a-distance-and-never-a-time.md));
+an area guide is what tenants answered, shown only above a floor of five
+([ADR-0014](adr/0014-an-area-guide-is-what-tenants-answered-shown-only-above-a-floor.md)); an
+application is the tenant's own words and Keys scores nobody
+([ADR-0015](adr/0015-an-application-is-the-tenants-own-words-and-keys-scores-nobody.md)); a city
+is data and a listing belongs to one by its coordinates
+([ADR-0016](adr/0016-a-city-is-data-and-a-listing-belongs-to-one-by-its-coordinates.md)). 360°
+tours need a camera and are R18.
+
+**Phase gate.** *A search in Abuja returns only Abuja; a listing four kilometres from the place
+a tenant named says four kilometres and never a minute; an area guide with four answers shows
+nothing and one with five shows counts; an application's status is a closed list the tenant
+sees every change of, and no response anywhere carries a number about a person.*
+
 ---
 
 ---
