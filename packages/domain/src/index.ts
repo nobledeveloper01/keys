@@ -26,3 +26,7 @@ export * from './places.ts';
 export * from './saved.ts';
 export * from './search.ts';
 export * from './reports.ts';
+export * from './tenancy.ts';
+export * from './maintenance.ts';
+export * from './condition.ts';
+export * from './portfolio.ts';
