@@ -1806,6 +1806,809 @@
           "review"
         ]
       }
+    },
+    "/v1/tenants/me/key": {
+      "post": {
+        "operationId": "TenancyController_registerKey",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenantKeyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Register this phone's public key, so the tenant can sign.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies": {
+      "post": {
+        "operationId": "TenancyController_openTenancy",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenTenancyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenancyView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Open a tenancy on a property this agent holds authority over. A draft until both sign.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/mine": {
+      "get": {
+        "operationId": "TenancyController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TenancyView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "My tenancies, as tenant or as the letting side, by whichever token is sent.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/portfolio": {
+      "get": {
+        "operationId": "TenancyController_portfolio",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PortfolioRowView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "The letting side’s view across its tenancies: facts per tenancy, never a total.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}": {
+      "get": {
+        "operationId": "TenancyController_one",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenancyView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The record, the same for both parties.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}/agreement": {
+      "get": {
+        "operationId": "TenancyController_agreement",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgreementBytesView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The bytes each party signs, and whether the template has been read by a lawyer.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}/sign": {
+      "post": {
+        "operationId": "TenancyController_sign",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenancyView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sign the agreement with this party’s device key. Signed by both, it is in force.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}/payments": {
+      "post": {
+        "operationId": "TenancyController_recordPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordPaymentBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenancyView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Record a payment as received. Keys did not receive it.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}/payments/{paymentId}/correct": {
+      "post": {
+        "operationId": "TenancyController_correct",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paymentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectPaymentBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenancyView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "agent-token": []
+          }
+        ],
+        "summary": "Correct a recorded amount. The earlier entry stays; the receipt says so.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}/payments/{paymentId}/dispute": {
+      "post": {
+        "operationId": "TenancyController_dispute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paymentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DisputeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenancyView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "The tenant says a recorded amount is wrong. Both see it.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}/end": {
+      "post": {
+        "operationId": "TenancyController_end",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenancyView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Either party ends the tenancy. The record stays with both.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}/receipts": {
+      "get": {
+        "operationId": "TenancyController_receipts",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReceiptView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "One receipt per recorded payment, carrying any correction rather than hiding it.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}/tickets": {
+      "post": {
+        "operationId": "TenancyController_openTicket",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenTicketBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Raise a ticket. It can never be deleted.",
+        "tags": [
+          "tenancy"
+        ]
+      },
+      "get": {
+        "operationId": "TenancyController_tickets",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TicketView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Every ticket on the tenancy, with its whole history.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tickets/{id}/move": {
+      "post": {
+        "operationId": "TenancyController_moveTicket",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveTicketBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Move a ticket along an allowed edge for this party.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tickets/{id}/notes": {
+      "post": {
+        "operationId": "TenancyController_noteTicket",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteTicketBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Add a note and photographs to the history.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/tenancies/{id}/condition": {
+      "post": {
+        "operationId": "TenancyController_createRecord",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConditionRecordBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConditionView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Start a condition record — a draft until both acknowledge the same bytes.",
+        "tags": [
+          "tenancy"
+        ]
+      },
+      "get": {
+        "operationId": "TenancyController_records",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConditionView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Every condition record on the tenancy, and who has acknowledged each.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/condition/{recordId}": {
+      "put": {
+        "operationId": "TenancyController_replaceRecord",
+        "parameters": [
+          {
+            "name": "recordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConditionRecordBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConditionView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Change a draft. Refused once anybody has acknowledged it.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/condition/{recordId}/acknowledge": {
+      "post": {
+        "operationId": "TenancyController_acknowledge",
+        "parameters": [
+          {
+            "name": "recordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcknowledgeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConditionView"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sign the record bytes with this party’s device key.",
+        "tags": [
+          "tenancy"
+        ]
+      }
+    },
+    "/v1/condition/{recordId}/compare": {
+      "get": {
+        "operationId": "TenancyController_compareRecords",
+        "parameters": [
+          {
+            "name": "recordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RoomChangeView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "A move-out beside its move-in, per room: what changed. Never a number about money.",
+        "tags": [
+          "tenancy"
+        ]
+      }
     }
   },
   "info": {
@@ -3344,6 +4147,834 @@
         "required": [
           "decision",
           "reasoning"
+        ]
+      },
+      "TenantKeyBody": {
+        "type": "object",
+        "properties": {
+          "publicKey": {
+            "type": "string",
+            "description": "This phone's public key, SPKI DER, base64."
+          }
+        },
+        "required": [
+          "publicKey"
+        ]
+      },
+      "OpenTenancyBody": {
+        "type": "object",
+        "properties": {
+          "propertyId": {
+            "type": "string",
+            "description": "A property this agent holds current authority over."
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "The tenant's account id, from the conversation."
+          },
+          "rentKobo": {
+            "type": "number",
+            "description": "Rent for one period, in kobo."
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "quarterly",
+              "yearly"
+            ]
+          },
+          "periods": {
+            "type": "number",
+            "description": "Whole periods the agreement runs for."
+          },
+          "cautionDepositKobo": {
+            "type": "number"
+          },
+          "startsOn": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-01"
+          }
+        },
+        "required": [
+          "propertyId",
+          "tenantId",
+          "rentKobo",
+          "period",
+          "periods",
+          "cautionDepositKobo",
+          "startsOn"
+        ]
+      },
+      "AgreementView": {
+        "type": "object",
+        "properties": {
+          "templateVersion": {
+            "type": "string"
+          },
+          "propertyId": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "lettingId": {
+            "type": "string"
+          },
+          "rentKobo": {
+            "type": "number"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "monthly",
+              "quarterly",
+              "yearly"
+            ]
+          },
+          "periods": {
+            "type": "number"
+          },
+          "cautionDepositKobo": {
+            "type": "number"
+          },
+          "startsOn": {
+            "type": "string",
+            "format": "date"
+          }
+        },
+        "required": [
+          "templateVersion",
+          "propertyId",
+          "tenantId",
+          "lettingId",
+          "rentKobo",
+          "period",
+          "periods",
+          "cautionDepositKobo",
+          "startsOn"
+        ]
+      },
+      "DueView": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "number"
+          },
+          "dueOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "amountKobo": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "index",
+          "dueOn",
+          "amountKobo"
+        ]
+      },
+      "RecordedView": {
+        "type": "object",
+        "properties": {
+          "periodIndex": {
+            "type": "number"
+          },
+          "dueOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "dueKobo": {
+            "type": "number"
+          },
+          "recordedKobo": {
+            "type": "number",
+            "description": "Recorded against this period after corrections. Labelled recorded, never paid."
+          },
+          "disputed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "periodIndex",
+          "dueOn",
+          "dueKobo",
+          "recordedKobo",
+          "disputed"
+        ]
+      },
+      "TenancyEntryView": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "agreement_signed",
+              "payment_recorded",
+              "payment_corrected",
+              "payment_disputed",
+              "ended"
+            ]
+          },
+          "by": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string"
+          },
+          "periodIndex": {
+            "type": "number"
+          },
+          "amountKobo": {
+            "type": "number"
+          },
+          "receivedOn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "corrects": {
+            "type": "string"
+          },
+          "disputes": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "signature": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "by",
+          "at"
+        ]
+      },
+      "TenancyView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "agreement": {
+            "$ref": "#/components/schemas/AgreementView"
+          },
+          "templateLegallyReviewed": {
+            "type": "boolean"
+          },
+          "signed": {
+            "type": "boolean"
+          },
+          "schedule": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DueView"
+            }
+          },
+          "recorded": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecordedView"
+            }
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TenancyEntryView"
+            }
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "agreement",
+          "templateLegallyReviewed",
+          "signed",
+          "schedule",
+          "recorded",
+          "entries",
+          "note"
+        ]
+      },
+      "PortfolioRowView": {
+        "type": "object",
+        "properties": {
+          "tenancyId": {
+            "type": "string"
+          },
+          "propertyId": {
+            "type": "string"
+          },
+          "signed": {
+            "type": "boolean"
+          },
+          "nextDueOn": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "nextDueKobo": {
+            "type": "number"
+          },
+          "nextRecordedKobo": {
+            "type": "number"
+          },
+          "periodsShort": {
+            "type": "number"
+          },
+          "disputed": {
+            "type": "boolean"
+          },
+          "openTickets": {
+            "type": "number"
+          },
+          "longestWaitingDays": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "tenancyId",
+          "propertyId",
+          "signed",
+          "nextDueOn",
+          "nextDueKobo",
+          "nextRecordedKobo",
+          "periodsShort",
+          "disputed",
+          "openTickets",
+          "longestWaitingDays"
+        ]
+      },
+      "AgreementBytesView": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "templateVersion": {
+            "type": "string"
+          },
+          "templateLegallyReviewed": {
+            "type": "boolean"
+          },
+          "legalAdvice": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "templateVersion",
+          "templateLegallyReviewed",
+          "legalAdvice"
+        ]
+      },
+      "SignBody": {
+        "type": "object",
+        "properties": {
+          "signature": {
+            "type": "string",
+            "description": "Base64 signature over the agreement bytes, with this party’s device key."
+          },
+          "deviceId": {
+            "type": "string",
+            "description": "For an agent: the registered device the signature came from."
+          }
+        },
+        "required": [
+          "signature"
+        ]
+      },
+      "RecordPaymentBody": {
+        "type": "object",
+        "properties": {
+          "periodIndex": {
+            "type": "number"
+          },
+          "amountKobo": {
+            "type": "number",
+            "description": "In kobo. Recorded as received; Keys did not receive it."
+          },
+          "receivedOn": {
+            "type": "string",
+            "format": "date"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "periodIndex",
+          "amountKobo",
+          "receivedOn"
+        ]
+      },
+      "CorrectPaymentBody": {
+        "type": "object",
+        "properties": {
+          "amountKobo": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string",
+            "description": "Why the earlier entry was wrong. Required: a correction without a reason is an edit."
+          }
+        },
+        "required": [
+          "amountKobo",
+          "note"
+        ]
+      },
+      "DisputeBody": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "note"
+        ]
+      },
+      "EndBody": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "ReceiptView": {
+        "type": "object",
+        "properties": {
+          "tenancyId": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string"
+          },
+          "periodIndex": {
+            "type": "number"
+          },
+          "periods": {
+            "type": "number"
+          },
+          "amountKobo": {
+            "type": "number"
+          },
+          "receivedOn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recordedBy": {
+            "type": "string"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "correctedToKobo": {
+            "type": "number",
+            "nullable": true
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenancyId",
+          "paymentId",
+          "periodIndex",
+          "periods",
+          "amountKobo",
+          "receivedOn",
+          "recordedBy",
+          "recordedAt",
+          "correctedToKobo",
+          "text"
+        ]
+      },
+      "OpenTicketBody": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "plumbing",
+              "electrical",
+              "structural",
+              "security",
+              "pests",
+              "appliance",
+              "other"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "photoHashes": {
+            "description": "SHA-256 hex of each photograph.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "category",
+          "description"
+        ]
+      },
+      "TicketEventView": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "opened",
+              "moved",
+              "noted"
+            ]
+          },
+          "by": {
+            "type": "string"
+          },
+          "party": {
+            "type": "string",
+            "enum": [
+              "tenant",
+              "letting"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "category": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "photoHashes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "by",
+          "party",
+          "at"
+        ]
+      },
+      "TicketView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenancyId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "open",
+              "acknowledged",
+              "assigned",
+              "in_progress",
+              "resolved",
+              "closed"
+            ]
+          },
+          "moves": {
+            "type": "array",
+            "description": "Where this party may move it now.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "open",
+                "acknowledged",
+                "assigned",
+                "in_progress",
+                "resolved",
+                "closed"
+              ]
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TicketEventView"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "tenancyId",
+          "state",
+          "moves",
+          "events"
+        ]
+      },
+      "MoveTicketBody": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "enum": [
+              "open",
+              "acknowledged",
+              "assigned",
+              "in_progress",
+              "resolved",
+              "closed"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "to"
+        ]
+      },
+      "NoteTicketBody": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "photoHashes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "note"
+        ]
+      },
+      "RoomItemBody": {
+        "type": "object",
+        "properties": {
+          "caption": {
+            "type": "string"
+          },
+          "photoHash": {
+            "type": "string",
+            "description": "SHA-256 hex of the photograph, taken the moment it was captured."
+          },
+          "verdict": {
+            "type": "string",
+            "enum": [
+              "snag",
+              "fine"
+            ]
+          }
+        },
+        "required": [
+          "caption",
+          "photoHash",
+          "verdict"
+        ]
+      },
+      "RoomBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoomItemBody"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "items"
+        ]
+      },
+      "ConditionRecordBody": {
+        "type": "object",
+        "properties": {
+          "walk": {
+            "type": "string",
+            "enum": [
+              "move_in",
+              "move_out"
+            ]
+          },
+          "comparesTo": {
+            "type": "string",
+            "description": "For a move-out: the move-in it is compared against."
+          },
+          "rooms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoomBody"
+            }
+          },
+          "takenAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "walk",
+          "rooms",
+          "takenAt"
+        ]
+      },
+      "AcknowledgementView": {
+        "type": "object",
+        "properties": {
+          "by": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "by",
+          "at"
+        ]
+      },
+      "ConditionView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenancyId": {
+            "type": "string"
+          },
+          "walk": {
+            "type": "string",
+            "enum": [
+              "move_in",
+              "move_out"
+            ]
+          },
+          "comparesTo": {
+            "type": "string",
+            "nullable": true
+          },
+          "rooms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoomBody"
+            }
+          },
+          "takenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acknowledgements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AcknowledgementView"
+            }
+          },
+          "acknowledgedByBoth": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "description": "The bytes each party signs."
+          }
+        },
+        "required": [
+          "id",
+          "tenancyId",
+          "walk",
+          "comparesTo",
+          "rooms",
+          "takenAt",
+          "acknowledgements",
+          "acknowledgedByBoth",
+          "message"
+        ]
+      },
+      "AcknowledgeBody": {
+        "type": "object",
+        "properties": {
+          "signature": {
+            "type": "string",
+            "description": "Base64 signature over the record bytes."
+          },
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "signature"
+        ]
+      },
+      "RoomChangeView": {
+        "type": "object",
+        "properties": {
+          "room": {
+            "type": "string"
+          },
+          "newSnags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fixed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "missing": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "added": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "room",
+          "newSnags",
+          "fixed",
+          "missing",
+          "added"
         ]
       }
     }

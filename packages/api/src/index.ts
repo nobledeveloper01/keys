@@ -73,6 +73,14 @@ export type AgentUnderReview =
   paths['/v1/agent-review']['get']['responses'][200]['content']['application/json'][number];
 export type DuplicatePair =
   paths['/v1/duplicates']['get']['responses'][200]['content']['application/json'][number];
+export type Tenancy = paths['/v1/tenancies/{id}']['get']['responses'][200]['content']['application/json'];
+export type TenancyEntry = Tenancy['entries'][number];
+export type AgreementBytes = paths['/v1/tenancies/{id}/agreement']['get']['responses'][200]['content']['application/json'];
+export type Receipt = paths['/v1/tenancies/{id}/receipts']['get']['responses'][200]['content']['application/json'][number];
+export type Ticket = paths['/v1/tickets/{id}/move']['post']['responses'][201]['content']['application/json'];
+export type ConditionRecordView = paths['/v1/condition/{recordId}/acknowledge']['post']['responses'][201]['content']['application/json'];
+export type RoomChange = paths['/v1/condition/{recordId}/compare']['get']['responses'][200]['content']['application/json'][number];
+export type PortfolioRow = paths['/v1/tenancies/portfolio']['get']['responses'][200]['content']['application/json'][number];
 export type ReviewMetrics =
   paths['/v1/review/metrics']['get']['responses'][200]['content']['application/json'];
 
@@ -380,6 +388,46 @@ export function client(options: ClientOptions) {
         send<Inspection>(options, 'POST', `/v1/inspections/${id}/outcome`, {
           body: { outcome, ...(paidKobo === undefined ? {} : { paidKobo }) },
         }),
+    },
+
+    /**
+     * The tenancy (Phase 7). Either token: a tenancy has two parties and
+     * both read the same record. Nothing here moves money; the words on the
+     * methods are the words on the screens — *record*, never *pay*.
+     */
+    tenancy: {
+      registerKey: (publicKey: string) => send<{ ok: boolean }>(options, 'POST', '/v1/tenants/me/key', { body: { publicKey } }),
+      open: (body: { propertyId: string; tenantId: string; rentKobo: number; period: 'monthly' | 'quarterly' | 'yearly'; periods: number; cautionDepositKobo: number; startsOn: string }) =>
+        send<Tenancy>(options, 'POST', '/v1/tenancies', { body }),
+      mine: () => send<Tenancy[]>(options, 'GET', '/v1/tenancies/mine'),
+      portfolio: () => send<PortfolioRow[]>(options, 'GET', '/v1/tenancies/portfolio'),
+      one: (id: string) => send<Tenancy>(options, 'GET', `/v1/tenancies/${id}`),
+      agreement: (id: string) => send<AgreementBytes>(options, 'GET', `/v1/tenancies/${id}/agreement`),
+      sign: (id: string, signature: string, deviceId?: string) =>
+        send<Tenancy>(options, 'POST', `/v1/tenancies/${id}/sign`, { body: { signature, ...(deviceId ? { deviceId } : {}) } }),
+      recordPayment: (id: string, body: { periodIndex: number; amountKobo: number; receivedOn: string; note?: string }) =>
+        send<Tenancy>(options, 'POST', `/v1/tenancies/${id}/payments`, { body }),
+      correctPayment: (id: string, paymentId: string, amountKobo: number, note: string) =>
+        send<Tenancy>(options, 'POST', `/v1/tenancies/${id}/payments/${paymentId}/correct`, { body: { amountKobo, note } }),
+      disputePayment: (id: string, paymentId: string, note: string) =>
+        send<Tenancy>(options, 'POST', `/v1/tenancies/${id}/payments/${paymentId}/dispute`, { body: { note } }),
+      end: (id: string, note?: string) => send<Tenancy>(options, 'POST', `/v1/tenancies/${id}/end`, { body: { ...(note ? { note } : {}) } }),
+      receipts: (id: string) => send<Receipt[]>(options, 'GET', `/v1/tenancies/${id}/receipts`),
+      openTicket: (id: string, body: { category: string; description: string; photoHashes?: string[] }) =>
+        send<Ticket>(options, 'POST', `/v1/tenancies/${id}/tickets`, { body }),
+      tickets: (id: string) => send<Ticket[]>(options, 'GET', `/v1/tenancies/${id}/tickets`),
+      moveTicket: (ticketId: string, to: string, note?: string) =>
+        send<Ticket>(options, 'POST', `/v1/tickets/${ticketId}/move`, { body: { to, ...(note ? { note } : {}) } }),
+      noteTicket: (ticketId: string, note: string, photoHashes?: string[]) =>
+        send<Ticket>(options, 'POST', `/v1/tickets/${ticketId}/notes`, { body: { note, ...(photoHashes ? { photoHashes } : {}) } }),
+      startRecord: (id: string, body: { walk: 'move_in' | 'move_out'; comparesTo?: string; rooms: Array<{ name: string; items: Array<{ caption: string; photoHash: string; verdict: 'snag' | 'fine' }> }>; takenAt: string }) =>
+        send<ConditionRecordView>(options, 'POST', `/v1/tenancies/${id}/condition`, { body }),
+      replaceRecord: (recordId: string, body: { rooms: Array<{ name: string; items: Array<{ caption: string; photoHash: string; verdict: 'snag' | 'fine' }> }>; takenAt: string }) =>
+        send<ConditionRecordView>(options, 'PUT', `/v1/condition/${recordId}`, { body }),
+      acknowledge: (recordId: string, signature: string, deviceId?: string) =>
+        send<ConditionRecordView>(options, 'POST', `/v1/condition/${recordId}/acknowledge`, { body: { signature, ...(deviceId ? { deviceId } : {}) } }),
+      records: (id: string) => send<ConditionRecordView[]>(options, 'GET', `/v1/tenancies/${id}/condition`),
+      compare: (recordId: string) => send<RoomChange[]>(options, 'GET', `/v1/condition/${recordId}/compare`),
     },
 
     /**

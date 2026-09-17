@@ -31,9 +31,6 @@ export interface Agreement {
   readonly startsOn: Date;
 }
 
-/** The blanks a template fills; the clauses are the template's and nobody's to edit in the app. */
-export const AGREEMENT_BLANKS = ['propertyId', 'tenantId', 'lettingId', 'rentKobo', 'period', 'periods', 'cautionDepositKobo', 'startsOn'] as const;
-
 /**
  * The bytes both parties sign: field order fixed, numbers as decimal, dates
  * as ISO days. The signatures are the parties' device keys over exactly

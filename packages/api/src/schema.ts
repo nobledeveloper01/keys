@@ -770,6 +770,331 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/tenants/me/key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register this phone's public key, so the tenant can sign. */
+        post: operations["TenancyController_registerKey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open a tenancy on a property this agent holds authority over. A draft until both sign. */
+        post: operations["TenancyController_openTenancy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My tenancies, as tenant or as the letting side, by whichever token is sent. */
+        get: operations["TenancyController_mine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/portfolio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The letting side’s view across its tenancies: facts per tenancy, never a total. */
+        get: operations["TenancyController_portfolio"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The record, the same for both parties. */
+        get: operations["TenancyController_one"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}/agreement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The bytes each party signs, and whether the template has been read by a lawyer. */
+        get: operations["TenancyController_agreement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign the agreement with this party’s device key. Signed by both, it is in force. */
+        post: operations["TenancyController_sign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record a payment as received. Keys did not receive it. */
+        post: operations["TenancyController_recordPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}/payments/{paymentId}/correct": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Correct a recorded amount. The earlier entry stays; the receipt says so. */
+        post: operations["TenancyController_correct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}/payments/{paymentId}/dispute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The tenant says a recorded amount is wrong. Both see it. */
+        post: operations["TenancyController_dispute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Either party ends the tenancy. The record stays with both. */
+        post: operations["TenancyController_end"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One receipt per recorded payment, carrying any correction rather than hiding it. */
+        get: operations["TenancyController_receipts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}/tickets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every ticket on the tenancy, with its whole history. */
+        get: operations["TenancyController_tickets"];
+        put?: never;
+        /** Raise a ticket. It can never be deleted. */
+        post: operations["TenancyController_openTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tickets/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Move a ticket along an allowed edge for this party. */
+        post: operations["TenancyController_moveTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tickets/{id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a note and photographs to the history. */
+        post: operations["TenancyController_noteTicket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/tenancies/{id}/condition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every condition record on the tenancy, and who has acknowledged each. */
+        get: operations["TenancyController_records"];
+        put?: never;
+        /** Start a condition record — a draft until both acknowledge the same bytes. */
+        post: operations["TenancyController_createRecord"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/condition/{recordId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Change a draft. Refused once anybody has acknowledged it. */
+        put: operations["TenancyController_replaceRecord"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/condition/{recordId}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign the record bytes with this party’s device key. */
+        post: operations["TenancyController_acknowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/condition/{recordId}/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A move-out beside its move-in, per room: what changed. Never a number about money. */
+        get: operations["TenancyController_compareRecords"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1264,6 +1589,230 @@ export interface components {
             decision: "blocked" | "allowed";
             /** @description Mandatory. This is the audit record. */
             reasoning: string;
+        };
+        TenantKeyBody: {
+            /** @description This phone's public key, SPKI DER, base64. */
+            publicKey: string;
+        };
+        OpenTenancyBody: {
+            /** @description A property this agent holds current authority over. */
+            propertyId: string;
+            /** @description The tenant's account id, from the conversation. */
+            tenantId: string;
+            /** @description Rent for one period, in kobo. */
+            rentKobo: number;
+            /** @enum {string} */
+            period: "monthly" | "quarterly" | "yearly";
+            /** @description Whole periods the agreement runs for. */
+            periods: number;
+            cautionDepositKobo: number;
+            /**
+             * Format: date
+             * @example 2026-10-01
+             */
+            startsOn: string;
+        };
+        AgreementView: {
+            templateVersion: string;
+            propertyId: string;
+            tenantId: string;
+            lettingId: string;
+            rentKobo: number;
+            /** @enum {string} */
+            period: "monthly" | "quarterly" | "yearly";
+            periods: number;
+            cautionDepositKobo: number;
+            /** Format: date */
+            startsOn: string;
+        };
+        DueView: {
+            index: number;
+            /** Format: date */
+            dueOn: string;
+            amountKobo: number;
+        };
+        RecordedView: {
+            periodIndex: number;
+            /** Format: date */
+            dueOn: string;
+            dueKobo: number;
+            /** @description Recorded against this period after corrections. Labelled recorded, never paid. */
+            recordedKobo: number;
+            disputed: boolean;
+        };
+        TenancyEntryView: {
+            /** @enum {string} */
+            kind: "agreement_signed" | "payment_recorded" | "payment_corrected" | "payment_disputed" | "ended";
+            by: string;
+            /** Format: date-time */
+            at: string;
+            id?: string;
+            periodIndex?: number;
+            amountKobo?: number;
+            /** Format: date-time */
+            receivedOn?: string;
+            corrects?: string;
+            disputes?: string;
+            note?: string | null;
+            signature?: string;
+        };
+        TenancyView: {
+            id: string;
+            agreement: components["schemas"]["AgreementView"];
+            templateLegallyReviewed: boolean;
+            signed: boolean;
+            schedule: components["schemas"]["DueView"][];
+            recorded: components["schemas"]["RecordedView"][];
+            entries: components["schemas"]["TenancyEntryView"][];
+            note: string;
+        };
+        PortfolioRowView: {
+            tenancyId: string;
+            propertyId: string;
+            signed: boolean;
+            /** Format: date */
+            nextDueOn: string | null;
+            nextDueKobo: number;
+            nextRecordedKobo: number;
+            periodsShort: number;
+            disputed: boolean;
+            openTickets: number;
+            longestWaitingDays: number | null;
+        };
+        AgreementBytesView: {
+            message: string;
+            templateVersion: string;
+            templateLegallyReviewed: boolean;
+            legalAdvice: string;
+        };
+        SignBody: {
+            /** @description Base64 signature over the agreement bytes, with this party’s device key. */
+            signature: string;
+            /** @description For an agent: the registered device the signature came from. */
+            deviceId?: string;
+        };
+        RecordPaymentBody: {
+            periodIndex: number;
+            /** @description In kobo. Recorded as received; Keys did not receive it. */
+            amountKobo: number;
+            /** Format: date */
+            receivedOn: string;
+            note?: string;
+        };
+        CorrectPaymentBody: {
+            amountKobo: number;
+            /** @description Why the earlier entry was wrong. Required: a correction without a reason is an edit. */
+            note: string;
+        };
+        DisputeBody: {
+            note: string;
+        };
+        EndBody: {
+            note?: string;
+        };
+        ReceiptView: {
+            tenancyId: string;
+            paymentId: string;
+            periodIndex: number;
+            periods: number;
+            amountKobo: number;
+            /** Format: date-time */
+            receivedOn: string;
+            recordedBy: string;
+            /** Format: date-time */
+            recordedAt: string;
+            correctedToKobo: number | null;
+            text: string;
+        };
+        OpenTicketBody: {
+            /** @enum {string} */
+            category: "plumbing" | "electrical" | "structural" | "security" | "pests" | "appliance" | "other";
+            description: string;
+            /** @description SHA-256 hex of each photograph. */
+            photoHashes?: string[];
+        };
+        TicketEventView: {
+            /** @enum {string} */
+            kind: "opened" | "moved" | "noted";
+            by: string;
+            /** @enum {string} */
+            party: "tenant" | "letting";
+            /** Format: date-time */
+            at: string;
+            category?: string;
+            description?: string;
+            to?: string;
+            note?: string | null;
+            photoHashes?: string[];
+        };
+        TicketView: {
+            id: string;
+            tenancyId: string;
+            /** @enum {string} */
+            state: "open" | "acknowledged" | "assigned" | "in_progress" | "resolved" | "closed";
+            /** @description Where this party may move it now. */
+            moves: ("open" | "acknowledged" | "assigned" | "in_progress" | "resolved" | "closed")[];
+            events: components["schemas"]["TicketEventView"][];
+        };
+        MoveTicketBody: {
+            /** @enum {string} */
+            to: "open" | "acknowledged" | "assigned" | "in_progress" | "resolved" | "closed";
+            note?: string;
+        };
+        NoteTicketBody: {
+            note: string;
+            photoHashes?: string[];
+        };
+        RoomItemBody: {
+            caption: string;
+            /** @description SHA-256 hex of the photograph, taken the moment it was captured. */
+            photoHash: string;
+            /** @enum {string} */
+            verdict: "snag" | "fine";
+        };
+        RoomBody: {
+            name: string;
+            items: components["schemas"]["RoomItemBody"][];
+        };
+        ConditionRecordBody: {
+            /** @enum {string} */
+            walk: "move_in" | "move_out";
+            /** @description For a move-out: the move-in it is compared against. */
+            comparesTo?: string;
+            rooms: components["schemas"]["RoomBody"][];
+            /** Format: date-time */
+            takenAt: string;
+        };
+        AcknowledgementView: {
+            by: string;
+            /** Format: date-time */
+            at: string;
+        };
+        ConditionView: {
+            id: string;
+            tenancyId: string;
+            /** @enum {string} */
+            walk: "move_in" | "move_out";
+            comparesTo: string | null;
+            rooms: components["schemas"]["RoomBody"][];
+            /** Format: date-time */
+            takenAt: string;
+            acknowledgements: components["schemas"]["AcknowledgementView"][];
+            acknowledgedByBoth: boolean;
+            /** @description The bytes each party signs. */
+            message: string;
+        };
+        AcknowledgeBody: {
+            /** @description Base64 signature over the record bytes. */
+            signature: string;
+            deviceId?: string;
+        };
+        RoomChangeView: {
+            room: string;
+            newSnags: string[];
+            fixed: string[];
+            missing: string[];
+            added: string[];
         };
     };
     responses: never;
@@ -2402,6 +2951,491 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    TenancyController_registerKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TenantKeyBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TenancyController_openTenancy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenTenancyBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenancyView"];
+                };
+            };
+        };
+    };
+    TenancyController_mine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenancyView"][];
+                };
+            };
+        };
+    };
+    TenancyController_portfolio: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioRowView"][];
+                };
+            };
+        };
+    };
+    TenancyController_one: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenancyView"];
+                };
+            };
+        };
+    };
+    TenancyController_agreement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgreementBytesView"];
+                };
+            };
+        };
+    };
+    TenancyController_sign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SignBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenancyView"];
+                };
+            };
+        };
+    };
+    TenancyController_recordPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordPaymentBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenancyView"];
+                };
+            };
+        };
+    };
+    TenancyController_correct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectPaymentBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenancyView"];
+                };
+            };
+        };
+    };
+    TenancyController_dispute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DisputeBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenancyView"];
+                };
+            };
+        };
+    };
+    TenancyController_end: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EndBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenancyView"];
+                };
+            };
+        };
+    };
+    TenancyController_receipts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptView"][];
+                };
+            };
+        };
+    };
+    TenancyController_tickets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketView"][];
+                };
+            };
+        };
+    };
+    TenancyController_openTicket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenTicketBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketView"];
+                };
+            };
+        };
+    };
+    TenancyController_moveTicket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveTicketBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketView"];
+                };
+            };
+        };
+    };
+    TenancyController_noteTicket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteTicketBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TicketView"];
+                };
+            };
+        };
+    };
+    TenancyController_records: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConditionView"][];
+                };
+            };
+        };
+    };
+    TenancyController_createRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConditionRecordBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConditionView"];
+                };
+            };
+        };
+    };
+    TenancyController_replaceRecord: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConditionRecordBody"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConditionView"];
+                };
+            };
+        };
+    };
+    TenancyController_acknowledge: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcknowledgeBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConditionView"];
+                };
+            };
+        };
+    };
+    TenancyController_compareRecords: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoomChangeView"][];
+                };
             };
         };
     };

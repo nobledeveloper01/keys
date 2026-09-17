@@ -272,7 +272,88 @@ export type Phrase =
   | 'agree_to_show'
   | 'decline'
   | 'outcome_recorded'
-  | 'number_shared';
+  | 'number_shared'
+  | 'tenancy'
+  | 'tenancies_lede'
+  | 'tenancies_none'
+  | 'portfolio'
+  | 'portfolio_lede'
+  | 'portfolio_none'
+  | 'open_a_tenancy'
+  | 'tenant_account_id'
+  | 'rent_per_period'
+  | 'period'
+  | 'period_monthly'
+  | 'period_quarterly'
+  | 'period_yearly'
+  | 'periods_count'
+  | 'caution_deposit'
+  | 'starts_on'
+  | 'agreement'
+  | 'template_not_reviewed'
+  | 'signed_by_both'
+  | 'signed_by_you'
+  | 'signed_by_other'
+  | 'unsigned'
+  | 'sign_agreement'
+  | 'recorded_note'
+  | 'schedule'
+  | 'due_on'
+  | 'recorded_so_far'
+  | 'disputed'
+  | 'record_received'
+  | 'amount_naira'
+  | 'received_on'
+  | 'correct_amount'
+  | 'why_wrong'
+  | 'dispute_amount'
+  | 'what_is_wrong'
+  | 'receipts'
+  | 'receipt_corrected'
+  | 'tickets'
+  | 'open_ticket'
+  | 'ticket_category'
+  | 'ticket_description'
+  | 'cat_plumbing'
+  | 'cat_electrical'
+  | 'cat_structural'
+  | 'cat_security'
+  | 'cat_pests'
+  | 'cat_appliance'
+  | 'cat_other'
+  | 'state_open'
+  | 'state_acknowledged'
+  | 'state_assigned'
+  | 'state_in_progress'
+  | 'state_resolved'
+  | 'state_closed'
+  | 'move_to'
+  | 'walk_record'
+  | 'walk_record_lede'
+  | 'start_move_in'
+  | 'start_move_out'
+  | 'walk_move_in'
+  | 'walk_move_out'
+  | 'pick_rooms'
+  | 'add_item'
+  | 'caption'
+  | 'verdict_snag'
+  | 'verdict_fine'
+  | 'acknowledge'
+  | 'acknowledged_both'
+  | 'acknowledged_one'
+  | 'draft'
+  | 'compare'
+  | 'unchanged'
+  | 'new_snags'
+  | 'fixed_since'
+  | 'missing_since'
+  | 'added_since'
+  | 'end_tenancy'
+  | 'ended'
+  | 'nothing_recorded'
+  | 'period_of'
+  | 'add_a_note';
 
 export const EN: Readonly<Record<Phrase, string>> = {
   app_name: "Keys",
@@ -531,6 +612,87 @@ export const EN: Readonly<Record<Phrase, string>> = {
   category_undisclosed_fees: "Fees that were never mentioned",
   category_no_show: "Took the appointment and never turned up",
   share_this_answer: "Send this to whoever asked",
+  tenancy: "Tenancy",
+  tenancies_lede: "Your agreement, what was recorded, every receipt and both condition records — on this phone, with or without signal.",
+  tenancies_none: "No tenancy yet. The letting side opens one for you; it appears here to sign.",
+  portfolio: "Your tenancies",
+  portfolio_lede: "One row per tenancy: what is due next, what was recorded against it, and which tickets are waiting. Never a total.",
+  portfolio_none: "No tenancies yet. Open one on a property you hold authority over.",
+  open_a_tenancy: "Open a tenancy",
+  tenant_account_id: "The tenant's account id, from your conversation",
+  rent_per_period: "Rent for one period, in naira",
+  period: "Period",
+  period_monthly: "Monthly",
+  period_quarterly: "Quarterly",
+  period_yearly: "Yearly",
+  periods_count: "How many periods",
+  caution_deposit: "Caution deposit, in naira",
+  starts_on: "Starts on (YYYY-MM-DD)",
+  agreement: "The agreement",
+  template_not_reviewed: "This template has not yet been read by a lawyer. Keys is not giving legal advice; either party may take their own.",
+  signed_by_both: "Signed by both. In force.",
+  signed_by_you: "Signed by you. Waiting for the other party.",
+  signed_by_other: "Signed by the other party. Waiting for you.",
+  unsigned: "Not signed yet.",
+  sign_agreement: "Sign with this phone",
+  recorded_note: "Keys records what the parties say happened. It does not receive, hold, move or ask for money.",
+  schedule: "The schedule",
+  due_on: "Due on",
+  recorded_so_far: "Recorded so far",
+  disputed: "Disputed by the tenant",
+  record_received: "Record as received",
+  amount_naira: "Amount, in naira",
+  received_on: "Received on (YYYY-MM-DD)",
+  correct_amount: "Correct this amount",
+  why_wrong: "Why the earlier entry was wrong",
+  dispute_amount: "This is not right",
+  what_is_wrong: "What is wrong",
+  receipts: "Receipts",
+  receipt_corrected: "Corrected to",
+  tickets: "Maintenance",
+  open_ticket: "Report a fault",
+  ticket_category: "What kind of fault",
+  ticket_description: "What is wrong, and where",
+  cat_plumbing: "Plumbing",
+  cat_electrical: "Electrical",
+  cat_structural: "Structural",
+  cat_security: "Security",
+  cat_pests: "Pests",
+  cat_appliance: "Appliance",
+  cat_other: "Something else",
+  state_open: "Open",
+  state_acknowledged: "Seen",
+  state_assigned: "Somebody assigned",
+  state_in_progress: "Being fixed",
+  state_resolved: "Fixed, says the letting side",
+  state_closed: "Closed by the tenant",
+  move_to: "Mark as",
+  walk_record: "Condition record",
+  walk_record_lede: "Room by room, photograph by photograph, on the day it can still be written down. It counts when both have signed the same record.",
+  start_move_in: "Start the move-in record",
+  start_move_out: "Start the move-out record",
+  walk_move_in: "Move-in",
+  walk_move_out: "Move-out",
+  pick_rooms: "Which rooms",
+  add_item: "Photograph something",
+  caption: "What is it",
+  verdict_snag: "Snag",
+  verdict_fine: "Fine",
+  acknowledge: "Sign this record",
+  acknowledged_both: "Signed by both. Nothing changes it now.",
+  acknowledged_one: "Signed by one party. Waiting for the other.",
+  draft: "A draft. Either party may still change it.",
+  compare: "Beside the move-in",
+  unchanged: "As at move-in.",
+  new_snags: "New snags",
+  fixed_since: "Fixed since",
+  missing_since: "Missing since",
+  added_since: "Added since",
+  end_tenancy: "End the tenancy",
+  ended: "Ended. The record stays with both parties.",
+  nothing_recorded: "Nothing recorded yet.",
+  period_of: "Period",
+  add_a_note: "Add a note",
 };
 
 export const HA: Readonly<Record<Phrase, string>> = {
@@ -759,6 +921,87 @@ export const HA: Readonly<Record<Phrase, string>> = {
   category_undisclosed_fees: "Kuɗaɗen da ba a taɓa ambata ba",
   category_no_show: "Sun karɓi alƙawari amma ba su zo ba",
   share_this_answer: "Aika wannan ga wanda ya tambaya",
+  tenancy: "Haya",
+  tenancies_lede: "Yarjejeniyarka, abin da aka rubuta, kowace rasit da rikodin yanayin gida — a wannan wayar, da sigina ko ba tare da ita ba.",
+  tenancies_none: "Babu haya tukuna. Mai ba da haya zai buɗe maka ɗaya; za ta bayyana a nan don sa hannu.",
+  portfolio: "Hayoyinka",
+  portfolio_lede: "Layi ɗaya ga kowace haya: abin da ke zuwa, abin da aka rubuta, da tikitin da ke jira. Ba jimla ba.",
+  portfolio_none: "Babu haya tukuna. Buɗe ɗaya a kan gidan da kake da izini a kai.",
+  open_a_tenancy: "Buɗe haya",
+  tenant_account_id: "Lambar asusun mai haya, daga tattaunawarku",
+  rent_per_period: "Kuɗin haya na lokaci ɗaya, a naira",
+  period: "Lokaci",
+  period_monthly: "Kowane wata",
+  period_quarterly: "Kowane wata uku",
+  period_yearly: "Kowace shekara",
+  periods_count: "Lokuta nawa",
+  caution_deposit: "Kuɗin ajiya, a naira",
+  starts_on: "Farawa (YYYY-MM-DD)",
+  agreement: "Yarjejeniyar",
+  template_not_reviewed: "Lauya bai karanta wannan samfurin ba tukuna. Keys ba ya ba da shawarar shari'a; kowane ɓangare na iya nemo tasa.",
+  signed_by_both: "Duka biyu sun sa hannu. Tana aiki.",
+  signed_by_you: "Ka sa hannu. Ana jiran ɗayan ɓangaren.",
+  signed_by_other: "Ɗayan ɓangaren ya sa hannu. Ana jiran ka.",
+  unsigned: "Ba a sa hannu ba tukuna.",
+  sign_agreement: "Sa hannu da wannan wayar",
+  recorded_note: "Keys yana rubuta abin da ɓangarorin suka ce ya faru. Ba ya karɓa, riƙe, motsa ko neman kuɗi.",
+  schedule: "Jadawalin",
+  due_on: "Ranar biya",
+  recorded_so_far: "An rubuta zuwa yanzu",
+  disputed: "Mai haya ya ƙi yarda",
+  record_received: "Rubuta cewa an karɓa",
+  amount_naira: "Adadi, a naira",
+  received_on: "Ranar da aka karɓa (YYYY-MM-DD)",
+  correct_amount: "Gyara wannan adadin",
+  why_wrong: "Dalilin da rubutun farko ya yi kuskure",
+  dispute_amount: "Wannan ba daidai ba ne",
+  what_is_wrong: "Me ba daidai ba",
+  receipts: "Rasitoci",
+  receipt_corrected: "An gyara zuwa",
+  tickets: "Gyara",
+  open_ticket: "Ba da rahoton lalacewa",
+  ticket_category: "Wace irin lalacewa",
+  ticket_description: "Me ya lalace, kuma a ina",
+  cat_plumbing: "Famfo",
+  cat_electrical: "Wutar lantarki",
+  cat_structural: "Gini",
+  cat_security: "Tsaro",
+  cat_pests: "Kwari",
+  cat_appliance: "Na'ura",
+  cat_other: "Wani abu dabam",
+  state_open: "A buɗe",
+  state_acknowledged: "An gani",
+  state_assigned: "An ba wani",
+  state_in_progress: "Ana gyarawa",
+  state_resolved: "An gyara, in ji mai ba da haya",
+  state_closed: "Mai haya ya rufe",
+  move_to: "Yi masa alama",
+  walk_record: "Rikodin yanayin gida",
+  walk_record_lede: "Ɗaki bayan ɗaki, hoto bayan hoto, a ranar da har yanzu ana iya rubutawa. Yana ƙidaya idan duka biyu sun sa hannu a rikodi ɗaya.",
+  start_move_in: "Fara rikodin shiga",
+  start_move_out: "Fara rikodin fita",
+  walk_move_in: "Shiga",
+  walk_move_out: "Fita",
+  pick_rooms: "Waɗanne ɗakuna",
+  add_item: "Ɗauki hoton wani abu",
+  caption: "Menene",
+  verdict_snag: "Lalacewa",
+  verdict_fine: "Lafiya",
+  acknowledge: "Sa hannu a wannan rikodin",
+  acknowledged_both: "Duka biyu sun sa hannu. Babu abin da zai canza shi yanzu.",
+  acknowledged_one: "Ɓangare ɗaya ya sa hannu. Ana jiran ɗayan.",
+  draft: "Daftari. Kowane ɓangare na iya canza shi tukuna.",
+  compare: "Kusa da rikodin shiga",
+  unchanged: "Kamar lokacin shiga.",
+  new_snags: "Sabbin lalacewa",
+  fixed_since: "An gyara tun",
+  missing_since: "Ya ɓace tun",
+  added_since: "An ƙara tun",
+  end_tenancy: "Kawo ƙarshen haya",
+  ended: "Ta ƙare. Rikodin ya rage ga ɓangarorin biyu.",
+  nothing_recorded: "Ba a rubuta komai ba tukuna.",
+  period_of: "Lokaci",
+  add_a_note: "Ƙara bayani",
 };
 
 export const YO: Readonly<Record<Phrase, string>> = {
@@ -987,6 +1230,87 @@ export const YO: Readonly<Record<Phrase, string>> = {
   category_undisclosed_fees: "Owó tí a kò dárúkọ rí",
   category_no_show: "Wọ́n gba ìpàdé, wọn kò sì dé",
   share_this_answer: "Fi èyí ránṣẹ́ sí ẹni tó béèrè",
+  tenancy: "Ìgbàlé",
+  tenancies_lede: "Àdéhùn rẹ, ohun tí a kọ sílẹ̀, gbogbo ìwé ẹ̀rí àti ìwé ipò ilé méjèèjì — lórí fóònù yìí, pẹ̀lú tàbí láìsí nẹ́tíwọ̀kì.",
+  tenancies_none: "Kò tíì sí ìgbàlé. Ẹni tó ń gbé ilé lé ọ lọ́wọ́ ni yóò ṣí i; yóò hàn níbí fún ìbuwọ́lù.",
+  portfolio: "Àwọn ìgbàlé rẹ",
+  portfolio_lede: "Ìlà kan fún ìgbàlé kọ̀ọ̀kan: ohun tó ń bọ̀, ohun tí a kọ sílẹ̀, àti àwọn tíkẹ́ẹ̀tì tó ń dúró. Kì í ṣe àpapọ̀ láé.",
+  portfolio_none: "Kò tíì sí ìgbàlé. Ṣí ọ̀kan lórí ilé tí o ní àṣẹ lé lórí.",
+  open_a_tenancy: "Ṣí ìgbàlé",
+  tenant_account_id: "Nọ́mbà àkáǹtì ayálégbé, láti inú ìbánisọ̀rọ̀ yín",
+  rent_per_period: "Owó ilé fún àkókò kan, ní náírà",
+  period: "Àkókò",
+  period_monthly: "Oṣooṣù",
+  period_quarterly: "Oṣù mẹ́ta mẹ́ta",
+  period_yearly: "Ọdọọdún",
+  periods_count: "Àkókò mélòó",
+  caution_deposit: "Owó ìdúró, ní náírà",
+  starts_on: "Ó bẹ̀rẹ̀ ní (YYYY-MM-DD)",
+  agreement: "Àdéhùn náà",
+  template_not_reviewed: "Agbẹjọ́rò kò tíì ka àwòṣe yìí. Keys kò fún ni ní ìmọ̀ràn òfin; ẹnikẹ́ni lára yín lè wá tirẹ̀.",
+  signed_by_both: "Àwọn méjèèjì ti buwọ́lù. Ó ti wà ní ipa.",
+  signed_by_you: "O ti buwọ́lù. À ń dúró de ẹgbẹ́ kejì.",
+  signed_by_other: "Ẹgbẹ́ kejì ti buwọ́lù. À ń dúró dè ọ́.",
+  unsigned: "Kò tíì buwọ́lù.",
+  sign_agreement: "Buwọ́lù pẹ̀lú fóònù yìí",
+  recorded_note: "Keys ń kọ ohun tí àwọn ẹgbẹ́ sọ pé ó ṣẹlẹ̀. Kì í gba, kì í pa mọ́, kì í gbé, kì í sì béèrè owó.",
+  schedule: "Ètò ìsanwó",
+  due_on: "Ọjọ́ tó yẹ",
+  recorded_so_far: "A ti kọ sílẹ̀ títí di ìsinsìnyí",
+  disputed: "Ayálégbé kò gbà",
+  record_received: "Kọ pé a ti gbà",
+  amount_naira: "Iye, ní náírà",
+  received_on: "Ọjọ́ tí a gbà (YYYY-MM-DD)",
+  correct_amount: "Ṣàtúnṣe iye yìí",
+  why_wrong: "Ìdí tí ìkọsílẹ̀ àkọ́kọ́ fi jẹ́ àṣìṣe",
+  dispute_amount: "Èyí kò tọ́",
+  what_is_wrong: "Kí ló kù",
+  receipts: "Àwọn ìwé ẹ̀rí",
+  receipt_corrected: "A ṣàtúnṣe sí",
+  tickets: "Àtúnṣe ilé",
+  open_ticket: "Sọ nípa àléébù",
+  ticket_category: "Irú àléébù wo",
+  ticket_description: "Kí ló bàjẹ́, níbo",
+  cat_plumbing: "Omi àti páìpù",
+  cat_electrical: "Iná mànàmáná",
+  cat_structural: "Ilé fúnra rẹ̀",
+  cat_security: "Ààbò",
+  cat_pests: "Kòkòrò",
+  cat_appliance: "Ẹ̀rọ",
+  cat_other: "Ohun mìíràn",
+  state_open: "Ṣíṣí",
+  state_acknowledged: "A ti rí i",
+  state_assigned: "A ti gbé fún ẹnìkan",
+  state_in_progress: "À ń tún ṣe",
+  state_resolved: "A ti tún ṣe, ni ẹni tó ń gbé ilé wí",
+  state_closed: "Ayálégbé ti tì í",
+  move_to: "Fi àmì sí",
+  walk_record: "Ìwé ipò ilé",
+  walk_record_lede: "Yàrá dé yàrá, fọ́tò dé fọ́tò, ní ọjọ́ tí a ṣì lè kọ ọ́ sílẹ̀. Ó kà nígbà tí àwọn méjèèjì bá ti buwọ́lù sí ìwé kan náà.",
+  start_move_in: "Bẹ̀rẹ̀ ìwé ìwọlé",
+  start_move_out: "Bẹ̀rẹ̀ ìwé ìjáde",
+  walk_move_in: "Ìwọlé",
+  walk_move_out: "Ìjáde",
+  pick_rooms: "Àwọn yàrá wo",
+  add_item: "Ya fọ́tò ohun kan",
+  caption: "Kí ni",
+  verdict_snag: "Àléébù",
+  verdict_fine: "Ó dára",
+  acknowledge: "Buwọ́lù sí ìwé yìí",
+  acknowledged_both: "Àwọn méjèèjì ti buwọ́lù. Kò sí ohun tó lè yí i padà mọ́.",
+  acknowledged_one: "Ẹgbẹ́ kan ti buwọ́lù. À ń dúró de èkejì.",
+  draft: "Àkọsílẹ̀. Ẹgbẹ́ kọ̀ọ̀kan ṣì lè yí i padà.",
+  compare: "Lẹ́gbẹ̀ẹ́ ìwé ìwọlé",
+  unchanged: "Bí ó ti wà nígbà ìwọlé.",
+  new_snags: "Àléébù tuntun",
+  fixed_since: "A ti tún ṣe láti",
+  missing_since: "Ó ti sọnù láti",
+  added_since: "A ti fi kún láti",
+  end_tenancy: "Parí ìgbàlé",
+  ended: "Ó ti parí. Ìwé náà wà lọ́wọ́ àwọn méjèèjì.",
+  nothing_recorded: "Kò tíì sí ohun tí a kọ sílẹ̀.",
+  period_of: "Àkókò",
+  add_a_note: "Fi àkọsílẹ̀ kún",
 };
 
 export const IG: Readonly<Record<Phrase, string>> = {
@@ -1215,6 +1539,87 @@ export const IG: Readonly<Record<Phrase, string>> = {
   category_undisclosed_fees: "Ụgwọ a na-akpọtụghị aha ya",
   category_no_show: "Ha nabatara oge ma ha abịaghị",
   share_this_answer: "Zigara onye jụrụ nke a",
+  tenancy: "Mgbazinye ụlọ",
+  tenancies_lede: "Nkwekọrịta gị, ihe e dere, akwụkwọ nnata ọ bụla na ndekọ ọnọdụ ụlọ abụọ — n'ekwentị a, ma nwee netwọk ma ọ bụ enweghị.",
+  tenancies_none: "Enwebeghị mgbazinye. Onye na-agbazinye ga-emepe gị otu; ọ ga-apụta ebe a ka ị bịanye aka.",
+  portfolio: "Mgbazinye gị niile",
+  portfolio_lede: "Otu ahịrị maka mgbazinye ọ bụla: ihe na-abịa, ihe e dere megide ya, na tiketi na-eche. Ọ bụghị nchikota ma ọlị.",
+  portfolio_none: "Enwebeghị mgbazinye. Mepee otu n'ụlọ ị nwere ikike na ya.",
+  open_a_tenancy: "Mepee mgbazinye",
+  tenant_account_id: "Nọmba akaụntụ onye bi n'ụlọ, site na mkparịta ụka unu",
+  rent_per_period: "Ụgwọ ụlọ maka otu oge, na naịra",
+  period: "Oge",
+  period_monthly: "Kwa ọnwa",
+  period_quarterly: "Kwa ọnwa atọ",
+  period_yearly: "Kwa afọ",
+  periods_count: "Oge ole",
+  caution_deposit: "Ego nkwụnye, na naịra",
+  starts_on: "Na-amalite na (YYYY-MM-DD)",
+  agreement: "Nkwekọrịta ahụ",
+  template_not_reviewed: "Onye ọka iwu agụbeghị ụdị a. Keys anaghị enye ndụmọdụ iwu; akụkụ ọ bụla nwere ike ịchọta nke ya.",
+  signed_by_both: "Ha abụọ bịanyere aka. Ọ na-arụ ọrụ.",
+  signed_by_you: "Ị bịanyere aka. A na-eche akụkụ nke ọzọ.",
+  signed_by_other: "Akụkụ nke ọzọ bịanyere aka. A na-eche gị.",
+  unsigned: "A bịanyebeghị aka.",
+  sign_agreement: "Bịanye aka na ekwentị a",
+  recorded_note: "Keys na-ede ihe akụkụ abụọ kwuru na ọ mere. Ọ naghị anata, ejide, ebugharị ma ọ bụ rịọ ego.",
+  schedule: "Usoro ụgwọ",
+  due_on: "Ụbọchị ọ ruru",
+  recorded_so_far: "E dere ruo ugbu a",
+  disputed: "Onye bi n'ụlọ ekwenyeghị",
+  record_received: "Dee na e nwetara ya",
+  amount_naira: "Ego ole, na naịra",
+  received_on: "Ụbọchị e nwetara ya (YYYY-MM-DD)",
+  correct_amount: "Dozie ego a",
+  why_wrong: "Ihe mere ndekọ mbụ ji dị njọ",
+  dispute_amount: "Nke a ezighị ezi",
+  what_is_wrong: "Gịnị na-ezighị ezi",
+  receipts: "Akwụkwọ nnata",
+  receipt_corrected: "E doziri ya ka ọ bụrụ",
+  tickets: "Nrụzi",
+  open_ticket: "Kọọ ihe mebiri",
+  ticket_category: "Ụdị mmebi",
+  ticket_description: "Gịnị mebiri, na ebee",
+  cat_plumbing: "Ọkpọkọ mmiri",
+  cat_electrical: "Ọkụ eletrik",
+  cat_structural: "Ahụ ụlọ",
+  cat_security: "Nchekwa",
+  cat_pests: "Ụmụ ahụhụ",
+  cat_appliance: "Ngwá",
+  cat_other: "Ihe ọzọ",
+  state_open: "Emepere",
+  state_acknowledged: "Ahụla ya",
+  state_assigned: "Enyere mmadụ",
+  state_in_progress: "A na-arụzi ya",
+  state_resolved: "Arụziela ya, ka onye na-agbazinye kwuru",
+  state_closed: "Onye bi n'ụlọ mechiri ya",
+  move_to: "Kaa ya dịka",
+  walk_record: "Ndekọ ọnọdụ ụlọ",
+  walk_record_lede: "Ọnụ ụlọ n'otu n'otu, foto n'otu n'otu, n'ụbọchị a ka nwere ike idetu ya. Ọ na-agụ mgbe ha abụọ bịanyere aka n'otu ndekọ.",
+  start_move_in: "Malite ndekọ mbata",
+  start_move_out: "Malite ndekọ ọpụpụ",
+  walk_move_in: "Mbata",
+  walk_move_out: "Ọpụpụ",
+  pick_rooms: "Ọnụ ụlọ ndị",
+  add_item: "See foto ihe",
+  caption: "Gịnị bụ ya",
+  verdict_snag: "Mmebi",
+  verdict_fine: "Ọ dị mma",
+  acknowledge: "Bịanye aka na ndekọ a",
+  acknowledged_both: "Ha abụọ bịanyere aka. Ọ dịghị ihe ga-agbanwe ya ugbu a.",
+  acknowledged_one: "Otu akụkụ bịanyere aka. A na-eche nke ọzọ.",
+  draft: "Ihe odide. Akụkụ ọ bụla ka nwere ike gbanwee ya.",
+  compare: "N'akụkụ ndekọ mbata",
+  unchanged: "Dịka ọ dị na mbata.",
+  new_snags: "Mmebi ọhụrụ",
+  fixed_since: "E doziri kemgbe",
+  missing_since: "Ọ furu kemgbe",
+  added_since: "Agbakwunyere kemgbe",
+  end_tenancy: "Kwụsị mgbazinye",
+  ended: "Ọ kwụsịrị. Ndekọ ahụ dị n'aka akụkụ abụọ.",
+  nothing_recorded: "Edebeghị ihe ọ bụla.",
+  period_of: "Oge",
+  add_a_note: "Tinye ihe odide",
 };
 
 const TABLES: Readonly<Record<Language, Readonly<Record<Phrase, string>>>> = {
