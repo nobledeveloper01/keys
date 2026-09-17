@@ -67,7 +67,7 @@ untranslated:
 	python3 scripts/untranslated-check.py
 
 ## gates: every blocking check, without the tests
-gates: typecheck lint boundary doc-check doc-drift wired-check untranslated phrase-check repo-check api-fresh bundle-check splash-check mark-check palette-check
+gates: typecheck lint boundary doc-check doc-drift wired-check untranslated phrase-check copy-check repo-check api-fresh bundle-check splash-check mark-check palette-check
 
 ## ci: the gate
 ci: gates test
@@ -79,6 +79,10 @@ doc-drift:
 ## phrase-check: fail when a phrase is written in four languages and used on no screen
 phrase-check:
 	python3 scripts/phrase-check.py
+
+## copy-check: fail on any sentence that implies Keys holds, moves or asks for money (ADR-0009)
+copy-check:
+	python3 scripts/copy-check.py
 
 ## api: regenerate openapi.json and the typed client from the controllers
 api:
@@ -129,4 +133,4 @@ clean:
 	rm -rf apps/server/dist packages/*/dist
 	@echo "cleaned — node_modules left alone"
 
-.PHONY: help setup db test typecheck lint boundary doc-check doc-drift wired-check untranslated phrase-check repo-check api api-fresh bundle-check splash-check mark-check palette-check gates ci clean
+.PHONY: help setup db test typecheck lint boundary doc-check doc-drift wired-check untranslated phrase-check copy-check repo-check api api-fresh bundle-check splash-check mark-check palette-check gates ci clean
