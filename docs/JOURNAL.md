@@ -2374,3 +2374,34 @@ seconds and wedges the app for the tests after it; on the stashed tree it
 did the same. Not raised, not fixed here — flagged for its own session,
 because a timeout in that file reads exactly like a security regression,
 and the honest fix is the cause.
+
+## 2026-09-17 (later) — The route walk hung one run in four, and it was the ports
+
+**Did.** Found the hang the morning's entry flagged. It was not the app and
+it was not a route: the process was idle, its JavaScript stack empty, and
+eight connections sat ESTABLISHED on both ends with nothing moving.
+
+**The suite never called `listen`, so supertest did — per request.** Handed
+a server that is not listening, supertest calls `listen(0)` before each
+request and `close()` after it (its `serverAddress` and `end`, read rather
+than assumed). A one-request suite never notices. The walk makes two
+thousand, so each run burned four thousand ephemeral ports — a listening
+port and a client port per request — from macOS's sequential range of
+sixteen thousand. Three or four runs inside the thirty-second TIME_WAIT
+window and the sequence wrapped into (client, server) pairs the kernel still
+remembered, whose SYNs it drops until they expire; the request "hung", and
+every request after it marched through the same zone. Which is why it was
+always the fourth run, why runs one to three got slower (0.4 s, 1.8 s,
+2.6 s) as the allocator started colliding, and why it predated Phase 7.
+
+**Proved rather than reasoned.** A probe that traced every request to a file
+found the first hang at request #1999, #2008, #2003 across three runs —
+never a particular route. `netstat` at the hang showed TIME_WAIT climbing
+by 2,044 per run, one per request. `app.listen(0)` once in `beforeAll`:
+eight consecutive runs, the walk at 370 ms every time, zero TIME_WAIT left.
+The two other suites that only `init()` got the same line, with a comment
+pointing here. The timeout was not touched.
+
+**A timeout in a security test reads as a security regression**, which is
+why the morning's entry refused to raise it. The fix is the cause, and the
+comment above the `listen` says how to recognise the symptom next time.

@@ -31,6 +31,9 @@ describe('the server and the phone share one rules package', () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
     await app.init();
+    // Listen once: supertest restarts a server that is not listening for every request, and
+    // burns two ephemeral ports each time — see the route walk in no-unreviewed-report-escapes.
+    await app.listen(0);
   });
 
   afterAll(async () => {

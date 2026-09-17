@@ -104,6 +104,22 @@ describe.each(STORES)('no unreviewed report escapes (%s)', (_name, databaseUrl) 
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
     await app.init();
+    /*
+      Listen once, here, and not per request.
+
+      Handed a server that is not listening, supertest calls `listen(0)` before
+      each request and `close()` after it. For a suite that makes one request
+      that is a detail; for a walk that makes two thousand it is four thousand
+      ephemeral ports — a listening port and a client port per request — and
+      macOS hands them out in sequence from a range of sixteen thousand. Three
+      or four runs inside the thirty-second TIME_WAIT window and the sequence
+      wraps into pairs the kernel still remembers, whose SYNs it drops until
+      they expire. That is the sixty-second hang this test showed one run in
+      four, and every test after it timing out while the sequence marched on
+      through the same zone. One listening port for the whole suite, and each
+      request costs one client port and no server port.
+    */
+    await app.listen(0);
 
     store = app.get(ReportsStore);
     // A clean table. The suite asserts on counts, and a row left by the last
