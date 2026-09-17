@@ -1,4 +1,6 @@
-import { TurboModuleRegistry, type TurboModule } from 'react-native';
+import type { TurboModule } from 'react-native';
+
+import { onThisPlatform } from './onThisPlatform';
 
 /**
  * The camera, and only the camera.
@@ -57,4 +59,5 @@ export interface Spec extends TurboModule {
   }>;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('KeysCapture');
+// A stand-in that refuses at use on a platform without the module (ADR-0018), never a crash at launch.
+export default onThisPlatform<Spec>('KeysCapture');

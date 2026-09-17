@@ -1,4 +1,6 @@
-import { TurboModuleRegistry, type TurboModule } from 'react-native';
+import type { TurboModule } from 'react-native';
+
+import { onThisPlatform } from './onThisPlatform';
 
 /**
  * The device key, and the only thing that can sign a capture.
@@ -44,4 +46,5 @@ export interface Spec extends TurboModule {
   hasSecureEnclave(): Promise<boolean>;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('KeysSigning');
+// A stand-in that refuses at use on a platform without the module (ADR-0018), never a crash at launch.
+export default onThisPlatform<Spec>('KeysSigning');
