@@ -2336,3 +2336,41 @@ four packages: 34 domain, 45 server". Both had been true once. The second
 had not been touched since phase 1, and nothing here counts test totals the
 way `counts-check` does in the Swift projects — a figure quoted twice is a
 figure that drifts once. The rewrite quotes each figure in one place.
+
+## 2026-09-17 — Tenancy, the phase after v1.0
+
+**Did.** Phase 7 ahead of v1.0 shipping, because everything v1.0 still needs
+is a device or a person. Four ADRs first, then the domain — tenancy,
+maintenance, condition, portfolio, seventeen tests green on the first run —
+then the server module with both stores and a migration, six tests through
+the real routes against memory and Postgres, then the four screens and the
+signing helpers, then the gates.
+
+**The copy gate is the ADR.** ADR-0009 says Keys never touches money; the
+gate is what makes that true next month. It was broken on purpose with *pay
+now to secure your deposit* in the Hausa table and fired on both words.
+
+**A phrase prefix is a namespace somebody else owns.** `condition_lede`
+tripped the listings test that derives the nine conditions from every
+phrase starting `condition_` — the test was right and the name was wrong.
+`walk_record` now. The gate that found it exists because two places once
+computed Verified and disagreed; a name is one of those places.
+
+**`wired-check` refused four exports and it was right about all four.**
+`movesFor` was written and the server filtered `TICKET_STATES` by hand
+beside it — two implementations of one rule, the exact thing the gate
+exists for. `reminderOn`, `correctPayment` and `noteTicket` were built and
+reached by nothing; each has a screen now.
+
+**A nullable number in Swagger is `Record<string, never>` unless you say
+`type: Number`.** The generated client typed `correctedToKobo` as an empty
+object and the app refused to hand it to `naira()`. `api-fresh` would not
+have caught it — the client matched the controllers exactly, and both were
+wrong the same way.
+
+**The route walk hangs one run in four, and it did before this phase.** The
+test that hits every route with every candidate sometimes takes sixty
+seconds and wedges the app for the tests after it; on the stashed tree it
+did the same. Not raised, not fixed here — flagged for its own session,
+because a timeout in that file reads exactly like a security regression,
+and the honest fix is the cause.

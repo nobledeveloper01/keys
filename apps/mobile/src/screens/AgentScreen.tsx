@@ -31,9 +31,11 @@ import { PropertyScreen } from './PropertyScreen';
 export function AgentScreen({
   baseUrl,
   onOpenEnquiry,
+  onOpenPortfolio,
 }: {
   baseUrl: string;
   onOpenEnquiry: (conversationId: string) => void;
+  onOpenPortfolio: () => void;
 }) {
   const { t } = useLanguage();
   const { token, signIn, signOut } = useSession();
@@ -170,6 +172,8 @@ export function AgentScreen({
             onOpen={(listing) => setOpenId(listing.id)}
             onAdd={() => setAdding(true)}
           />
+
+          <Button label={t('portfolio')} onPress={onOpenPortfolio} quiet />
 
           <View style={styles.out}>
             <Button label={t('sign_out')} onPress={signOut} quiet />

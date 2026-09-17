@@ -254,6 +254,42 @@ the review console and the transparency figures. Geotagged capture is
 deliberately impossible on web — that limitation *is* the guarantee: a
 verified listing requires that a person physically stood at the property.
 
+### The tenancy
+
+Phase 7, built ahead of v1.0 shipping. From the Messages tab a tenant opens
+*Tenancy*; from the Account tab the letting side opens *Your tenancies*. Both
+read the same record ([ADR-0010](docs/adr/0010-the-tenancy-has-two-parties-and-the-letting-side-is-an-agent-account.md)).
+
+**The agreement** is a versioned template with blanks — the property, the
+parties, the rent, the period, the deposit, the start — and each party signs
+its bytes with the same phone key that signs a capture; signed by both, it
+is in force. Until a lawyer has read the template the screen says so, in
+every language, and that Keys gives no legal advice (R17).
+
+**The schedule** is what the agreement implies, one period at a time. The
+letting side **records** a payment as received; the tenant sees it at once
+and may say *this is not right*; a wrong amount is **corrected** by a new
+entry with a reason, never edited, and the receipt carries the correction
+rather than hiding it. Every receipt says that Keys recorded this and did
+not receive, hold or move the money — and a gate fails the build on any
+sentence in any language that would imply otherwise
+([ADR-0009](docs/adr/0009-a-tenancy-records-money-and-never-touches-it.md)).
+
+**Maintenance** is an append-only history: the tenant raises, the letting
+side acknowledges, assigns, works and resolves, the tenant closes or
+reopens; the edges are data a test asserts exactly, and a screen offers only
+the moves its side may make. Nothing is deleted.
+
+**The condition record** is Snag's walk on a Keys phone: a template names
+the rooms, a prompt starts a caption, every photograph is hashed the moment
+it is taken, *fine* is a real answer. A draft either side may change; a
+record both have signed nothing changes. At move-out the same rooms are
+walked again and the app shows what changed, per room, as a list — never a
+number ([ADR-0011](docs/adr/0011-the-condition-record-is-snags-and-is-acknowledged-by-both-or-by-neither.md)).
+
+**The portfolio** is one row per tenancy — the next due, what is recorded
+against it, periods short, tickets waiting — and never a total across them.
+
 ### At the largest text size
 
 | iOS accessibility XXXL |
@@ -366,6 +402,11 @@ they are listed together.
 | `KEYS_MEDIA_DIR` | server | The in-memory media store, which says `durable: false` |
 | `KEYS_API_URL` | web | **The web surface will not start.** No localhost fallback |
 | `KEYS_TEST_DATABASE_URL` | tests | Server suites run against the in-memory store only, and `make test` prints a warning saying so |
+
+The agent's phone key that signs a capture also signs an agreement and a
+condition record; a tenant registers the same phone key once
+(`/v1/tenants/me/key`) and signs with it. Every signature is verified on the
+server over bytes the server handed out.
 
 Each default is the one that fails loudly. A missing secret should stop the
 thing that needs it, never quietly widen what is allowed.
@@ -486,7 +527,9 @@ matters most.
 | Signed on the device | Captures — the greyscale grid, the media, the position | A key the phone cannot export; EXIF is never trusted |
 | In the Keychain | Session tokens on iOS | `AfterFirstUnlockThisDeviceOnly`; swept from the container on every launch. Android refuses an account rather than keep one in a file |
 | Never stored | The badge | Nine conditions computed on every read; there is no `is_verified` column |
-| Never held | Money | No escrow, no rent, no deposit; the schema has no transaction columns |
+| Never held | Money | No escrow, no rent, no deposit; the schema has no transaction columns. A tenancy *records* a payment as received and a gate keeps *pay*, *wallet* and *balance* out of every language |
+| Signed by both or by neither | The agreement, the condition record | Each party's phone key over the same bytes; one signature is a draft |
+| Appended, never edited | Payments, corrections, disputes, ticket events | A wrong amount is corrected by a new entry with a reason; the receipt says so |
 | Public only when upheld | A report against a number | Published by a named reviewer with a reason; the accused answers by a texted capability |
 
 ---
@@ -505,7 +548,7 @@ make palette       # regenerate the palette; palette-check fails if it drifted
 `--no-verify` skips it, deliberately: a hook that cannot be skipped is a hook
 people delete.
 
-Fifteen gates, every one **proved to fail** by breaking what it guards and
+Sixteen gates, every one **proved to fail** by breaking what it guards and
 watching it go red:
 
 | Gate | Holds |
@@ -524,6 +567,7 @@ watching it go red:
 | `splash-check` | The native launch screen and the JavaScript splash are the same colour |
 | `mark-check` | The app and the web draw the same mark, to the path |
 | `palette-check` | The generated palette is what the tokens produce |
+| `copy-check` | Any sentence, in any language, implying Keys holds, moves or asks for money — proved to fire on *pay now to secure your deposit* |
 | `test` | Every suite; the server's against every store implementation |
 
 The server suites run **against every store implementation** — in memory
@@ -548,12 +592,13 @@ and says plainly when it cannot.
 ```text
 packages/domain/src/       listings and the nine conditions, capture, hashing, money,
                            places, search, featured, conversations, inspections, saved,
-                           reports, phone, language — pure TypeScript, Apache-2.0
+                           reports, phone, language; tenancy, maintenance, condition,
+                           portfolio — pure TypeScript, Apache-2.0
 packages/api/              the wire client, generated from the controllers, gated
-apps/server/src/           NestJS: agents, captures, market, outbox, reports, health;
-                           every store in memory and in Postgres
+apps/server/src/           NestJS: agents, captures, market, outbox, reports, tenancy,
+                           health; every store in memory and in Postgres
 apps/server/test/          one file per rule, each run against both stores
-apps/mobile/src/screens/   the twelve screens
+apps/mobile/src/screens/   the sixteen screens, four of them the tenancy's
 apps/mobile/src/native/    KeysSecrets (Keychain) and the capture module
 apps/mobile/src/design/    the tokens and the generated palette
 apps/web/                  Next.js: lookup, report, reply, review, transparency
@@ -574,7 +619,7 @@ scripts/                   the gates
 deployed, and five gates block v1.0** — every one of them needs a physical
 device or a person, not more code.
 
-**179 domain tests, no build step; 258 server tests, every suite against
+**196 domain tests, no build step; 270 server tests, every suite against
 in-memory and real PostgreSQL including a process restart; 23 app tests;
 4 wire tests.**
 
@@ -587,8 +632,8 @@ in-memory and real PostgreSQL including a process restart; 23 app tests;
 | Faces | tenant, agent, landlord, reviewer — one app and a web console |
 | Screens | 24, four languages, both themes |
 | Conditions behind the badge | 9, computed on every read, never stored |
-| ADRs | 8 |
-| Gates | 15, each broken on purpose to prove it fires |
+| ADRs | 12 |
+| Gates | 16, each broken on purpose to prove it fires |
 
 | Phase | State |
 | --- | --- |
@@ -599,7 +644,7 @@ in-memory and real PostgreSQL including a process restart; 23 app tests;
 | **4** Search and discovery | Done — SQL narrows, the domain decides; nothing is cached |
 | **5** Marketplace loop | Done — asking, messaging, viewings, *there was nothing there* |
 | **6** Launch hardening | **current** — the Keychain, offline saved listings, the largest text size; the gates are devices and people |
-| **7** Tenancy → v1.1 | Not started |
+| **7** Tenancy → v1.1 | Built ahead — the agreement signed by both, the schedule and what was recorded, receipts that carry their corrections, tickets as history, the condition record, the portfolio; the gate is a lawyer reading the template (R17) |
 | **8** Depth and reach → v1.2 | Not started |
 
 ### What is open, and why it matters

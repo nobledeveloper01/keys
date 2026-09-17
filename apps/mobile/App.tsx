@@ -8,9 +8,9 @@ import { Tabs, type Tab } from './src/components/Tabs';
 import { useColours, useTheme, ThemeProvider } from './src/design/theme';
 import { useDeepLink } from './src/state/deepLink';
 import { LanguageProvider, useLanguage } from './src/state/language';
-import { SessionProvider } from './src/state/session';
+import { SessionProvider, useSession } from './src/state/session';
 import { SavedProvider } from './src/state/saved';
-import { TenantProvider } from './src/state/tenant';
+import { TenantProvider, useTenant } from './src/state/tenant';
 import { AgentScreen } from './src/screens/AgentScreen';
 import { FindScreen } from './src/screens/FindScreen';
 import { ConversationScreen } from './src/screens/ConversationScreen';
@@ -22,6 +22,10 @@ import { LookupScreen } from './src/screens/LookupScreen';
 import { ReplyScreen } from './src/screens/ReplyScreen';
 import { ReportScreen } from './src/screens/ReportScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
+import { ConditionScreen } from './src/screens/ConditionScreen';
+import { PortfolioScreen } from './src/screens/PortfolioScreen';
+import { TenanciesScreen } from './src/screens/TenanciesScreen';
+import { TenancyScreen } from './src/screens/TenancyScreen';
 
 /*
   Where the server is, in development.
@@ -117,6 +121,16 @@ function Shell() {
   const [openConversation, setOpenConversation] = useState<string | null>(null);
   const [asking, setAsking] = useState<{ listingId: string } | null>(null);
   const [openEnquiry, setOpenEnquiry] = useState<string | null>(null);
+  /*
+    The tenancy, from either side: the list, one tenancy, its condition record.
+    Two tokens, one set of screens — a tenancy has two parties and both read
+    the same record (ADR-0010).
+  */
+  const [tenancies, setTenancies] = useState<'tenant' | 'letting' | null>(null);
+  const [openTenancy, setOpenTenancy] = useState<string | null>(null);
+  const [walking, setWalking] = useState(false);
+  const tenantSession = useTenant();
+  const agentSession = useSession();
 
   /*
     A listing being reported, which is not the same state as a *number* being
@@ -285,8 +299,16 @@ function Shell() {
             />
           ))}
         {tab === 'messages' &&
-          (openConversation === null ? (
-            <MessagesScreen baseUrl={API_URL} onOpen={setOpenConversation} />
+          (tenancies === 'tenant' && tenantSession.token !== null ? (
+            openTenancy === null ? (
+              <TenanciesScreen baseUrl={API_URL} tenantToken={tenantSession.token} agentToken={null} onOpen={setOpenTenancy} onBack={() => setTenancies(null)} />
+            ) : walking ? (
+              <ConditionScreen baseUrl={API_URL} token={tenantSession.token} as="tenant" tenancyId={openTenancy} onBack={() => setWalking(false)} />
+            ) : (
+              <TenancyScreen baseUrl={API_URL} token={tenantSession.token} as="tenant" id={openTenancy} onOpenCondition={() => setWalking(true)} onBack={() => setOpenTenancy(null)} />
+            )
+          ) : openConversation === null ? (
+            <MessagesScreen baseUrl={API_URL} onOpen={setOpenConversation} onOpenTenancies={() => setTenancies('tenant')} />
           ) : (
             <ConversationScreen
               baseUrl={API_URL}
@@ -311,8 +333,16 @@ function Shell() {
             />
           ))}
         {tab === 'account' &&
-          (openEnquiry === null ? (
-            <AgentScreen baseUrl={API_URL} onOpenEnquiry={setOpenEnquiry} />
+          (tenancies === 'letting' && agentSession.token !== null ? (
+            openTenancy === null ? (
+              <PortfolioScreen baseUrl={API_URL} token={agentSession.token} onOpen={setOpenTenancy} onBack={() => setTenancies(null)} />
+            ) : walking ? (
+              <ConditionScreen baseUrl={API_URL} token={agentSession.token} as="letting" tenancyId={openTenancy} onBack={() => setWalking(false)} />
+            ) : (
+              <TenancyScreen baseUrl={API_URL} token={agentSession.token} as="letting" id={openTenancy} onOpenCondition={() => setWalking(true)} onBack={() => setOpenTenancy(null)} />
+            )
+          ) : openEnquiry === null ? (
+            <AgentScreen baseUrl={API_URL} onOpenEnquiry={setOpenEnquiry} onOpenPortfolio={() => setTenancies('letting')} />
           ) : (
             /*
               The same screen the tenant reads, from the other side.

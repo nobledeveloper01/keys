@@ -9,6 +9,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Tenancy, built.** The agreement from a versioned template, signed by
+  each party's phone key over bytes the server hands out — a tenant
+  registers the same key an agent's captures use; the schedule the agreement
+  implies, with reminders that say a date is coming and never *pay*; payments
+  *recorded* by the letting side, disputed by the tenant, corrected by a new
+  entry with a reason and never edited, with a receipt that carries the
+  correction and says Keys did not touch the money; maintenance tickets as
+  append-only histories whose edges a test asserts exactly; the condition
+  record — Snag's rooms, items, hashed photographs and *fine* — a draft until
+  both signed the same bytes, then immutable, with the move-out shown beside
+  the move-in as differences and never a number; the letting side's
+  portfolio, facts per tenancy and no total. Six server tests against both
+  stores; a copy gate that fails on any sentence implying money held.
 - **Tenancy, decided before it is built.** Four ADRs: money is recorded and
   never touched — no collection, no wallet, no reminder that says *pay* — and
   the copy gate now fails on the words that would imply otherwise; the

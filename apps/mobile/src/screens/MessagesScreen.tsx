@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { attempt, client, type Conversation } from '@keys/api';
 
+import { Button } from '../components/Button';
 import { Empty } from '../components/Empty';
 import { PropertyRow } from '../components/PropertyRow';
 import { Text } from '../components/Text';
@@ -24,9 +25,11 @@ import { useTenant } from '../state/tenant';
 export function MessagesScreen({
   baseUrl,
   onOpen,
+  onOpenTenancies,
 }: {
   baseUrl: string;
   onOpen: (id: string) => void;
+  onOpenTenancies: () => void;
 }) {
   const { t } = useLanguage();
   const { token, ready } = useTenant();
@@ -60,6 +63,7 @@ export function MessagesScreen({
         giving anybody a reason to give one.
       */}
       {token !== null && <Unready query={query} onRetry={refresh} />}
+      {token !== null && <Button label={t('tenancy')} onPress={onOpenTenancies} quiet />}
 
       {conversations !== null &&
         (conversations.length === 0 ? (
