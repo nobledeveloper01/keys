@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { Pool } from 'pg';
 import * as request from 'supertest';
 
 import { AppModule } from '../src/app.module';
@@ -44,6 +45,13 @@ describe.each(STORES)('the outbox forgets the number (%s)', (_name, databaseUrl)
       .compile();
     app = moduleRef.createNestApplication();
     await app.init();
+    if (databaseUrl) {
+      // Reports persist between runs; the agent's own view below counts them.
+      const pool = new Pool({ connectionString: databaseUrl });
+      await pool.query('TRUNCATE reports CASCADE');
+      await pool.query('TRUNCATE agents CASCADE');
+      await pool.end();
+    }
   });
 
   afterAll(async () => {

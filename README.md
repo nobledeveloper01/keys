@@ -573,7 +573,7 @@ matters most.
 ```bash
 make ci            # every gate, then the tests
 make gates         # the blocking checks alone
-make test          # 179 domain, 258 server against both stores, 23 app, 4 wire
+make test          # 214 domain, 288 server against both stores, 25 app, 4 wire
 make api           # regenerate packages/api from the controllers
 make palette       # regenerate the palette; palette-check fails if it drifted
 ```
@@ -655,8 +655,8 @@ scripts/                   the gates
 deployed, and five gates block v1.0** — every one of them needs a physical
 device or a person, not more code.
 
-**211 domain tests, no build step; 276 server tests, every suite against
-in-memory and real PostgreSQL including a process restart; 23 app tests;
+**214 domain tests, no build step; 288 server tests, every suite against
+in-memory and real PostgreSQL including a process restart; 25 app tests;
 4 wire tests.**
 
 | | |
@@ -668,7 +668,7 @@ in-memory and real PostgreSQL including a process restart; 23 app tests;
 | Faces | tenant, agent, landlord, reviewer — one app and a web console |
 | Screens | 24, four languages, both themes |
 | Conditions behind the badge | 9, computed on every read, never stored |
-| ADRs | 16 |
+| ADRs | 20 |
 | Gates | 16, each broken on purpose to prove it fires |
 
 | Phase | State |
@@ -688,10 +688,10 @@ in-memory and real PostgreSQL including a process restart; 23 app tests;
 | Open | Blocks | Why it is not closed |
 | --- | --- | --- |
 | A photograph taken on a real phone at a real property | v1.0 (R11, R14) | There is no photograph anywhere in this product yet: a capture is a 40×32 greyscale grid, enough for every gate here and not enough to look at the flat. A simulator has no camera |
-| An Android build somebody has watched succeed | v1.0 (R4, R16) | Never built on this machine; its session tokens have nowhere safe to live, so it refuses to open an account rather than keep one in a file |
+| An Android build somebody has watched succeed | v1.0 (R4, R16) | Never built on this machine. Since 2026-09-17 its session tokens have a Keystore-backed store and the camera and the key refuse at use rather than failing at launch ([ADR-0018](docs/adr/0018-android-keeps-a-token-in-the-keystore-and-a-platform-without-a-module-refuses-at-use-not-at-launch.md)); what is left is somebody watching it |
 | Review console throughput against real reports | v1.0 (R2) | A reviewer doing the job; the launch is paced to it |
 | Legal review of the report policy | **Public launch, outright** (R3) | A Nigerian lawyer. No test result substitutes for it |
-| An SMS a real phone received | v1.0 (R1, R7, R12) | The outbox holds only a phone *hash*, so no message in this product can currently be delivered to anybody |
+| An SMS a real phone received | v1.0 (R1, R7) | The outbox can address a real phone since 2026-09-17 — it holds the number for one message and forgets it when sent ([ADR-0017](docs/adr/0017-the-outbox-holds-a-number-for-one-message-and-forgets-it-when-sent.md)); what is left is a provider behind the one-method sender, and somebody watching a phone receive a text |
 | No KYC vendor, no payment provider, no bucket | Nothing, by decision (R6 closed by hand, R13, R15) | `docs/V1-SCOPE.md`: where v1.0 has no vendor, Keys does the work by hand and the product says so |
 
 ---

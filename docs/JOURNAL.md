@@ -2435,3 +2435,73 @@ the web and for anybody else.
 
 **An application deliberately has no reason field.** Written into the ADR
 before the DTO, because the DTO is where somebody would have added it.
+
+## 2026-09-17 (night) — The code that was left in the gates
+
+**Did.** Read the release gates and the thirty-item backlog for what was
+code and not a handset, a person or a vendor, and found four: R12 (the
+outbox cannot address a phone), R16 (Android has nowhere to keep a token),
+backlog #10 (tier changes as events) and #20/#21 (the withheld count and
+saved searches). Four ADRs first — 0017 to 0020 — then the server, the
+Android module, the domain, the phone. 214 domain, 288 server on both
+stores, 25 app tests; every gate green; R12 moves to *Cleared*.
+
+### What surprised us
+
+**R12's own two options were both wrong.** The gate asked whether the outbox
+should store a number beside the hash or move landlord codes to a
+link-with-token. A link still has to reach a landlord who has never heard of
+Keys, and the only channel that does is a text to a number; a number on the
+account is the directory hashing exists to prevent. The shape that survives
+is smaller than either: the outbox holds the number for one message and
+forgets it when sent, and every caller already had the number in hand at
+that instant. Nothing is un-hashed.
+
+**The withdrawal route could text nobody, and the fix is a check, not a
+field.** It took no number, correctly — the first draft had texted whoever
+asked — so the code went to a hash. It takes one now and *compares* it with
+the hash that granted the authority; only a match opens a challenge, and the
+text goes to that same number. A stranger who types their own gets the 404 a
+nonexistent pair gets. The test that once asserted the code went to the
+landlord and not the caller now asserts the stranger is refused and the
+landlord is not.
+
+**An agent's right of reply cannot be texted, and need not be.** Their
+number is a hash; they also have an account. `GET /v1/agents/me/reports`
+lists what has been said about their number with the same link a stranger
+would be texted, and never the reporter.
+
+**Android did not get as far as refusing to sign in.** R16 said the token
+had nowhere to live; it did not say the camera and the signing key were
+reached with `getEnforcing`, which throws at *import* on a platform without
+them. The Android app did not start. The Keystore module is the small part;
+the stand-in that rejects at use with one sentence is what lets an Android
+phone open at all — and Jest, which has no native modules either, is now the
+first platform to prove it.
+
+**Postgres remembered the last run's reports.** The outbox suite's agent
+view counted three reports where it expected one; the other suites truncate
+before they start and this one had not. Every suite that counts rows on the
+durable store truncates first, and now this one does.
+
+**A withdrawal is not a withheld listing.** The first withheld test withdrew
+a landlord's authority and expected the count to say one; the count said
+zero, because a withdrawal *unpublishes* and an unpublished listing is not
+withheld, it is not there. A suspension — a tenant went and found nothing —
+leaves the listing published and unverified, which is what *withheld* means.
+The test says which, and why.
+
+### Still open
+
+- R4 and R16 stay open: the Kotlin compiles where CI builds Android and
+  nobody has watched it on a handset. An unwatched build is not a gate
+  cleared.
+- R14 (a real photograph), R11, R2, R3, R7/R1 (a provider), R13, R15, R17,
+  R18: hardware, people and vendors, as before. Nothing in the gate list is
+  code any more except R15's S3 implementation, which needs a bucket to be
+  proved and was not written blind.
+- Backlog #26 (a data-saver mode with a stated page weight, tested throttled
+  in CI) and #27 (an app-size gate) need a release build and a throttled
+  runner to mean anything; #11, #16, #19, #22 are refused or built in
+  another shape (a commute is a distance, ADR-0013; the fee is enforced by
+  suspension, not refund).

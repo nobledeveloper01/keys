@@ -9,6 +9,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **A saved search says what moved.** Save a search from *Find*; under
+  *Messages* it lists what changed since you last looked — a listing that is
+  new, a price that changed and by how much, one that is no longer shown, and
+  the one worth acting on: the same photographs back under a different agent.
+  No push and no badge count; opening the screen is what moves *since last
+  time* forward. Ten per tenant.
+- **A search says what it withheld.** Above the results: *nine matched and
+  were not shown, because they could not be verified* — a count, never the
+  listings, in the words of the publication rule. The smaller inventory is
+  the argument for the product, and it was being thrown away.
+- **A tier change is an event.** The tier is still computed on every read
+  and stored nowhere; what the computation last *observed* is kept, and a
+  drop is a row and a message from `keys` in every conversation the agent is
+  party to — what the badge now means, never why. A rise is recorded and not
+  announced, because *this agent is now trusted* is the badge overclaiming in
+  a message.
+- **Android keeps its session token in the Keystore.** `KeysSecrets` on
+  Android is `EncryptedSharedPreferences` under a Keystore master key, the
+  same three methods as the Keychain and the same rule — a store that refuses
+  is a phone that does not keep a token, never a file. And a platform without
+  the camera or the signing key now refuses at use, with a sentence, instead
+  of failing at launch: an Android phone opens, signs in, searches and reads,
+  and is told plainly that it cannot capture yet.
+- **The outbox can address a real phone.** It is the one place a number is
+  written in plain, for one message, and the number is deleted when the text
+  is sent or given up on after three refusals — every caller already held the
+  number at that instant, so nothing is un-hashed and the stores stay hashes.
+  A sender is one method; the logging one writes the hash and never the
+  number or the code. The withdrawal route now takes the landlord's number
+  and checks it against the one that granted the authority, texting only a
+  match; an agent, whose number is only a hash, reads what has been said
+  about them under `GET /v1/agents/me/reports` with the same reply link.
+  Release gate R12 is cleared.
+
 - **Depth and reach, built.** Three cities as data with their named areas,
   and a search by city that returns only that city; a distance filter from a
   place the tenant picks, in kilometres and never minutes; area guides from

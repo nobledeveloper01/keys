@@ -75,6 +75,10 @@ When an agent's tier drops, everyone who has an open enquiry with them is told.
 A verification system that silently downgrades is a verification system nobody
 finds out about in time.
 
+**Built 2026-09-17** ([ADR-0019](adr/0019-a-tier-change-is-an-event-and-everyone-with-an-open-enquiry-is-told.md)): the
+computation records what it observed, a drop is a row and a message from
+`keys` in every open conversation, a rise is recorded and not announced.
+
 ### 11. Say what a tier does not mean
 Every badge links to a plain-language page saying exactly what was checked and
 what was not. Overclaiming is the failure mode of every trust badge on the
@@ -133,9 +137,16 @@ A count, per search: *nine listings matched and were not shown, because they
 could not be verified*. It makes the smaller inventory into evidence rather than
 a weakness.
 
+**Built 2026-09-17** ([ADR-0020](adr/0020-a-search-says-what-it-withheld-and-a-saved-search-is-told-when-the-market-moves.md)):
+`withheld` on every search response, the sentence above the results.
+
 ### 21. Save a search and be told when the market moves
 Not just new listings — price changes, and the same property reappearing at a
 different price under a different agent, which is a signal worth acting on.
+
+**Built 2026-09-17** (ADR-0020): a saved search is the box and the answer it
+last saw; the next read says new, price, gone, and the same photographs back
+under a different agent. No push; reading moves *last time* forward.
 
 ---
 
