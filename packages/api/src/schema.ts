@@ -1251,6 +1251,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/saved-searches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Your saved searches, each with what moved since you last read it. Reading is what moves last time forward. */
+        get: operations["SavedSearchesController_mine"];
+        put?: never;
+        /** Save this search. What it sees now is what the next read compares with. */
+        post: operations["SavedSearchesController_save"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/saved-searches/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Forget a saved search. */
+        delete: operations["SavedSearchesController_forget"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1570,6 +1605,8 @@ export interface components {
             id: string;
             title: string;
             address: string;
+            /** @description Whose listing it is, so a saved search can tell the same property reappearing under a different agent. */
+            agentId: string;
             /** @description Computed on every search from evidence. Never a stored column. */
             verified: boolean;
             agentName: string;
@@ -1594,6 +1631,8 @@ export interface components {
             featured: components["schemas"]["SearchResult"][];
             /** @description The answer to what was asked, ranked. Nothing in this list was bought, and anything in `featured` has been taken out of it so nobody appears twice. */
             results: components["schemas"]["SearchResult"][];
+            /** @description How many listings matched and were not shown, because the badge could not be computed for them (ADR-0020). The listings themselves are withheld for a reason; the count is the argument for the smaller inventory. */
+            withheld: number;
         };
         ListingCheck: {
             /** @enum {string} */
@@ -2050,6 +2089,39 @@ export interface components {
         MoveApplicationBody: {
             /** @enum {string} */
             to: "submitted" | "seen" | "shortlisted" | "offered" | "declined" | "withdrawn";
+        };
+        SaveSearchBody: {
+            q?: string;
+            city?: string;
+            placeLatitude?: number;
+            placeLongitude?: number;
+            withinKm?: number;
+            /** @description Defaults to true, as the search does. */
+            verifiedOnly?: boolean;
+        };
+        MarketMoveView: {
+            /** @enum {string} */
+            kind: "new" | "price" | "gone" | "reappeared";
+            id: string;
+            fromKobo?: number | null;
+            toKobo?: number | null;
+            /** @description For a reappearance: the listing seen before whose photographs this one matches. */
+            previousId?: string | null;
+        };
+        SavedSearchView: {
+            id: string;
+            q: string;
+            city: string | null;
+            placeLatitude: number | null;
+            placeLongitude: number | null;
+            withinKm: number | null;
+            verifiedOnly: boolean;
+            savedAt: string;
+            readAt: string;
+            /** @description How many the search sees now. */
+            matching: number;
+            /** @description What moved since the last read. Empty on save. */
+            moves: components["schemas"]["MarketMoveView"][];
         };
     };
     responses: never;
@@ -3864,6 +3936,67 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ApplicationView"];
                 };
+            };
+        };
+    };
+    SavedSearchesController_mine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedSearchView"][];
+                };
+            };
+        };
+    };
+    SavedSearchesController_save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveSearchBody"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedSearchView"];
+                };
+            };
+        };
+    };
+    SavedSearchesController_forget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

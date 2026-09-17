@@ -2936,6 +2936,100 @@
           "reach"
         ]
       }
+    },
+    "/v1/saved-searches": {
+      "post": {
+        "operationId": "SavedSearchesController_save",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSearchBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedSearchView"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Save this search. What it sees now is what the next read compares with.",
+        "tags": [
+          "reach"
+        ]
+      },
+      "get": {
+        "operationId": "SavedSearchesController_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SavedSearchView"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Your saved searches, each with what moved since you last read it. Reading is what moves last time forward.",
+        "tags": [
+          "reach"
+        ]
+      }
+    },
+    "/v1/saved-searches/{id}": {
+      "delete": {
+        "operationId": "SavedSearchesController_forget",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "tenant-token": []
+          }
+        ],
+        "summary": "Forget a saved search.",
+        "tags": [
+          "reach"
+        ]
+      }
     }
   },
   "info": {
@@ -3887,6 +3981,10 @@
           "address": {
             "type": "string"
           },
+          "agentId": {
+            "type": "string",
+            "description": "Whose listing it is, so a saved search can tell the same property reappearing under a different agent."
+          },
           "verified": {
             "type": "boolean",
             "description": "Computed on every search from evidence. Never a stored column."
@@ -3932,6 +4030,7 @@
           "id",
           "title",
           "address",
+          "agentId",
           "verified",
           "agentName",
           "moveInKobo",
@@ -3958,11 +4057,16 @@
             "items": {
               "$ref": "#/components/schemas/SearchResult"
             }
+          },
+          "withheld": {
+            "type": "number",
+            "description": "How many listings matched and were not shown, because the badge could not be computed for them (ADR-0020). The listings themselves are withheld for a reason; the count is the argument for the smaller inventory."
           }
         },
         "required": [
           "featured",
-          "results"
+          "results",
+          "withheld"
         ]
       },
       "ListingCheck": {
@@ -5639,6 +5743,124 @@
         },
         "required": [
           "to"
+        ]
+      },
+      "SaveSearchBody": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "placeLatitude": {
+            "type": "number"
+          },
+          "placeLongitude": {
+            "type": "number"
+          },
+          "withinKm": {
+            "type": "number"
+          },
+          "verifiedOnly": {
+            "type": "boolean",
+            "description": "Defaults to true, as the search does."
+          }
+        }
+      },
+      "MarketMoveView": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "new",
+              "price",
+              "gone",
+              "reappeared"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "fromKobo": {
+            "type": "number",
+            "nullable": true
+          },
+          "toKobo": {
+            "type": "number",
+            "nullable": true
+          },
+          "previousId": {
+            "type": "string",
+            "nullable": true,
+            "description": "For a reappearance: the listing seen before whose photographs this one matches."
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ]
+      },
+      "SavedSearchView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "q": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true
+          },
+          "placeLatitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "placeLongitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "withinKm": {
+            "type": "number",
+            "nullable": true
+          },
+          "verifiedOnly": {
+            "type": "boolean"
+          },
+          "savedAt": {
+            "type": "string"
+          },
+          "readAt": {
+            "type": "string"
+          },
+          "matching": {
+            "type": "number",
+            "description": "How many the search sees now."
+          },
+          "moves": {
+            "description": "What moved since the last read. Empty on save.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarketMoveView"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "q",
+          "city",
+          "placeLatitude",
+          "placeLongitude",
+          "withinKm",
+          "verifiedOnly",
+          "savedAt",
+          "readAt",
+          "matching",
+          "moves"
         ]
       }
     }

@@ -74,3 +74,34 @@ export class ApplicationView {
   @ApiProperty({ type: TenantStandingView }) standing!: TenantStandingView;
   @ApiProperty({ type: [ApplicationEventView] }) events!: ApplicationEventView[];
 }
+
+export class SaveSearchBody {
+  @ApiPropertyOptional() q?: string;
+  @ApiPropertyOptional() city?: string;
+  @ApiPropertyOptional() placeLatitude?: number;
+  @ApiPropertyOptional() placeLongitude?: number;
+  @ApiPropertyOptional() withinKm?: number;
+  @ApiPropertyOptional({ description: 'Defaults to true, as the search does.' }) verifiedOnly?: boolean;
+}
+
+export class MarketMoveView {
+  @ApiProperty({ enum: ['new', 'price', 'gone', 'reappeared'] }) kind!: string;
+  @ApiProperty() id!: string;
+  @ApiPropertyOptional({ type: Number, nullable: true }) fromKobo?: number;
+  @ApiPropertyOptional({ type: Number, nullable: true }) toKobo?: number;
+  @ApiPropertyOptional({ type: String, nullable: true, description: 'For a reappearance: the listing seen before whose photographs this one matches.' }) previousId?: string;
+}
+
+export class SavedSearchView {
+  @ApiProperty() id!: string;
+  @ApiProperty() q!: string;
+  @ApiProperty({ type: String, nullable: true }) city!: string | null;
+  @ApiProperty({ type: Number, nullable: true }) placeLatitude!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) placeLongitude!: number | null;
+  @ApiProperty({ type: Number, nullable: true }) withinKm!: number | null;
+  @ApiProperty() verifiedOnly!: boolean;
+  @ApiProperty() savedAt!: string;
+  @ApiProperty() readAt!: string;
+  @ApiProperty({ description: 'How many the search sees now.' }) matching!: number;
+  @ApiProperty({ type: [MarketMoveView], description: 'What moved since the last read. Empty on save.' }) moves!: MarketMoveView[];
+}

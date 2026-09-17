@@ -27,11 +27,13 @@ export function MessagesScreen({
   onOpen,
   onOpenTenancies,
   onOpenApplications,
+  onOpenSavedSearches,
 }: {
   baseUrl: string;
   onOpen: (id: string) => void;
   onOpenTenancies: () => void;
   onOpenApplications: () => void;
+  onOpenSavedSearches: () => void;
 }) {
   const { t } = useLanguage();
   const { token, ready } = useTenant();
@@ -67,6 +69,7 @@ export function MessagesScreen({
       {token !== null && <Unready query={query} onRetry={refresh} />}
       {token !== null && <Button label={t('tenancy')} onPress={onOpenTenancies} quiet />}
       {token !== null && <Button label={t('applications')} onPress={onOpenApplications} quiet />}
+      {token !== null && <Button label={t('saved_searches')} onPress={onOpenSavedSearches} quiet />}
 
       {conversations !== null &&
         (conversations.length === 0 ? (

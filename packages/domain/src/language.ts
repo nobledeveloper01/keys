@@ -240,6 +240,20 @@ export type Phrase =
   | 'ask_about_this_place'
   | 'paid_to_appear_here'
   | 'what_your_search_found'
+  | 'matched_not_shown'
+  | 'save_this_search'
+  | 'search_saved'
+  | 'saved_searches'
+  | 'saved_searches_lede'
+  | 'saved_searches_none'
+  | 'nothing_moved'
+  | 'move_new'
+  | 'move_price'
+  | 'move_gone'
+  | 'move_reappeared'
+  | 'forget_search'
+  | 'matching_now'
+  | 'sign_in_to_save_search'
   | 'report_this_listing'
   | 'report_this_listing_help'
   | 'why_we_want_your_number'
@@ -602,6 +616,20 @@ export const EN: Readonly<Record<Phrase, string>> = {
   ask_about_this_place: "Ask about this place",
   paid_to_appear_here: "These agents paid to appear here",
   what_your_search_found: "What your search found",
+  matched_not_shown: "matched and were not shown, because they could not be verified.",
+  save_this_search: "Save this search",
+  search_saved: "Saved. Come back to it under Messages to see what moved.",
+  saved_searches: "Saved searches",
+  saved_searches_lede: "Each one remembers what it saw. Opening this is what moves “since last time” forward.",
+  saved_searches_none: "No saved searches yet. Save one from Find.",
+  nothing_moved: "Nothing has moved since you last looked.",
+  move_new: "New since you last looked",
+  move_price: "Price changed",
+  move_gone: "No longer shown",
+  move_reappeared: "The same photographs, back under a different agent",
+  forget_search: "Forget",
+  matching_now: "matching now",
+  sign_in_to_save_search: "Ask about a place first to get an account; then a search can be saved.",
   report_this_listing: "Report this listing",
   report_this_listing_help: "You do not need the agent's number. Keys knows whose listing this is.",
   why_we_want_your_number: "Keys keeps this to itself. The agent does not see it — if you want them to have it, you choose that later, inside the conversation.",
@@ -967,6 +995,20 @@ export const HA: Readonly<Record<Phrase, string>> = {
   ask_about_this_place: "Tambaya game da wannan wurin",
   paid_to_appear_here: "Waɗannan dillalai sun biya don su bayyana a nan",
   what_your_search_found: "Abin da bincikenka ya samu",
+  matched_not_shown: "sun dace amma ba a nuna su ba, domin ba a iya tabbatar da su ba.",
+  save_this_search: "Ajiye wannan bincike",
+  search_saved: "An ajiye. Ka koma gare shi a Saƙonni don ganin abin da ya canja.",
+  saved_searches: "Binciken da aka ajiye",
+  saved_searches_lede: "Kowanne yana tuna abin da ya gani. Buɗe wannan shi ne ke ɗaga “tun lokacin ƙarshe” gaba.",
+  saved_searches_none: "Babu binciken da aka ajiye tukuna. Ajiye ɗaya daga Nemo.",
+  nothing_moved: "Babu abin da ya canja tun lokacin ƙarshe da ka duba.",
+  move_new: "Sabo tun lokacin ƙarshe da ka duba",
+  move_price: "Farashi ya canja",
+  move_gone: "Ba a ƙara nuna shi ba",
+  move_reappeared: "Hotuna iri ɗaya, sun dawo ƙarƙashin wani wakili daban",
+  forget_search: "Manta",
+  matching_now: "sun dace yanzu",
+  sign_in_to_save_search: "Fara tambaya game da wuri don samun asusu; sannan za a iya ajiye bincike.",
   report_this_listing: "Bayar da rahoton wannan tallar",
   report_this_listing_help: "Ba ka bukatar lambar dillali. Keys ya san tallan wa ne.",
   why_we_want_your_number: "Keys yana riƙe wannan da kansa. Dillali ba ya ganin sa — idan kana son su same shi, za ka zaɓa daga baya, cikin tattaunawar.",
@@ -1332,6 +1374,20 @@ export const YO: Readonly<Record<Phrase, string>> = {
   ask_about_this_place: "Béèrè nípa ibì yìí",
   paid_to_appear_here: "Àwọn aṣojú wọ̀nyí san owó láti fara hàn níbí",
   what_your_search_found: "Ohun tí ìwádìí rẹ rí",
+  matched_not_shown: "bá a mu, a kò sì fi wọ́n hàn, nítorí a kò lè jẹ́rìí sí wọn.",
+  save_this_search: "Fi ìwádìí yìí pamọ́",
+  search_saved: "A ti fi pamọ́. Padà sí i lábẹ́ Ìránṣẹ́ láti rí ohun tó yí padà.",
+  saved_searches: "Àwọn ìwádìí tí a fi pamọ́",
+  saved_searches_lede: "Ọ̀kọ̀ọ̀kan rántí ohun tó rí. Ṣíṣí èyí ni ó ń gbé “láti ìgbà tó kọjá” síwájú.",
+  saved_searches_none: "Kò sí ìwádìí tí a fi pamọ́ síbẹ̀. Fi ọ̀kan pamọ́ láti Wá.",
+  nothing_moved: "Kò sí ohun tó yí padà láti ìgbà tí o wò kẹ́yìn.",
+  move_new: "Tuntun láti ìgbà tí o wò kẹ́yìn",
+  move_price: "Owó yí padà",
+  move_gone: "A kò fi hàn mọ́",
+  move_reappeared: "Àwọn fọ́tò kan náà, padà lábẹ́ aṣojú mìíràn",
+  forget_search: "Gbàgbé",
+  matching_now: "tó bá a mu báyìí",
+  sign_in_to_save_search: "Kọ́kọ́ béèrè nípa ibì kan láti ní àkọọ́lẹ̀; lẹ́yìn náà a lè fi ìwádìí pamọ́.",
   report_this_listing: "Ròyìn ìpolówó yìí",
   report_this_listing_help: "O kò nílò nọ́mbà aṣojú. Keys mọ ẹni tí ìpolówó yìí jẹ́ tirẹ̀.",
   why_we_want_your_number: "Keys ni yóò pa á mọ́. Aṣojú kò rí i — bí o bá fẹ́ kí wọ́n ní i, ìwọ yóò yàn án nígbà mìíràn, nínú ìjíròrò náà.",
@@ -1697,6 +1753,20 @@ export const IG: Readonly<Record<Phrase, string>> = {
   ask_about_this_place: "Jụọ gbasara ebe a",
   paid_to_appear_here: "Ndị nnọchi a kwụrụ ụgwọ ka ha pụta ebe a",
   what_your_search_found: "Ihe nchọta gị chọtara",
+  matched_not_shown: "dabara ma egosighị ha, n’ihi na enweghị ike ịkwado ha.",
+  save_this_search: "Chekwaa nchọta a",
+  search_saved: "Echekwara ya. Laghachi na ya n’okpuru Ozi ka ị hụ ihe gbanwere.",
+  saved_searches: "Nchọta ndị echekwara",
+  saved_searches_lede: "Nke ọ bụla na-echeta ihe ọ hụrụ. Imeghe nke a bụ ihe na-ebuga “kemgbe oge ikpeazụ” n’ihu.",
+  saved_searches_none: "Enwebeghị nchọta echekwara. Chekwaa otu site na Chọọ.",
+  nothing_moved: "Ọ dịghị ihe gbanwere kemgbe oge ikpeazụ ị lere anya.",
+  move_new: "Ọhụrụ kemgbe oge ikpeazụ ị lere anya",
+  move_price: "Ọnụahịa gbanwere",
+  move_gone: "Egosighịzi ya",
+  move_reappeared: "Otu foto ahụ, laghachiri n’okpuru onye ọrụ ọzọ",
+  forget_search: "Chefuo",
+  matching_now: "na-adaba ugbu a",
+  sign_in_to_save_search: "Buru ụzọ jụọ maka ebe ka i nweta akaụntụ; mgbe ahụ enwere ike ichekwa nchọta.",
   report_this_listing: "Kọọ mgbasa ozi a",
   report_this_listing_help: "Ị chọghị nọmba onye nnọchi. Keys maara onye nwe mgbasa ozi a.",
   why_we_want_your_number: "Keys na-edobe ya naanị ya. Onye nnọchi anaghị ahụ ya — ọ bụrụ na ị chọrọ ka ha nweta ya, ị ga-ahọrọ ya mgbe e mesịrị, nʼime mkparịta ụka ahụ.",

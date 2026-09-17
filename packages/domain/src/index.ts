@@ -34,3 +34,4 @@ export * from './cities.ts';
 export * from './distance.ts';
 export * from './guides.ts';
 export * from './applications.ts';
+export * from './searches.ts';

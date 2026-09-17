@@ -83,6 +83,7 @@ export type RoomChange = paths['/v1/condition/{recordId}/compare']['get']['respo
 export type PortfolioRow = paths['/v1/tenancies/portfolio']['get']['responses'][200]['content']['application/json'][number];
 export type GuideView = paths['/v1/areas/{areaId}/guide']['get']['responses'][200]['content']['application/json'];
 export type ApplicationView = paths['/v1/applications/{id}/withdraw']['post']['responses'][201]['content']['application/json'];
+export type SavedSearchView = paths['/v1/saved-searches']['post']['responses'][201]['content']['application/json'];
 export type ReviewMetrics =
   paths['/v1/review/metrics']['get']['responses'][200]['content']['application/json'];
 
@@ -462,6 +463,11 @@ export function client(options: ClientOptions) {
       forAgent: () => send<ApplicationView[]>(options, 'GET', '/v1/agent/applications'),
       move: (id: string, to: string) => send<ApplicationView>(options, 'POST', `/v1/applications/${id}/move`, { body: { to } }),
       withdraw: (id: string) => send<ApplicationView>(options, 'POST', `/v1/applications/${id}/withdraw`),
+      /** Saved searches (ADR-0020): the box and what moved since it was last read. */
+      saveSearch: (body: { q?: string; city?: string; placeLatitude?: number; placeLongitude?: number; withinKm?: number; verifiedOnly?: boolean }) =>
+        send<SavedSearchView>(options, 'POST', '/v1/saved-searches', { body }),
+      savedSearches: () => send<SavedSearchView[]>(options, 'GET', '/v1/saved-searches'),
+      forgetSearch: (id: string) => send<{ forgotten: boolean }>(options, 'DELETE', `/v1/saved-searches/${id}`),
     },
 
     search: (query: { q?: string; latitude?: number; longitude?: number; verifiedOnly?: boolean; city?: string; placeLatitude?: number; placeLongitude?: number; withinKm?: number }) =>

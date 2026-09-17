@@ -23,6 +23,7 @@ import {
   say,
   type Language,
   type Point,
+  type SearchParams,
 } from '@keys/domain';
 
 import { CapturesStore } from '../captures/captures.store';
@@ -74,95 +75,20 @@ export class SearchController {
     @Query('withinKm') withinKmParam?: string,
   ) {
     const now = new Date();
-    const typed = (q ?? '').slice(0, 120);
-    const near = this.pointFrom(latitude, longitude);
-    /*
-      A city narrows in SQL with its box and decides here with the same box
-      (ADR-0016); a place the tenant named narrows nothing — it is a distance
-      on every row, and a filter only when they asked for one (ADR-0013).
-    */
-    const inCity = cityId !== undefined && isCityId(cityId) ? city(cityId) : null;
-    const place = this.pointFrom(placeLatitude, placeLongitude);
     const within = withinKmParam !== undefined && Number.isFinite(Number(withinKmParam)) && Number(withinKmParam) > 0 ? Number(withinKmParam) : null;
-
-    /*
-      Narrowed in SQL, decided here. ADR-0008.
-
-      The store is given the words and a box and returns a *superset*: every
-      listing the domain would keep, plus some it will not. `matches()` is
-      still the only definition of a match and `metresBetween` is still the
-      only definition of distance — the query makes them fast, it does not
-      replace them.
-
-      The box is the ranking horizon rather than a filter the caller chose. A
-      listing beyond it scores zero for closeness anyway, so fetching it costs
-      a row and changes no answer; a smaller box would start deciding.
-    */
-    const words = typed.trim().toLowerCase().split(/\s+/).filter((word) => word.length > 0);
-    const wanted = (
-      await this.store.searchable({
-        words,
-        box: inCity ? inCity.box : near ? boundingBox(near, DISTANCE_HORIZON_M) : null,
-      })
-    )
-      .filter((l) => matches([l.title, l.propertyId], typed))
-      .filter((l) => inCity === null || (l.latitude !== null && l.longitude !== null && cityOf({ latitude: l.latitude, longitude: l.longitude })?.id === inCity.id))
-      .filter((l) => place === null || within === null || withinKm(place, l, within));
-
-    const assessed = await Promise.all(wanted.map((l) => this.assess(l, now)));
-
-    /*
-      Filtered *after* assessing, not before.
-
-      The filter has to read the same computed answer the badge does. A query
-      that filtered on a stored `is_verified` would be fast and would show
-      listings that lost their badge an hour ago.
-    */
-    const shown =
-      verifiedOnly === 'false' ? assessed : assessed.filter((a) => a.verified);
-
-    const ranked = rank(shown, near, now).map(({ listing, because }) => ({
-      id: listing.id,
-      title: listing.title,
-      address: listing.propertyId,
-      verified: listing.verified,
-      agentName: listing.agentName,
-      /*
-        The move-in figure travels with the row, not just the rent.
-
-        Two listings advertising ₦800,000 are not the same price, and a list
-        that shows only rent hides exactly the difference somebody is trying to
-        compare. Both are sent so a reader can see the gap rather than take our
-        total on faith.
-      */
-      moveInKobo: listing.costs === null ? null : moveInCostKobo(listing.costs),
-      annualRentKobo: listing.costs?.annualRentKobo ?? null,
-      // Said, so a tenant can see why this is above that one. A ranking nobody
-      // can interrogate is a ranking somebody will assume was bought.
-      because: [...because],
-      featuredUntil: listing.featuredUntil,
-      kmFromPlace: kmFrom(place, listing),
-      areaId: listing.latitude !== null && listing.longitude !== null ? (areaOf({ latitude: listing.latitude, longitude: listing.longitude })?.id ?? null) : null,
-    }));
-
-    /*
-      The paid band is taken *out of* the ranked list, never mixed into it.
-
-      `rank()` was not told that featuring exists — there is no parameter for it
-      and no field on a scored listing — so a slot cannot quietly become a boost
-      by somebody threading an argument through in a later phase. What money
-      buys here is a labelled position above the answer; what it cannot buy is a
-      better answer to the question somebody asked.
-
-      Drawn from the ranked results rather than queried separately, which is
-      what stops a slot showing a flat in Ikeja to somebody searching Surulere:
-      nothing reaches this that the search did not already return.
-    */
-    const band = featuredAmong(ranked, now);
-    return {
-      featured: band.map((result) => ({ ...result, because: ['paid to appear here'] })),
-      results: withoutFeatured(ranked, band),
-    };
+    const place = this.pointFrom(placeLatitude, placeLongitude);
+    return runSearch(
+      { store: this.store, reports: this.reports, captures: this.captures, market: this.market },
+      {
+        q: (q ?? '').slice(0, 120),
+        cityId: cityId !== undefined && isCityId(cityId) ? cityId : null,
+        place,
+        withinKm: within,
+        verifiedOnly: verifiedOnly !== 'false',
+      },
+      this.pointFrom(latitude, longitude),
+      now,
+    );
   }
 
   @Get(':id')
@@ -278,4 +204,119 @@ export class SearchController {
     );
     return { ...listing, ...assessment };
   }
+}
+
+/** What one search reads from, so a saved search (ADR-0020) can ask the same question later. */
+export interface SearchStores {
+  readonly store: AgentsStore;
+  readonly reports: ReportsStore;
+  readonly captures: CapturesStore;
+  readonly market: MarketStore;
+}
+
+/**
+ * One search, from the parameters to the answer — the code the route had,
+ * moved out so a saved search can run the same question and compare. The
+ * count it withheld travels with the answer (ADR-0020): the listings that
+ * matched and were not shown because the badge could not be computed for
+ * them are the argument for the smaller inventory, not a weakness to hide.
+ */
+export async function runSearch(
+  stores: SearchStores,
+  params: SearchParams,
+  near: Point | null,
+  now: Date,
+) {
+  const typed = params.q;
+  /*
+    A city narrows in SQL with its box and decides here with the same box
+    (ADR-0016); a place the tenant named narrows nothing — it is a distance
+    on every row, and a filter only when they asked for one (ADR-0013).
+  */
+  const inCity = params.cityId !== null && isCityId(params.cityId) ? city(params.cityId) : null;
+  const place = params.place;
+  const within = params.withinKm;
+
+  /*
+    Narrowed in SQL, decided here. ADR-0008.
+
+    The store is given the words and a box and returns a *superset*: every
+    listing the domain would keep, plus some it will not. `matches()` is
+    still the only definition of a match and `metresBetween` is still the
+    only definition of distance — the query makes them fast, it does not
+    replace them.
+
+    The box is the ranking horizon rather than a filter the caller chose. A
+    listing beyond it scores zero for closeness anyway, so fetching it costs
+    a row and changes no answer; a smaller box would start deciding.
+  */
+  const words = typed.trim().toLowerCase().split(/\s+/).filter((word) => word.length > 0);
+  const wanted = (
+    await stores.store.searchable({
+      words,
+      box: inCity ? inCity.box : near ? boundingBox(near, DISTANCE_HORIZON_M) : null,
+    })
+  )
+    .filter((l) => matches([l.title, l.propertyId], typed))
+    .filter((l) => inCity === null || (l.latitude !== null && l.longitude !== null && cityOf({ latitude: l.latitude, longitude: l.longitude })?.id === inCity.id))
+    .filter((l) => place === null || within === null || withinKm(place, l, within));
+
+  const assessed = await Promise.all(
+    wanted.map(async (l) => ({ ...l, ...(await assessListing(l, { agents: stores.store, reports: stores.reports, captures: stores.captures, market: stores.market }, now)) })),
+  );
+
+  /*
+    Filtered *after* assessing, not before.
+
+    The filter has to read the same computed answer the badge does. A query
+    that filtered on a stored `is_verified` would be fast and would show
+    listings that lost their badge an hour ago.
+  */
+  const shown = params.verifiedOnly ? assessed.filter((a) => a.verified) : assessed;
+
+  const ranked = rank(shown, near, now).map(({ listing, because }) => ({
+    id: listing.id,
+    title: listing.title,
+    address: listing.propertyId,
+    verified: listing.verified,
+    agentName: listing.agentName,
+    agentId: listing.agentId,
+    /*
+      The move-in figure travels with the row, not just the rent.
+
+      Two listings advertising ₦800,000 are not the same price, and a list
+      that shows only rent hides exactly the difference somebody is trying to
+      compare. Both are sent so a reader can see the gap rather than take our
+      total on faith.
+    */
+    moveInKobo: listing.costs === null ? null : moveInCostKobo(listing.costs),
+    annualRentKobo: listing.costs?.annualRentKobo ?? null,
+    // Said, so a tenant can see why this is above that one. A ranking nobody
+    // can interrogate is a ranking somebody will assume was bought.
+    because: [...because],
+    featuredUntil: listing.featuredUntil,
+    kmFromPlace: kmFrom(place, listing),
+    areaId: listing.latitude !== null && listing.longitude !== null ? (areaOf({ latitude: listing.latitude, longitude: listing.longitude })?.id ?? null) : null,
+  }));
+
+  /*
+    The paid band is taken *out of* the ranked list, never mixed into it.
+
+    `rank()` was not told that featuring exists — there is no parameter for it
+    and no field on a scored listing — so a slot cannot quietly become a boost
+    by somebody threading an argument through in a later phase. What money
+    buys here is a labelled position above the answer; what it cannot buy is a
+    better answer to the question somebody asked.
+
+    Drawn from the ranked results rather than queried separately, which is
+    what stops a slot showing a flat in Ikeja to somebody searching Surulere:
+    nothing reaches this that the search did not already return.
+  */
+  const band = featuredAmong(ranked, now);
+  return {
+    featured: band.map((result) => ({ ...result, because: ['paid to appear here'] })),
+    results: withoutFeatured(ranked, band),
+    // Matched, and not shown, because the badge could not be computed for them.
+    withheld: assessed.length - shown.length,
+  };
 }

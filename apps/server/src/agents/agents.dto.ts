@@ -260,6 +260,8 @@ export class SearchResult {
   @ApiProperty() id!: string;
   @ApiProperty() title!: string;
   @ApiProperty() address!: string;
+  @ApiProperty({ description: 'Whose listing it is, so a saved search can tell the same property reappearing under a different agent.' })
+  agentId!: string;
 
   @ApiProperty({ description: 'Computed on every search from evidence. Never a stored column.' })
   verified!: boolean;
@@ -331,6 +333,12 @@ export class SearchResponse {
       'The answer to what was asked, ranked. Nothing in this list was bought, and anything in `featured` has been taken out of it so nobody appears twice.',
   })
   results!: SearchResult[];
+
+  @ApiProperty({
+    description:
+      'How many listings matched and were not shown, because the badge could not be computed for them (ADR-0020). The listings themselves are withheld for a reason; the count is the argument for the smaller inventory.',
+  })
+  withheld!: number;
 }
 
 export class ListingCheck {

@@ -28,6 +28,7 @@ import { TenanciesScreen } from './src/screens/TenanciesScreen';
 import { TenancyScreen } from './src/screens/TenancyScreen';
 import { ApplyScreen } from './src/screens/ApplyScreen';
 import { ApplicationsScreen } from './src/screens/ApplicationsScreen';
+import { SavedSearchesScreen } from './src/screens/SavedSearchesScreen';
 import { AreaAnswerScreen } from './src/screens/AreaAnswerScreen';
 
 /*
@@ -135,6 +136,7 @@ function Shell() {
   const [telling, setTelling] = useState(false);
   const [applying, setApplying] = useState<string | null>(null);
   const [applications, setApplications] = useState<'tenant' | 'agent' | null>(null);
+  const [savedSearches, setSavedSearches] = useState(false);
   const tenantSession = useTenant();
   const agentSession = useSession();
 
@@ -315,6 +317,17 @@ function Shell() {
         {tab === 'messages' &&
           (applications === 'tenant' && tenantSession.token !== null ? (
             <ApplicationsScreen baseUrl={API_URL} token={tenantSession.token} as="tenant" onBack={() => setApplications(null)} />
+          ) : savedSearches && tenantSession.token !== null ? (
+            <SavedSearchesScreen
+              baseUrl={API_URL}
+              token={tenantSession.token}
+              onOpen={(id) => {
+                setSavedSearches(false);
+                setOpenListing(id);
+                setTab('find');
+              }}
+              onBack={() => setSavedSearches(false)}
+            />
           ) : tenancies === 'tenant' && tenantSession.token !== null ? (
             openTenancy === null ? (
               <TenanciesScreen baseUrl={API_URL} tenantToken={tenantSession.token} agentToken={null} onOpen={setOpenTenancy} onBack={() => setTenancies(null)} />
@@ -326,7 +339,7 @@ function Shell() {
               <TenancyScreen baseUrl={API_URL} token={tenantSession.token} as="tenant" id={openTenancy} onOpenCondition={() => setWalking(true)} onTellArea={() => setTelling(true)} onBack={() => setOpenTenancy(null)} />
             )
           ) : openConversation === null ? (
-            <MessagesScreen baseUrl={API_URL} onOpen={setOpenConversation} onOpenTenancies={() => setTenancies('tenant')} onOpenApplications={() => setApplications('tenant')} />
+            <MessagesScreen baseUrl={API_URL} onOpen={setOpenConversation} onOpenTenancies={() => setTenancies('tenant')} onOpenApplications={() => setApplications('tenant')} onOpenSavedSearches={() => setSavedSearches(true)} />
           ) : (
             <ConversationScreen
               baseUrl={API_URL}

@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { attempt, client, type SearchResponse } from '@keys/api';
 
+import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
 import { CITIES, WITHIN_KM_OPTIONS, naira } from '@keys/domain';
 
@@ -14,6 +15,7 @@ import { space } from '../design/tokens';
 import { useLanguage } from '../state/language';
 import { useQuery } from '../state/server';
 import { useSaved } from '../state/saved';
+import { useTenant } from '../state/tenant';
 
 /**
  * Finding somewhere to live.
@@ -39,6 +41,13 @@ export function FindScreen({
   const [verifiedOnly, setVerifiedOnly] = useState(true);
   const [showSaved, setShowSaved] = useState(false);
   const saved = useSaved();
+  /*
+    Saving a search needs an account (ADR-0020), and a tenant gets one by
+    asking about a place. Without a token the button says so rather than
+    hiding; with one, saving snapshots what the search sees now.
+  */
+  const tenant = useTenant();
+  const [searchSaved, setSearchSaved] = useState(false);
   /*
     A city, and a place in it the tenant goes often (ADR-0013, ADR-0016).
 
@@ -313,6 +322,17 @@ export function FindScreen({
                 {t('what_your_search_found')}
               </Text>
             )}
+            {/*
+              What was withheld, and why (ADR-0020). A count, in the words of
+              the publication rule, never the listings — they were withheld for
+              a reason. Rendered above the answer so the smaller inventory
+              reads as evidence rather than as a weakness.
+            */}
+            {typeof found?.withheld === 'number' && found.withheld > 0 && (
+              <Text variant="label" tone="secondary" style={styles.heading} testID="withheld">
+                {`${found.withheld} ${t('matched_not_shown')}`}
+              </Text>
+            )}
             {results.map((result) => (
               <PropertyRow
                 key={result.id}
@@ -352,6 +372,37 @@ export function FindScreen({
             ))}
           </View>
         ))}
+
+      {!offline && results !== null && (
+        <View style={styles.row}>
+          {tenant.token === null ? (
+            <Text variant="label" tone="secondary">
+              {t('sign_in_to_save_search')}
+            </Text>
+          ) : searchSaved ? (
+            <Text variant="label" tone="secondary" testID="searchSaved">
+              {t('search_saved')}
+            </Text>
+          ) : (
+            <Button
+              label={t('save_this_search')}
+              quiet
+              onPress={() => {
+                void attempt(() =>
+                  client({ baseUrl, tenantToken: tenant.token! }).reach.saveSearch({
+                    q: typed.trim(),
+                    verifiedOnly,
+                    ...(cityId ? { city: cityId } : {}),
+                    ...(place ? { placeLatitude: place.centre.latitude, placeLongitude: place.centre.longitude, withinKm: within } : {}),
+                  }),
+                ).then((r) => {
+                  if (r.ok) setSearchSaved(true);
+                });
+              }}
+            />
+          )}
+        </View>
+      )}
     </ScrollView>
   );
 }
