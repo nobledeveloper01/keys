@@ -324,6 +324,19 @@ that claims exactly that.
 Agreement templates and e-signature, rent schedule and receipts, maintenance tickets, **condition
 records and the move-out comparison**, landlord portfolio, saved searches.
 
+**Started 2026-09-17, ahead of v1.0 shipping**, because everything v1.0 still needs is a device
+or a person and the keyboard was idle. Four decisions first: money is recorded and never touched
+([ADR-0009](adr/0009-a-tenancy-records-money-and-never-touches-it.md)); the letting side is an
+agent account ([ADR-0010](adr/0010-the-tenancy-has-two-parties-and-the-letting-side-is-an-agent-account.md));
+the condition record is Snag's and counts only when both have signed
+([ADR-0011](adr/0011-the-condition-record-is-snags-and-is-acknowledged-by-both-or-by-neither.md));
+tickets and tenancies are append-only and the agreement is a reviewed template
+([ADR-0012](adr/0012-a-ticket-and-a-tenancy-are-append-only-and-the-agreement-is-a-reviewed-template.md)).
+
+**Phase gate.** *A tenant in a dispute opens the app with no signal and has the agreement, every
+receipt and both condition records; a recorded payment cannot be edited, only corrected; and no
+screen, in any language, says or implies that Keys holds, moves or asks for money.*
+
 ## Phase 8 — Depth & Reach (Weeks 41–50) — *v1.2*
 360° tours, commute-time filtering, area guides, application and screening flow, Abuja and Port
 Harcourt.

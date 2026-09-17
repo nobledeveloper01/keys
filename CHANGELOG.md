@@ -9,6 +9,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Tenancy, decided before it is built.** Four ADRs: money is recorded and
+  never touched — no collection, no wallet, no reminder that says *pay* — and
+  the copy gate now fails on the words that would imply otherwise; the
+  tenancy's two parties are the tenant and the letting account, which a
+  landlord managing her own flat opens as an agent; the condition record is
+  Snag's model and counts only when both parties signed the same bytes;
+  tickets and tenancies are append-only histories with derived state, and
+  the agreement is a versioned template whose legal review is a gate (R17).
+
 - **Agent verification.** A tenant checking a number now gets both halves of the
   answer: what has been held against it, and what has been confirmed about
   whoever trades under it. The second half is a sentence naming what was
