@@ -1,4 +1,4 @@
-import { onThisPlatform } from '../src/native/onThisPlatform';
+import { absent } from '../src/native/onThisPlatform';
 import { captureFor } from '../src/state/capture';
 
 /**
@@ -9,7 +9,7 @@ import { captureFor } from '../src/state/capture';
  */
 describe('a module absent from this platform', () => {
   it('is a stand-in whose methods reject with one sentence, not a throw at import', async () => {
-    const camera = onThisPlatform<{ capture(kind: string): Promise<unknown> }>('KeysCapture');
+    const camera = absent<{ capture(kind: string): Promise<unknown> }>('KeysCapture');
     await expect(camera.capture('photo')).rejects.toThrow('KeysCapture is not on this platform yet.');
   });
 

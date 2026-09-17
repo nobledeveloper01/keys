@@ -1,4 +1,4 @@
-import type { TurboModule } from 'react-native';
+import { TurboModuleRegistry, type TurboModule } from 'react-native';
 
 import { onThisPlatform } from './onThisPlatform';
 
@@ -59,5 +59,10 @@ export interface Spec extends TurboModule {
   }>;
 }
 
-// A stand-in that refuses at use on a platform without the module (ADR-0018), never a crash at launch.
-export default onThisPlatform<Spec>('KeysCapture');
+// The registry call is written out for codegen to find; a platform without the
+// module gets a stand-in that refuses at use (ADR-0018), never a crash at launch.
+function load(): Spec {
+  return TurboModuleRegistry.getEnforcing<Spec>('KeysCapture');
+}
+
+export default onThisPlatform<Spec>('KeysCapture', load);

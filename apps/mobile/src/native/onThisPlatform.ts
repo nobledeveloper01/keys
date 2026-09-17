@@ -1,4 +1,4 @@
-import { TurboModuleRegistry, type TurboModule } from 'react-native';
+import type { TurboModule } from 'react-native';
 
 /**
  * A native module, or a stand-in that refuses at use rather than at launch
@@ -14,19 +14,31 @@ import { TurboModuleRegistry, type TurboModule } from 'react-native';
  * with one sentence. The callers already treat a rejection from the camera
  * or the key as a refusal to show; nothing else changes.
  *
- * `getEnforcing` in a try/catch rather than `get`, for the reason
- * `NativeKeysSecrets.ts` gives: these are legacy modules reached through the
- * interop layer, and `get` returned null for one that was in the binary.
+ * The registry call itself stays in each spec file, written out: React
+ * Native's codegen parses every `Native*.ts` for a literal
+ * `TurboModuleRegistry.get…<Spec>('Name')` and fails the native build when
+ * it cannot find one — which is how a helper that hid the call broke both
+ * platforms' builds on the first push. `getEnforcing` rather than `get`, for
+ * the reason `NativeKeysSecrets.ts` gives.
  */
-export function onThisPlatform<T extends TurboModule>(name: string): T {
+export function onThisPlatform<T extends TurboModule>(name: string, load: () => T): T {
   try {
-    return TurboModuleRegistry.getEnforcing<T>(name);
+    return load();
   } catch {
-    return new Proxy({} as T, {
-      get: (_target, method) =>
-        typeof method === 'string' && method !== 'then'
-          ? () => Promise.reject(new Error(`${name} is not on this platform yet.`))
-          : undefined,
-    });
+    return absent<T>(name);
   }
+}
+
+/**
+ * The stand-in. Every method rejects with one sentence; `then` is left
+ * undefined so an `await` on the module itself does not mistake it for a
+ * promise.
+ */
+export function absent<T extends TurboModule>(name: string): T {
+  return new Proxy({} as T, {
+    get: (_target, method) =>
+      typeof method === 'string' && method !== 'then'
+        ? () => Promise.reject(new Error(`${name} is not on this platform yet.`))
+        : undefined,
+  });
 }

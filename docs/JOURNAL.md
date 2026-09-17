@@ -2505,3 +2505,12 @@ The test says which, and why.
   runner to mean anything; #11, #16, #19, #22 are refused or built in
   another shape (a commute is a distance, ADR-0013; the fee is enforced by
   suspension, not refund).
+
+**Codegen wants the registry call written out, in the spec file, in a
+function.** The first push of the stand-in put `TurboModuleRegistry.getEnforcing`
+behind a helper; React Native's codegen parses every `Native*.ts` for a
+literal `TurboModuleRegistry.get…<Spec>('Name')` and fails both native builds
+when it finds none — *unused NativeModule spec* — and it does not look inside
+an arrow passed as an argument either. Reproduced locally with
+`combine-js-to-schema-cli` before pushing again; the call sits in a named
+`load()` in each spec file now, the way `NativeKeysSecrets` always had it.
